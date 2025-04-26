@@ -16,12 +16,40 @@ const server = new McpServer({
   description:
     "Run arbitrary JavaScript inside disposable Docker containers and install npm dependencies on the fly.",
 });
+server.tool(
+  "sandbox_initialize",
+  "Start a new isolated Docker container running Node.js. Used to set up a sandbox session for multiple commands and scripts.",
+  initializeSchema,
+  initializeSandbox
+);
 
-server.tool("sandbox_initialize", initializeSchema, initializeSandbox);
-server.tool("sandbox_exec", execSchema, execInSandbox);
-server.tool("run_js", runJsSchema, runJs);
-server.tool("sandbox_stop", stopSchema, stopSandbox);
-server.tool("run_js_ephemeral", ephemeralSchema, runJsEphemeral);
+server.tool(
+  "sandbox_exec",
+  "Execute one or more shell commands inside a running sandbox container. Requires a sandbox initialized beforehand.",
+  execSchema,
+  execInSandbox
+);
+
+server.tool(
+  "run_js",
+  "Install npm dependencies and run JavaScript code inside a running sandbox container. After running, you must manually stop the sandbox to free resources. The code must be valid ESModules (import/export syntax). Best for complex workflows where you want to reuse the environment across multiple executions.",
+  runJsSchema,
+  runJs
+);
+
+server.tool(
+  "sandbox_stop",
+  "Terminate and remove a running sandbox container. Should be called after finishing work in a sandbox initialized with sandbox_initialize.",
+  stopSchema,
+  stopSandbox
+);
+
+server.tool(
+  "run_js_ephemeral",
+  "Run a JavaScript snippet in a temporary disposable container with optional npm dependencies, then automatically clean up. The code must be valid ESModules (import/export syntax). Ideal for simple one-shot executions without maintaining a sandbox or managing cleanup manually.",
+  ephemeralSchema,
+  runJsEphemeral
+);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
