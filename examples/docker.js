@@ -13,7 +13,14 @@ async function main() {
   await client.connect(
     new StdioClientTransport({
       command: "docker",
-      args: ["run", "-i", "--rm", "alfonsograziano/node-code-sandbox-mcp"],
+      args: [
+        "run",
+        "-i",
+        "--rm",
+        "-v",
+        "/var/run/docker.sock:/var/run/docker.sock",
+        "alfonsograziano/node-code-sandbox-mcp",
+      ],
       env: {
         PATH: process.env.PATH,
       },

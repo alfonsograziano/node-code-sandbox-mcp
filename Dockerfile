@@ -4,7 +4,6 @@ WORKDIR /app
 
 # 1. Copy package files and tsconfig to install devDependencies (including tsc)
 COPY package*.json tsconfig.json ./
-
 RUN npm ci
 
 # 2. Copy all source (including src/tools/initialize.ts) and compile
@@ -15,12 +14,21 @@ RUN npm run build    # emits dist/server.js, dist/tools/initialize.js, etc.
 FROM node:23-slim
 WORKDIR /app
 
-# 3. Copy only package files & install production deps
+# 3. Install Docker CLI so we can shell out to docker commands
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends docker.io && \
+    rm -rf /var/lib/apt/lists/*
+
+# 4. Copy only package files & install production deps
 COPY package*.json ./
 RUN npm ci --production
 
-# 4. Pull in the compiled output from builder
+# 5. Pull in the compiled output from builder
 COPY --from=builder /app/dist ./dist
 
-# 5. Start your server
+# 6. Expose Docker socket for nested Docker commands
+#    When running: docker run -v /var/run/docker.sock:/var/run/docker.sock ...
+VOLUME ["/var/run/docker.sock"]
+
+# 7. Start your server
 CMD ["node", "dist/server.js"]

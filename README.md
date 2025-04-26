@@ -134,14 +134,6 @@ docker run --rm -it \
   alfonsograziano/node-code-sandbox-mcp stdio
 ```
 
-## NPX
-
-Launch without cloning:
-
-```shell
-npx -y alfonsograziano/node-code-sandbox-mcp stdio
-```
-
 ## Usage with VS Code
 
 **Quick install** buttons (VS Code & Insiders):
@@ -156,9 +148,12 @@ Install js-sandbox-mcp (NPX) Install js-sandbox-mcp (Docker)
         "js-sandbox": {
             "command": "docker",
             "args": [
-                "run", "-i", "--rm",
+                "run",
+                "-i",
+                "--rm",
+                "-v", "/var/run/docker.sock:/var/run/docker.sock",
                 "alfonsograziano/node-code-sandbox-mcp"
-            ],
+              ],
             "cwd": "${workspaceFolder}/js-sandbox-mcp"
         }
     }
