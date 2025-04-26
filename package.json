@@ -5,11 +5,13 @@
   "scripts": {
     "dev": "tsx src/server.ts",
     "build": "tsc -p .",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "test": "vitest"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.10.2",
-    "tmp": "^0.2.3"
+    "tmp": "^0.2.3",
+    "vitest": "^3.1.2"
   },
   "devDependencies": {
     "@types/express": "^5.0.1",
