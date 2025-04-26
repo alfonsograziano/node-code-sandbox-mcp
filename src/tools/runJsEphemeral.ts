@@ -15,6 +15,7 @@ export const argSchema = {
   image: z
     .string()
     .optional()
+    .default("node:20-slim")
     .describe(
       'Docker image to use for ephemeral execution, e.g. "node:20-slim"'
     ),
