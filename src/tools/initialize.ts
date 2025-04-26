@@ -14,7 +14,7 @@ export default async function initializeSandbox({
 }): Promise<McpResponse> {
   const container = `js-sbx-${randomUUID()}`;
   execSync(
-    `docker run -d --network none --memory 512m --cpus 1 ` +
+    `docker run -d --network host --memory 512m --cpus 1 ` +
       `--workdir /workspace --name ${container} ${image} tail -f /dev/null`
   );
   return {

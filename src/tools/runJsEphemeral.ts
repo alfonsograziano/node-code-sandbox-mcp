@@ -27,7 +27,7 @@ export default async function runJsEphemeral({
   try {
     // 1. Start ephemeral container
     execSync(
-      `docker run -d --network none --memory 512m --cpus 1 ` +
+      `docker run -d --network host --memory 512m --cpus 1 ` +
         `--workdir /workspace --name ${containerId} ${image} tail -f /dev/null`
     );
 

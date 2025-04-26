@@ -10,13 +10,11 @@ Node.js server implementing the Model Context Protocol (MCP) for running arbitra
 - Run ES module JavaScript snippets and capture stdout
 - Tear down containers cleanly
 
-> Note: Containers run with controlled CPU/memory limits and no network by default.
+> Note: Containers run with controlled CPU/memory limits.
 
 ## API
 
 ## Tools
-
-…
 
 ### run_js_ephemeral
 
