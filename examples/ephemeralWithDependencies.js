@@ -32,9 +32,12 @@ async function main() {
         const shuffled = _.shuffle(names);
         console.log('Shuffled names:', shuffled.join(', '));
       `,
-      dependencies: {
-        lodash: "^4.17.21",
-      },
+      dependencies: [
+        {
+          name: "lodash",
+          version: "^4.17.21",
+        },
+      ],
     },
   });
 

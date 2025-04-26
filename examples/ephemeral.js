@@ -30,9 +30,7 @@ async function main() {
         import { randomUUID } from 'node:crypto';
         console.log('Ephemeral run! Your UUID is', randomUUID());
       `,
-      dependencies: {
-        // e.g., "lodash": "^4.17.21"
-      },
+      dependencies: [],
     },
   });
 

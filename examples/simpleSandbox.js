@@ -44,10 +44,7 @@ async function main() {
         import { randomUUID } from 'node:crypto';
         console.log('Hello from sandbox! Your UUID is', randomUUID());
       `,
-      dependencies: {
-        // you can list any npm deps here; e.g.:
-        // "lodash": "^4.17.21"
-      },
+      dependencies: [],
     },
   });
   console.log("▶️ run_js output:\n", runResult.content[0].text);
