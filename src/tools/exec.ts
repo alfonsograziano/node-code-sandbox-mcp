@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { execSync } from "node:child_process";
-import { McpResponse, textContent } from "../types";
+import { McpResponse, textContent } from "../types.js";
 
 export const argSchema = {
   container_id: z.string(),

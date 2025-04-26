@@ -1,15 +1,25 @@
 {
-    "compilerOptions": {
-      "target": "ES2022",
-      "module": "ES2022",
-      "moduleResolution": "bundler",
-      "outDir": "dist",
-      "rootDir": "src",
-      "esModuleInterop": true,
-      "strict": true,
-      "skipLibCheck": true,
-      "allowJs": true,
-      "resolveJsonModule": true,
-    }
-  }
-  
+  "compilerOptions": {
+    // The folder where TypeScript looks for your .ts/.tsx files:
+    "rootDir": "src",
+
+    // The folder into which all compiled files will go:
+    "outDir": "dist",
+
+    // Use ESM Next so you get proper .js extensions in imports:
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+
+    "target": "ES2022",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+
+  // Only compile files under src/
+  "include": ["src/**/*"],
+
+  // Never compile these
+  "exclude": ["node_modules", "examples", "dist"]
+}

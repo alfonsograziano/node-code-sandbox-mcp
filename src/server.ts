@@ -2,13 +2,13 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import initializeSandbox, {
   argSchema as initializeSchema,
-} from "./tools/initialize";
-import execInSandbox, { argSchema as execSchema } from "./tools/exec";
-import runJs, { argSchema as runJsSchema } from "./tools/runJs";
-import stopSandbox, { argSchema as stopSchema } from "./tools/stop";
+} from "./tools/initialize.js";
+import execInSandbox, { argSchema as execSchema } from "./tools/exec.js";
+import runJs, { argSchema as runJsSchema } from "./tools/runJs.js";
+import stopSandbox, { argSchema as stopSchema } from "./tools/stop.js";
 import runJsEphemeral, {
   argSchema as ephemeralSchema,
-} from "./tools/runJsEphemeral";
+} from "./tools/runJsEphemeral.js";
 
 const server = new McpServer({
   name: "js-sandbox-mcp",

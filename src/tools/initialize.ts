@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { execSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { McpResponse, textContent } from "../types";
+import { McpResponse, textContent } from "../types.js";
 
 export const argSchema = { image: z.string().optional() };
 

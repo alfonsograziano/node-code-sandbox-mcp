@@ -4,7 +4,7 @@ import fs from "fs/promises";
 import path from "path";
 import tmp from "tmp";
 import { randomUUID } from "crypto";
-import { McpResponse, textContent } from "../types";
+import { McpResponse, textContent } from "../types.js";
 
 const NodeDependency = z.object({
   name: z.string().describe("npm package name, e.g. lodash"),

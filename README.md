@@ -24,7 +24,7 @@ Run a one-off JS script in a brand-new disposable container.
 
 - `image` (string, optional): Docker image to use (default: `node:20-slim`).
 - `code` (string, required): JavaScript source to execute.
-- `dependencies` (Record<string, string>, optional): NPM packages and versions to install (default: `{}`).
+- `dependencies` (array of `{ name, version }`, optional): NPM packages and versions to install (default: `[]`).
 
 **Behavior:**
 
@@ -43,7 +43,7 @@ Run a one-off JS script in a brand-new disposable container.
   "arguments": {
     "image": "node:20-slim",
     "code": "console.log('One-shot run!');",
-    "dependencies": { "lodash": "^4.17.21" }
+    "dependencies": [{ "name": "lodash", "version": "^4.17.21" }]
   }
 }
 ```
@@ -72,7 +72,7 @@ Install npm dependencies and execute JavaScript code.
 - **Input**:
   - `container_id` (_string_): ID from `sandbox_initialize`
   - `code` (_string_): JS source to run (ES modules supported)
-  - `dependencies` (_Record<string,string>_, optional, default: `{}`): npm package names → semver versions
+  - `dependencies` (_array of `{ name, version }`_, optional, default: `[]`): npm package names → semver versions
 - **Behavior**:
   1. Creates a temp workspace inside the container
   2. Writes `index.js` and a minimal `package.json`
@@ -125,12 +125,13 @@ Choose the workflow that best fits your use-case!
 Run the server in a container (mount Docker socket if needed):
 
 ```shell
-docker build -t js-sandbox-mcp .
-# Run with stdio transport
+# Build and publish your image locally if needed
+# docker build -t alfonsograziano/node-code-sandbox-mcp .
 
+# Run with stdio transport
 docker run --rm -it \
- -v /var/run/docker.sock:/var/run/docker.sock \
- js-sandbox-mcp stdio
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  alfonsograziano/node-code-sandbox-mcp stdio
 ```
 
 ## NPX
@@ -138,8 +139,7 @@ docker run --rm -it \
 Launch without cloning:
 
 ```shell
-npx -y js-sandbox-mcp stdio
-
+npx -y alfonsograziano/node-code-sandbox-mcp stdio
 ```
 
 ## Usage with VS Code
@@ -154,13 +154,15 @@ Install js-sandbox-mcp (NPX) Install js-sandbox-mcp (Docker)
 "mcp": {
     "servers": {
         "js-sandbox": {
-            "command": "node",
-            "args": ["dist/server.js", "stdio"],
+            "command": "docker",
+            "args": [
+                "run", "-i", "--rm",
+                "alfonsograziano/node-code-sandbox-mcp"
+            ],
             "cwd": "${workspaceFolder}/js-sandbox-mcp"
         }
     }
 }
-
 ```
 
 ## Build
