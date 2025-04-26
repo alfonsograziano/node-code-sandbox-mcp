@@ -154,9 +154,30 @@ Install js-sandbox-mcp (NPX) Install js-sandbox-mcp (Docker)
                 "-v", "/var/run/docker.sock:/var/run/docker.sock",
                 "alfonsograziano/node-code-sandbox-mcp"
               ],
-            "cwd": "${workspaceFolder}/js-sandbox-mcp"
         }
     }
+}
+```
+
+## Usage with Claude Desktop
+
+You can follow the [Official Guide](https://modelcontextprotocol.io/quickstart/user) to install this MCP server
+
+```json
+{
+  "mcpServers": {
+    "js-sandbox": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-v",
+        "/var/run/docker.sock:/var/run/docker.sock",
+        "alfonsograziano/node-code-sandbox-mcp"
+      ]
+    }
+  }
 }
 ```
 
