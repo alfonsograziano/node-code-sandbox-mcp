@@ -1,0 +1,21 @@
+{
+  "name": "js-sandbox-mcp",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/server.ts",
+    "build": "tsc -p .",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.10.2",
+    "tmp": "^0.2.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.1",
+    "@types/node": "^20.11.19",
+    "@types/tmp": "^0.2.6",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.4"
+  }
+}
