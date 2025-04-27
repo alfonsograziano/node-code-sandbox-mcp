@@ -46,7 +46,17 @@ server.tool(
 
 server.tool(
   "run_js_ephemeral",
-  "Run a JavaScript snippet in a temporary disposable container with optional npm dependencies, then automatically clean up. The code must be valid ESModules (import/export syntax). Ideal for simple one-shot executions without maintaining a sandbox or managing cleanup manually.",
+  "Run a JavaScript snippet in a temporary disposable container with optional npm dependencies, then automatically clean up. " +
+    "The code must be valid ESModules (import/export syntax). Ideal for simple one-shot executions without maintaining a sandbox or managing cleanup manually. " +
+    "If your script saves files in the current directory, these files will be returned automatically as part of the result. " +
+    "This includes images (e.g., PNG, JPEG) and other files (e.g., text, JSON, binaries).\n\n" +
+    "Example:\n\n" +
+    "```js\n" +
+    'import fs from "fs/promises";\n\n' +
+    'await fs.writeFile("hello.txt", "Hello world!");\n' +
+    'console.log("Saved hello.txt");\n' +
+    "```\n\n" +
+    "In this example, the tool will return the console output **and** the `hello.txt` file as resource.",
   ephemeralSchema,
   runJsEphemeral
 );

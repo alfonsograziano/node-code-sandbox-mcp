@@ -4,7 +4,8 @@ import fs from "fs/promises";
 import path from "path";
 import tmp from "tmp";
 import { randomUUID } from "crypto";
-import { McpResponse, textContent } from "../types.js";
+import mime from "mime-types";
+import { McpResponse, textContent, McpContent } from "../types.js";
 
 const NodeDependency = z.object({
   name: z.string().describe("npm package name, e.g. lodash"),
@@ -57,13 +58,13 @@ export default async function runJsEphemeral({
   const tmpDir = tmp.dirSync({ unsafeCleanup: true });
 
   try {
-    // 1. Start ephemeral container (allow network for npm installs)
+    // Start an ephemeral container (allow network for npm installs)
     execSync(
       `docker run -d --network host --memory 512m --cpus 1 ` +
         `--workdir /workspace --name ${containerId} ${image} tail -f /dev/null`
     );
 
-    // 2. Prepare workspace files
+    // Prepare workspace files
     await fs.writeFile(path.join(tmpDir.name, "index.js"), code);
     await fs.writeFile(
       path.join(tmpDir.name, "package.json"),
@@ -74,7 +75,7 @@ export default async function runJsEphemeral({
       )
     );
 
-    // 3. Copy files into container
+    // Copy files into container
     execSync(`docker cp ${tmpDir.name}/. ${containerId}:/workspace`);
 
     // 4. Install dependencies and execute
@@ -82,14 +83,53 @@ export default async function runJsEphemeral({
     const runCmd = `node index.js`;
     const fullCmd = `${installCmd} && ${runCmd}`;
 
-    const output = execSync(
+    const rawOutput = execSync(
       `docker exec ${containerId} /bin/sh -c ${JSON.stringify(fullCmd)}`,
       { encoding: "utf8" }
     );
 
-    return { content: [textContent(output)] };
+    // Copy everything back out of the container
+    execSync(`docker cp ${containerId}:/workspace/. ${tmpDir.name}`);
+
+    // Build the MCP response
+    const contents: McpContent[] = [];
+
+    //  Always include stdout, with the requested prefix
+    contents.push(textContent(`Node.js process output:\n${rawOutput}`));
+
+    const imageTypes = new Set(["image/jpeg", "image/png"]);
+    const dirents = await fs.readdir(tmpDir.name, { withFileTypes: true });
+    for (const dirent of dirents) {
+      if (!dirent.isFile()) continue;
+      const fname = dirent.name;
+      if (
+        fname === "index.js" ||
+        fname === "package.json" ||
+        fname === "package-lock.json"
+      )
+        continue;
+      const fullPath = path.join(tmpDir.name, fname);
+      const b64 = await fs.readFile(fullPath, { encoding: "base64" });
+      const mimeType = mime.lookup(fname) || "application/octet-stream";
+
+      if (imageTypes.has(mimeType)) {
+        // Return actual image content
+        contents.push({
+          type: "image",
+          data: b64,
+          mimeType,
+        });
+      } else {
+        // Return as generic resource
+        contents.push({
+          type: "resource",
+          resource: { uri: fname, mimeType, blob: b64 },
+        });
+      }
+    }
+
+    return { content: contents };
   } finally {
-    // 5. Cleanup: remove container and temp files
     execSync(`docker rm -f ${containerId}`);
     tmpDir.removeCallback();
   }
