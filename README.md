@@ -34,6 +34,11 @@ Run a one-off JS script in a brand-new disposable container.
 4. Executes the script.
 5. Tears down (removes) the container.
 6. Returns the captured stdout.
+7. If your code saves any files in the current directory, these files will be returned automatically.
+   - Images (e.g., PNG, JPEG) are returned as `image` content.
+   - Other files (e.g., `.txt`, `.json`) are returned as `resource` content.
+
+> **Tip:** To get files back, simply save them during your script execution.
 
 **Example Call:**
 
@@ -47,6 +52,17 @@ Run a one-off JS script in a brand-new disposable container.
   }
 }
 ```
+
+**Example to save a file:**
+
+```javascript
+import fs from "fs/promises";
+
+await fs.writeFile("hello.txt", "Hello world!");
+console.log("Saved hello.txt");
+```
+
+This will return the console output **and** the `hello.txt` file.
 
 ### sandbox_initialize
 
