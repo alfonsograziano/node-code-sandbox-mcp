@@ -7,6 +7,7 @@ import { randomUUID } from "crypto";
 import mime from "mime-types";
 import { McpResponse, textContent, McpContent } from "../types.js";
 import { pathToFileURL } from "url";
+import { isRunningInDocker } from "../utils.js";
 
 const NodeDependency = z.object({
   name: z.string().describe("npm package name, e.g. lodash"),
@@ -99,7 +100,14 @@ export default async function runJsEphemeral({
     contents.push(textContent(`Node.js process output:\n${rawOutput}`));
 
     // Determine where to save output files (within the container)
-    const outputDir = path.resolve(process.env.HOME || process.cwd());
+
+    const isContainer = isRunningInDocker();
+
+    const outputDir = isContainer
+      ? path.resolve(process.env.HOME || process.cwd())
+      : path.resolve(
+          process.env.JS_SANDBOX_OUTPUT_DIR || process.env.HOME || process.cwd()
+        );
     await fs.mkdir(outputDir, { recursive: true });
 
     const imageTypes = new Set(["image/jpeg", "image/png"]);

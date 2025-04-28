@@ -19,41 +19,51 @@ async function main() {
   const containerOutput = "/root";
 
   // 2️⃣ Connect to your js-sandbox-mcp server
+
   await client.connect(
     new StdioClientTransport({
-      command: "docker",
-      args: [
-        // 1) Start a new container
-        "run",
-        // 2) Keep STDIN open and allocate a pseudo-TTY (required for MCP over stdio)
-        "-i",
-        // 3) Remove the container automatically when it exits
-        "--rm",
-
-        // 4) Give the MCP-server access to the Docker socket
-        //    so it can spin up inner “ephemeral” containers
-        "-v",
-        "/var/run/docker.sock:/var/run/docker.sock",
-
-        // 5) Bind-mount your Desktop folder into the container at /root
-        "-v",
-        `${hostOutput}:${containerOutput}`,
-
-        // 6) Pass your host’s output-dir env var _into_ the MCP-server
-        "-e",
-        `JS_SANDBOX_OUTPUT_DIR=${hostOutput}`,
-
-        // 7) The MCP-server image that will manage your ephemeral sandboxes
-        "alfonsograziano/node-code-sandbox-mcp",
-      ],
-      env: {
-        // inherit your shell’s env
-        ...process.env,
-        // also set JS_SANDBOX_OUTPUT_DIR inside the MCP-server process
-        JS_SANDBOX_OUTPUT_DIR,
-      },
+      command: "npm",
+      args: ["run", "dev"],
+      cwd: path.resolve(".."),
+      env: { ...process.env, JS_SANDBOX_OUTPUT_DIR },
     })
   );
+
+  // await client.connect(
+  //   new StdioClientTransport({
+  //     command: "docker",
+  //     args: [
+  //       // 1) Start a new container
+  //       "run",
+  //       // 2) Keep STDIN open and allocate a pseudo-TTY (required for MCP over stdio)
+  //       "-i",
+  //       // 3) Remove the container automatically when it exits
+  //       "--rm",
+
+  //       // 4) Give the MCP-server access to the Docker socket
+  //       //    so it can spin up inner “ephemeral” containers
+  //       "-v",
+  //       "/var/run/docker.sock:/var/run/docker.sock",
+
+  //       // 5) Bind-mount your Desktop folder into the container at /root
+  //       "-v",
+  //       `${hostOutput}:${containerOutput}`,
+
+  //       // 6) Pass your host’s output-dir env var _into_ the MCP-server
+  //       "-e",
+  //       `JS_SANDBOX_OUTPUT_DIR=${hostOutput}`,
+
+  //       // 7) The MCP-server image that will manage your ephemeral sandboxes
+  //       "alfonsograziano/node-code-sandbox-mcp",
+  //     ],
+  //     env: {
+  //       // inherit your shell’s env
+  //       ...process.env,
+  //       // also set JS_SANDBOX_OUTPUT_DIR inside the MCP-server process
+  //       JS_SANDBOX_OUTPUT_DIR,
+  //     },
+  //   })
+  // );
 
   console.log("✅ Connected to js-sandbox-mcp");
 
