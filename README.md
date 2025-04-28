@@ -12,6 +12,11 @@ Node.js server implementing the Model Context Protocol (MCP) for running arbitra
 
 > Note: Containers run with controlled CPU/memory limits.
 
+## Explore Cool Use Cases
+
+If you want ideas for cool and powerful ways to use this library, check out the [USE_CASES.md](https://github.com/alfonsograziano/node-code-sandbox-mcp/blob/master/USE_CASE.md) file!
+It contains a curated list of prompts, examples, and creative experiments you can try with the Node.js Sandbox MCP Server.
+
 ## API
 
 ## Tools
