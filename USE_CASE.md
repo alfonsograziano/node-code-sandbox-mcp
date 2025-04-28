@@ -79,3 +79,17 @@ This is a simple page created from **Markdown**!
 Tip: Use a library like `marked` to perform the conversion.
 
 ---
+
+### Generate Random Data
+
+Create a JS script that generates a list of 100 fake users with names, emails, and addresses, then saves them to a JSON file called "fake_users.json".
+
+**Tip:** Use `@faker-js/faker`.
+
+---
+
+### Evaluate a complex math expression
+
+Create a JS script that evaluates this expression `((5 + 8) * (15 / 3) - (9 - (4 * 6)) + (10 / (2 + 6))) ^ 2 + sqrt(64) - factorial(6) + (24 / (5 + 7 * (3 ^ 2))) + log(1000) * sin(30 * pi / 180) - cos(60 * pi / 180) + tan(45 * pi / 180) + (4 ^ 3 - 2 ^ (5 - 2)) * (sqrt(81) / 9)`. Tip: use math.js
+
+---
