@@ -6,6 +6,7 @@ import tmp from "tmp";
 import { randomUUID } from "crypto";
 import mime from "mime-types";
 import { McpResponse, textContent, McpContent } from "../types.js";
+import { pathToFileURL } from "url";
 
 const NodeDependency = z.object({
   name: z.string().describe("npm package name, e.g. lodash"),
@@ -97,6 +98,10 @@ export default async function runJsEphemeral({
     //  Always include stdout, with the requested prefix
     contents.push(textContent(`Node.js process output:\n${rawOutput}`));
 
+    // Determine where to save output files (within the container)
+    const outputDir = path.resolve(process.env.HOME || process.cwd());
+    await fs.mkdir(outputDir, { recursive: true });
+
     const imageTypes = new Set(["image/jpeg", "image/png"]);
     const dirents = await fs.readdir(tmpDir.name, { withFileTypes: true });
     for (const dirent of dirents) {
@@ -109,23 +114,36 @@ export default async function runJsEphemeral({
       )
         continue;
       const fullPath = path.join(tmpDir.name, fname);
-      const b64 = await fs.readFile(fullPath, { encoding: "base64" });
+      const destPath = path.join(outputDir, fname);
+
+      const jsOutputHost =
+        process.env.JS_SANDBOX_OUTPUT_DIR || process.env.HOME || process.cwd();
+      const hostPath = path.join(jsOutputHost, fname);
+
+      // Save the file to the output directory
+      await fs.copyFile(fullPath, destPath);
+      contents.push(textContent(`I saved the file ${fname} at ${hostPath}`));
+
       const mimeType = mime.lookup(fname) || "application/octet-stream";
 
       if (imageTypes.has(mimeType)) {
-        // Return actual image content
+        const b64 = await fs.readFile(fullPath, { encoding: "base64" });
         contents.push({
           type: "image",
           data: b64,
           mimeType,
         });
-      } else {
-        // Return as generic resource
-        contents.push({
-          type: "resource",
-          resource: { uri: fname, mimeType, blob: b64 },
-        });
       }
+
+      // Add a resource item pointing at the saved file
+      contents.push({
+        type: "resource",
+        resource: {
+          uri: pathToFileURL(hostPath).href,
+          mimeType,
+          text: fname,
+        },
+      });
     }
 
     return { content: contents };

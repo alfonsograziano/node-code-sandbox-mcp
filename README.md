@@ -37,6 +37,7 @@ Run a one-off JS script in a brand-new disposable container.
 7. If your code saves any files in the current directory, these files will be returned automatically.
    - Images (e.g., PNG, JPEG) are returned as `image` content.
    - Other files (e.g., `.txt`, `.json`) are returned as `resource` content.
+   - Note: the file saving feature is currently available only in the ephemeral tool.
 
 > **Tip:** To get files back, simply save them during your script execution.
 
@@ -115,7 +116,11 @@ Add this to your `claude_desktop_config.json`:
     "js-sandbox": {
       "command": "node",
       "args": ["dist/server.js", "stdio"],
-      "cwd": "/path/to/js-sandbox-mcp"
+      "cwd": "/path/to/js-sandbox-mcp",
+      "env": {
+        // Mount a host directory into the container with the same path:
+        "JS_SANDBOX_OUTPUT_DIR": "/path/to/output/directory"
+      }
     }
   }
 }
@@ -138,17 +143,20 @@ Choose the workflow that best fits your use-case!
 
 ## Docker
 
-Run the server in a container (mount Docker socket if needed):
+Run the server in a container (mount Docker socket if needed), and pass through your desired host output directory as an env var:
 
 ```shell
-# Build and publish your image locally if needed
+# Build locally if necessary
 # docker build -t alfonsograziano/node-code-sandbox-mcp .
 
-# Run with stdio transport
 docker run --rm -it \
   -v /var/run/docker.sock:/var/run/docker.sock \
+  -v "$HOME/Desktop/sandbox-output":"$HOME/Desktop/sandbox-output" \
+  -e JS_SANDBOX_OUTPUT_DIR="$HOME/Desktop/sandbox-output" \
   alfonsograziano/node-code-sandbox-mcp stdio
 ```
+
+This bind-mounts your host folder into the container at the **same absolute path** and makes `JS_SANDBOX_OUTPUT_DIR` available inside the MCP server.
 
 ## Usage with VS Code
 
@@ -168,6 +176,9 @@ Install js-sandbox-mcp (NPX) Install js-sandbox-mcp (Docker)
                 "-i",
                 "--rm",
                 "-v", "/var/run/docker.sock:/var/run/docker.sock",
+                // bind-mount & pass env var:
+                "-v", "$HOME/Desktop/sandbox-output:$HOME/Desktop/sandbox-output",
+                "-e", "JS_SANDBOX_OUTPUT_DIR=$HOME/Desktop/sandbox-output",
                 "alfonsograziano/node-code-sandbox-mcp"
               ],
         }
@@ -182,18 +193,21 @@ You can follow the [Official Guide](https://modelcontextprotocol.io/quickstart/u
 ```json
 {
   "mcpServers": {
-    "js-sandbox": {
-      "command": "docker",
-      "args": [
-        "run",
-        "-i",
-        "--rm",
-        "-v",
-        "/var/run/docker.sock:/var/run/docker.sock",
-        "alfonsograziano/node-code-sandbox-mcp"
-      ]
+    "servers": {
+      "js-sandbox": {
+          "command": "docker",
+          "args": [
+            "run",
+            "-i",
+            "--rm",
+            "-v", "/var/run/docker.sock:/var/run/docker.sock",
+            // bind-mount & pass env var:
+            "-v", "$HOME/Desktop/sandbox-output:$HOME/Desktop/sandbox-output",
+            "-e", "JS_SANDBOX_OUTPUT_DIR=$HOME/Desktop/sandbox-output",
+            "alfonsograziano/node-code-sandbox-mcp"
+          ],
+      }
     }
-  }
 }
 ```
 

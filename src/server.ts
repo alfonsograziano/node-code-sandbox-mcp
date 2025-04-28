@@ -1,4 +1,7 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import {
+  McpServer,
+  ResourceTemplate,
+} from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import initializeSandbox, {
   argSchema as initializeSchema,
@@ -9,6 +12,8 @@ import stopSandbox, { argSchema as stopSchema } from "./tools/stop.js";
 import runJsEphemeral, {
   argSchema as ephemeralSchema,
 } from "./tools/runJsEphemeral.js";
+import mime from "mime-types";
+import fs from "fs/promises";
 
 const server = new McpServer({
   name: "js-sandbox-mcp",
@@ -59,6 +64,25 @@ server.tool(
     "In this example, the tool will return the console output **and** the `hello.txt` file as resource.",
   ephemeralSchema,
   runJsEphemeral
+);
+
+server.resource(
+  "file",
+  new ResourceTemplate("file://{+filepath}", { list: undefined }),
+  async (uri) => {
+    const filepath = new URL(uri).pathname;
+    const data = await fs.readFile(filepath);
+    const mimeType = mime.lookup(filepath) || "application/octet-stream";
+    return {
+      contents: [
+        {
+          uri: uri.toString(),
+          mimeType,
+          blob: data.toString("base64"),
+        },
+      ],
+    };
+  }
 );
 
 const transport = new StdioServerTransport();

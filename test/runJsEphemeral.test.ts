@@ -81,7 +81,7 @@ describe("argSchema", () => {
 
     expect(result).toBeDefined();
     expect(result.content).toBeDefined();
-    expect(result.content.length).toBe(2);
+    expect(result.content.length).toBe(4);
     expect(result.content[0].type).toBe("text");
 
     if (result.content[0].type === "text") {
@@ -89,9 +89,9 @@ describe("argSchema", () => {
     } else {
       throw new Error("Expected content type to be 'text'");
     }
-    expect(result.content[1].type).toBe("image");
-    if (result.content[1].type === "image") {
-      expect(result.content[1].mimeType).toBe("image/png");
+    expect(result.content[2].type).toBe("image");
+    if (result.content[2].type === "image") {
+      expect(result.content[2].mimeType).toBe("image/png");
     } else {
       throw new Error("Expected content type to be 'text'");
     }
@@ -106,37 +106,42 @@ describe("argSchema", () => {
       code: `
         import fs from 'fs/promises';
   
-        await fs.writeFile('hello.txt', 'Hello world!');
-        console.log('Saved hello.txt');
+        await fs.writeFile('hello test.txt', 'Hello world!');
+        console.log('Saved hello test.txt');
       `,
     });
 
     expect(result).toBeDefined();
     expect(result.content).toBeDefined();
-    expect(result.content.length).toBe(2);
-    expect(result.content[0].type).toBe("text");
+    expect(result.content.length).toBe(3);
 
+    // First item: Node.js process output
+    expect(result.content[0].type).toBe("text");
     if (result.content[0].type === "text") {
       expect(result.content[0].text).toContain("Node.js process output:");
-      expect(result.content[0].text).toContain("Saved hello.txt");
+      expect(result.content[0].text).toContain("Saved hello test.txt");
     } else {
       throw new Error("Expected first content item to be of type 'text'");
     }
 
-    expect(result.content[1].type).toBe("resource");
-    if (result.content[1].type === "resource") {
-      expect(result.content[1].resource.mimeType).toBe("text/plain");
-      expect(result.content[1].resource.uri).toBe("hello.txt");
-
-      if ("blob" in result.content[1].resource) {
-        expect(
-          Buffer.from(result.content[1].resource.blob, "base64").toString(
-            "utf8"
-          )
-        ).toBe("Hello world!");
-      }
+    // Second item: Info about saved file
+    expect(result.content[1].type).toBe("text");
+    if (result.content[1].type === "text") {
+      expect(result.content[1].text).toContain(
+        "I saved the file hello test.txt"
+      );
     } else {
-      throw new Error("Expected second content item to be of type 'resource'");
+      throw new Error("Expected second content item to be of type 'text'");
+    }
+
+    // Third item: The resource
+    expect(result.content[2].type).toBe("resource");
+    if (result.content[2].type === "resource") {
+      expect(result.content[2].resource.mimeType).toBe("text/plain");
+      expect(result.content[2].resource.uri).toContain("hello%20test.txt");
+      expect(result.content[2].resource.uri).toContain("file://");
+    } else {
+      throw new Error("Expected third content item to be of type 'resource'");
     }
   });
 });
