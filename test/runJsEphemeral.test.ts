@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { z } from "zod";
-import { argSchema } from "../src/tools/runJsEphemeral";
+import runJsEphemeral, { argSchema } from "../src/tools/runJsEphemeral";
 
 describe("argSchema", () => {
   it("should use default values for image and dependencies", () => {
@@ -28,11 +28,10 @@ describe("argSchema", () => {
     });
     expect(parsed.code).toBe("console.log('hi');");
   });
+});
 
+describe("should run runJsEphemeral", () => {
   it("shoud run runJsEphemeral", async () => {
-    const { default: runJsEphemeral } = await import(
-      "../src/tools/runJsEphemeral"
-    );
     const result = await runJsEphemeral({
       code: "console.log('Hello, world!');",
       dependencies: [{ name: "lodash", version: "^4.17.21" }],
@@ -51,10 +50,6 @@ describe("argSchema", () => {
   });
 
   it("should generate a valid QR code resource", async () => {
-    const { default: runJsEphemeral } = await import(
-      "../src/tools/runJsEphemeral"
-    );
-
     const result = await runJsEphemeral({
       code: `
         import fs from 'fs';
@@ -98,10 +93,6 @@ describe("argSchema", () => {
   });
 
   it("should save a hello.txt file and return it as a resource", async () => {
-    const { default: runJsEphemeral } = await import(
-      "../src/tools/runJsEphemeral"
-    );
-
     const result = await runJsEphemeral({
       code: `
         import fs from 'fs/promises';
@@ -143,5 +134,49 @@ describe("argSchema", () => {
     } else {
       throw new Error("Expected third content item to be of type 'resource'");
     }
+  });
+});
+
+describe("runJsEphemeral error handling", () => {
+  it("should reject when the code throws an exception", async () => {
+    await expect(
+      runJsEphemeral({ code: "throw new Error('Test error');" })
+    ).rejects.toThrow("Test error");
+  });
+});
+
+describe("runJsEphemeral multiple file outputs", () => {
+  it("should handle saving both text and JPEG files correctly", async () => {
+    const base64 =
+      "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxISEhUSEhIVFhUVFRUVFRUVFRUVFRUVFRUWFhUVFRUYHSggGBolGxUVITEhJSkrLi4uFx8zODMsNygtLisBCgoKDg0OGhAQGy0lHyYtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLf/AABEIAJ8BPgMBIgACEQEDEQH/xAAbAAACAwEBAQAAAAAAAAAAAAAEBgIDBQABB//EADkQAAIBAgQDBgQEBQUBAAAAAAECAwQRAAUSITFBBhMiUWEHFDJxgZEjQrHB0RUjYnLw8RUz/8QAGQEAAgMBAAAAAAAAAAAAAAAAAwQBAgAF/8QAJBEAAgEEAgEFAAAAAAAAAAAAAQIDBBESITFBBRMiUYGh/9oADAMBAAIRAxEAPwD9YKKKAP/Z";
+    const result = await runJsEphemeral({
+      code: `
+        import fs from 'fs/promises';
+        await fs.writeFile('foo.txt', 'Hello Foo');
+        const img = Buffer.from('${base64}', 'base64');
+        await fs.writeFile('bar.jpg', img);
+        console.log('Done writing foo.txt and bar.jpg');
+      `,
+    });
+
+    // stdout
+    const stdout = result.content.find((c) => c.type === "text");
+    expect(stdout).toBeDefined();
+    if (stdout?.type === "text") {
+      expect(stdout.text).toContain("Done writing foo.txt and bar.jpg");
+    }
+
+    // resources
+    const resources = result.content
+      .filter((c) => c.type === "resource")
+      .map((c) => (c as any).resource.text);
+    expect(resources).toEqual(expect.arrayContaining(["foo.txt", "bar.jpg"]));
+
+    // image
+    const images = result.content.filter(
+      (c) => c.type === "image"
+    ) as Array<any>;
+    expect(images).toHaveLength(1);
+    expect(images[0].mimeType).toBe("image/jpeg");
   });
 });
