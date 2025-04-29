@@ -20,7 +20,7 @@ export const argSchema = {
     .optional()
     .default("node:20-slim")
     .describe(
-      'Docker image to use for ephemeral execution, e.g. "node:20-slim"'
+      'Docker image to use for ephemeral execution, e.g. "node:20-slim" or "mcr.microsoft.com/playwright:v1.52.0-noble" for Playwright usage.'
     ),
   // We use an array of { name, version } items instead of a record
   // because the OpenAI function-calling schema doesn’t reliably support arbitrary

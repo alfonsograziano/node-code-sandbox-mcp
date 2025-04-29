@@ -1,6 +1,20 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { z } from "zod";
 import runJsEphemeral, { argSchema } from "../src/tools/runJsEphemeral";
+
+vi.mock("fs/promises", async () => {
+  const actual = await vi.importActual<typeof import("fs/promises")>(
+    "fs/promises"
+  );
+  return {
+    ...actual,
+    copyFile: vi.fn(async (src, dest) => {
+      console.log(`Mocked copyFile from ${src} to ${dest}`);
+      // no-op as copyFile is used within runJsEphemeral to copy files to the host system
+      // and we don't want to actually copy files in the test environment
+    }),
+  };
+});
 
 describe("argSchema", () => {
   it("should use default values for image and dependencies", () => {
@@ -179,4 +193,45 @@ describe("runJsEphemeral multiple file outputs", () => {
     expect(images).toHaveLength(1);
     expect(images[0].mimeType).toBe("image/jpeg");
   });
+});
+
+describe("runJsEphemeral screenshot with Playwright", () => {
+  it("should take a screenshot of example.com using Playwright and the Playwright image", async () => {
+    const result = await runJsEphemeral({
+      code: `
+        import { chromium } from 'playwright';
+
+        (async () => {
+          const browser = await chromium.launch();
+          const page = await browser.newPage();
+          await page.goto('https://example.com');
+          await page.screenshot({ path: 'example_screenshot.png' });
+          await browser.close();
+          console.log('Screenshot saved');
+        })();
+      `,
+      dependencies: [
+        {
+          name: "playwright",
+          version: "^1.52.0",
+        },
+      ],
+      image: "mcr.microsoft.com/playwright:v1.52.0-noble",
+    });
+
+    expect(result).toBeDefined();
+    expect(result.content).toBeDefined();
+    expect(result.content.length).toBeGreaterThan(1);
+
+    const output = result.content.find((c) => c.type === "text");
+    expect(output).toBeDefined();
+    if (output?.type === "text") {
+      expect(output.text).toContain("Screenshot saved");
+    }
+
+    const image = result.content.find(
+      (c) => c.type === "image" && c.mimeType === "image/png"
+    );
+    expect(image).toBeDefined();
+  }, 15_000);
 });

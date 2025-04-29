@@ -93,3 +93,11 @@ Create a JS script that generates a list of 100 fake users with names, emails, a
 Create a JS script that evaluates this expression `((5 + 8) * (15 / 3) - (9 - (4 * 6)) + (10 / (2 + 6))) ^ 2 + sqrt(64) - factorial(6) + (24 / (5 + 7 * (3 ^ 2))) + log(1000) * sin(30 * pi / 180) - cos(60 * pi / 180) + tan(45 * pi / 180) + (4 ^ 3 - 2 ^ (5 - 2)) * (sqrt(81) / 9)`. Tip: use math.js
 
 ---
+
+### Take a Screenshot with Playwright
+
+Create and run a JS script that launches a Chromium browser, navigates to `https://example.com`, and takes a screenshot saved as `screenshot_test.png`.
+
+**Tip:** Use the official Playwright Docker image (mcr.microsoft.com/playwright) and install the playwright npm package dynamically.
+
+---
