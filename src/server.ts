@@ -14,6 +14,7 @@ import runJsEphemeral, {
 } from "./tools/runJsEphemeral.js";
 import mime from "mime-types";
 import fs from "fs/promises";
+import { z } from "zod";
 
 const server = new McpServer({
   name: "js-sandbox-mcp",
@@ -84,6 +85,29 @@ server.resource(
     };
   }
 );
+
+server.prompt("run-node-js-script", { prompt: z.string() }, ({ prompt }) => ({
+  messages: [
+    {
+      role: "user",
+      content: {
+        type: "text",
+        text:
+          `Here is my prompt:\n\n${prompt}\n\n` +
+          `Follow modern Node.js best practices:\n` +
+          // I've noticed that gpt4o-mini tends to use CommonJS
+          `- Use ECMAScript Modules (ESM) syntax (import/export), avoid CommonJS (require/module.exports)\n` +
+          // gpt4o-mini tends to try to install node-fetch
+          `- Use native fetch, avoid node-fetch or axios unless absolutely necessary or requested\n` +
+          `- Prefer top-level await in ES modules when appropriate\n` +
+          `- Use async/await consistently for asynchronous code, avoid mixing with .then/.catch\n` +
+          `- Avoid callback-style code in favor of Promises and async/await\n` +
+          `- Avoid unnecessary dependencies if a native API is available\n` +
+          `Please write and run a Node.js script.`,
+      },
+    },
+  ],
+}));
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
