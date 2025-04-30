@@ -1,30 +1,35 @@
 import { z } from "zod";
 import { execSync } from "node:child_process";
-import fs from "fs/promises";
-import path from "path";
-import tmp from "tmp";
 import { randomUUID } from "crypto";
 import { McpResponse, textContent } from "../types.js";
+import {
+  prepareWorkspace,
+  extractOutputsFromDir,
+  getHostOutputDir,
+} from "../runUtils.js";
+import tmp from "tmp";
 
-// Schema for a single dependency item
-const DependencyItem = z.object({
+const NodeDependency = z.object({
   name: z.string().describe("npm package name, e.g. lodash"),
   version: z.string().describe("npm package version range, e.g. ^4.17.21"),
 });
 
 export const argSchema = {
   container_id: z.string().describe("Docker container identifier"),
-  code: z
-    .string()
-    .describe("JavaScript code to run inside the ephemeral container."),
+  // We use an array of { name, version } items instead of a record
+  // because the OpenAI function-calling schema doesn’t reliably support arbitrary
+  // object keys. An explicit array ensures each dependency has a clear, uniform
+  // structure the model can populate.
+  // Schema for a single dependency item
   dependencies: z
-    .array(DependencyItem)
+    .array(NodeDependency)
     .default([])
     .describe(
       "A list of npm dependencies to install before running the code. " +
         "Each item must have a `name` (package) and `version` (range). " +
         "If none, returns an empty array."
     ),
+  code: z.string().describe("JavaScript code to run inside the container."),
 };
 
 type DependenciesArray = Array<{ name: string; version: string }>;
@@ -38,45 +43,58 @@ export default async function runJs({
   code: string;
   dependencies?: DependenciesArray;
 }): Promise<McpResponse> {
-  // Convert array of { name, version } into record for package.json
   const dependenciesRecord: Record<string, string> = Object.fromEntries(
     dependencies.map(({ name, version }) => [name, version])
   );
 
-  // 1. Create a unique workspace directory inside the container
   const dirName = `job-${Date.now()}-${randomUUID()}`;
-  execSync(`docker exec ${container_id} mkdir -p /workspace/${dirName}`);
+  const containerWorkdir = `/workspace/${dirName}`;
 
-  // 2. Prepare local temporary build context
-  const localTmp = tmp.dirSync({ unsafeCleanup: true });
-  await fs.writeFile(path.join(localTmp.name, "index.js"), code);
-  await fs.writeFile(
-    path.join(localTmp.name, "package.json"),
-    JSON.stringify(
-      { type: "module", dependencies: dependenciesRecord },
-      null,
-      2
-    )
-  );
+  // 1. Create workspace folder inside container
+  execSync(`docker exec ${container_id} mkdir -p ${containerWorkdir}`);
 
-  // 3. Copy files into container
+  // 2. Prepare local files using shared utility
+  const localWorkspace = await prepareWorkspace({
+    code,
+    dependenciesRecord,
+  });
+
+  // 3. Copy into container
   execSync(
-    `docker cp ${localTmp.name}/. ${container_id}:/workspace/${dirName}`
+    `docker cp ${localWorkspace.name}/. ${container_id}:${containerWorkdir}`
   );
 
-  // 4. Install dependencies and execute code
-  const installCmd = `cd /workspace/${dirName} && npm install --omit=dev --ignore-scripts --no-audit --loglevel=error`;
-  const runCmd = `node /workspace/${dirName}/index.js`;
+  // 4. Run install + script
+  const installCmd = `cd ${containerWorkdir} && npm install --omit=dev --prefer-offline --no-audit --loglevel=error`;
+  const runCmd = `node ${containerWorkdir}/index.js`;
   const fullCmd = `${installCmd} && ${runCmd}`;
 
-  const result = execSync(
+  const rawOutput = execSync(
     `docker exec ${container_id} /bin/sh -c ${JSON.stringify(fullCmd)}`,
     { encoding: "utf8" }
   );
 
-  // 5. Cleanup workspace inside container and local temp
-  execSync(`docker exec ${container_id} rm -rf /workspace/${dirName}`);
-  localTmp.removeCallback();
+  // 5. Copy output files back out of container
+  const tmpOutput = tmp.dirSync({ unsafeCleanup: true });
+  execSync(`docker cp ${container_id}:${containerWorkdir}/. ${tmpOutput.name}`);
 
-  return { content: [textContent(result)] };
+  // 6. Cleanup inside the container
+  execSync(`docker exec ${container_id} rm -rf ${containerWorkdir}`);
+
+  // 7. Parse and return output
+  const outputDir = getHostOutputDir();
+  const extractedContents = await extractOutputsFromDir({
+    dirPath: tmpOutput.name,
+    outputDir,
+  });
+
+  tmpOutput.removeCallback();
+  localWorkspace.removeCallback();
+
+  return {
+    content: [
+      textContent(`Node.js process output:\n${rawOutput}`),
+      ...extractedContents,
+    ],
+  };
 }
