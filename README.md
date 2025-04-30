@@ -27,7 +27,7 @@ Run a one-off JS script in a brand-new disposable container.
 
 **Inputs:**
 
-- `image` (string, optional): Docker image to use (default: `node:20-slim`).
+- `image` (string, optional): Docker image to use (default: `node:lts-slim`).
 - `code` (string, required): JavaScript source to execute.
 - `dependencies` (array of `{ name, version }`, optional): NPM packages and versions to install (default: `[]`).
 
@@ -52,7 +52,7 @@ Run a one-off JS script in a brand-new disposable container.
 {
   "name": "run_js_ephemeral",
   "arguments": {
-    "image": "node:20-slim",
+    "image": "node:lts-slim",
     "code": "console.log('One-shot run!');",
     "dependencies": [{ "name": "lodash", "version": "^4.17.21" }]
   }
@@ -75,7 +75,7 @@ This will return the console output **and** the `hello.txt` file.
 Start a fresh sandbox container.
 
 - **Input**:
-  - `image` (_string_, optional, default: `node:20-slim`): Docker image for the sandbox
+  - `image` (_string_, optional, default: `node:lts-slim`): Docker image for the sandbox
 - **Output**: Container ID string
 
 ### sandbox_exec

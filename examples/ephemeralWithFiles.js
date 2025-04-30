@@ -71,7 +71,7 @@ async function main() {
   const result = await client.callTool({
     name: "run_js_ephemeral",
     arguments: {
-      image: "node:20-slim",
+      image: "node:lts-slim",
       code: `
           import fs from 'fs/promises';  
           await fs.writeFile('hello_world.txt', 'Hello world!');
