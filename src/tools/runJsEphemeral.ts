@@ -7,7 +7,12 @@ import { randomUUID } from "crypto";
 import mime from "mime-types";
 import { McpResponse, textContent, McpContent } from "../types.js";
 import { pathToFileURL } from "url";
-import { isRunningInDocker, preprocessDependencies } from "../utils.js";
+import {
+  DEFAULT_NODE_IMAGE,
+  generateSuggestedImages,
+  isRunningInDocker,
+  preprocessDependencies,
+} from "../utils.js";
 
 const NodeDependency = z.object({
   name: z.string().describe("npm package name, e.g. lodash"),
@@ -18,9 +23,10 @@ export const argSchema = {
   image: z
     .string()
     .optional()
-    .default("node:lts-slim")
+    .default(DEFAULT_NODE_IMAGE)
     .describe(
-      'Docker image to use for ephemeral execution, e.g. "node:lts-slim", "mcr.microsoft.com/playwright:v1.52.0-noble" for Playwright usage, or "alfonsograziano/node-chartjs-canvas:latest" to generate charts with chartjs-node-canvas v4.0.0.'
+      "Docker image to use for ephemeral execution. e.g. " +
+        generateSuggestedImages()
     ),
   // We use an array of { name, version } items instead of a record
   // because the OpenAI function-calling schema doesn’t reliably support arbitrary
@@ -43,7 +49,7 @@ export const argSchema = {
 type NodeDependenciesArray = Array<{ name: string; version: string }>;
 
 export default async function runJsEphemeral({
-  image = "node:lts-slim",
+  image = DEFAULT_NODE_IMAGE,
   code,
   dependencies = [],
 }: {

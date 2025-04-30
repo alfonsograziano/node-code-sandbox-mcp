@@ -2,13 +2,12 @@ import { z } from "zod";
 import { execSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { McpResponse, textContent } from "../types.js";
+import { DEFAULT_NODE_IMAGE } from "../utils.js";
 
 export const argSchema = { image: z.string().optional() };
 
-const DEFAULT_IMAGE = "node:lts-slim";
-
 export default async function initializeSandbox({
-  image = DEFAULT_IMAGE,
+  image = DEFAULT_NODE_IMAGE,
 }: {
   image?: string;
 }): Promise<McpResponse> {

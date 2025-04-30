@@ -111,28 +111,6 @@ Terminate and remove the sandbox container.
   - `container_id` (_string_): ID from `sandbox_initialize`
 - **Output**: Confirmation message
 
-## Usage with Claude Desktop
-
-Add this to your `claude_desktop_config.json`:
-
-```jsonc
-{
-  "mcpServers": {
-    "js-sandbox": {
-      "command": "node",
-      "args": ["dist/server.js", "stdio"],
-      "cwd": "/path/to/js-sandbox-mcp",
-      "env": {
-        // Mount a host directory into the container with the same path:
-        "JS_SANDBOX_OUTPUT_DIR": "/path/to/output/directory"
-      }
-    }
-  }
-}
-```
-
-> Note: Ensure your working directory points to the built server, and Docker is installed/running.
-
 ## Usage Tips
 
 - **Session-based tools** (`sandbox_initialize` ➔ `run_js` ➔ `sandbox_stop`) are ideal when you want to:
@@ -146,7 +124,34 @@ Add this to your `claude_desktop_config.json`:
 
 Choose the workflow that best fits your use-case!
 
-## Docker
+### Usage with Claude Desktop
+
+Add this to your `claude_desktop_config.json`:
+You can follow the [Official Guide](https://modelcontextprotocol.io/quickstart/user) to install this MCP server
+
+```json
+{
+  "mcpServers": {
+    "servers": {
+      "js-sandbox": {
+          "command": "docker",
+          "args": [
+            "run",
+            "-i",
+            "--rm",
+            "-v", "/var/run/docker.sock:/var/run/docker.sock",
+            "-v", "$HOME/Desktop/sandbox-output:$HOME/Desktop/sandbox-output",
+            "-e", "JS_SANDBOX_OUTPUT_DIR=$HOME/Desktop/sandbox-output",
+            "alfonsograziano/node-code-sandbox-mcp"
+          ],
+      }
+    }
+}
+```
+
+> Note: Ensure your working directory points to the built server, and Docker is installed/running.
+
+### Docker
 
 Run the server in a container (mount Docker socket if needed), and pass through your desired host output directory as an env var:
 
@@ -163,7 +168,7 @@ docker run --rm -it \
 
 This bind-mounts your host folder into the container at the **same absolute path** and makes `JS_SANDBOX_OUTPUT_DIR` available inside the MCP server.
 
-## Usage with VS Code
+### Usage with VS Code
 
 **Quick install** buttons (VS Code & Insiders):
 
@@ -181,37 +186,11 @@ Install js-sandbox-mcp (NPX) Install js-sandbox-mcp (Docker)
                 "-i",
                 "--rm",
                 "-v", "/var/run/docker.sock:/var/run/docker.sock",
-                // bind-mount & pass env var:
                 "-v", "$HOME/Desktop/sandbox-output:$HOME/Desktop/sandbox-output",
                 "-e", "JS_SANDBOX_OUTPUT_DIR=$HOME/Desktop/sandbox-output",
                 "alfonsograziano/node-code-sandbox-mcp"
               ],
         }
-    }
-}
-```
-
-## Usage with Claude Desktop
-
-You can follow the [Official Guide](https://modelcontextprotocol.io/quickstart/user) to install this MCP server
-
-```json
-{
-  "mcpServers": {
-    "servers": {
-      "js-sandbox": {
-          "command": "docker",
-          "args": [
-            "run",
-            "-i",
-            "--rm",
-            "-v", "/var/run/docker.sock:/var/run/docker.sock",
-            // bind-mount & pass env var:
-            "-v", "$HOME/Desktop/sandbox-output:$HOME/Desktop/sandbox-output",
-            "-e", "JS_SANDBOX_OUTPUT_DIR=$HOME/Desktop/sandbox-output",
-            "alfonsograziano/node-code-sandbox-mcp"
-          ],
-      }
     }
 }
 ```

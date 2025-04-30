@@ -36,3 +36,28 @@ export function preprocessDependencies({
 
   return dependenciesRecord;
 }
+
+export const DEFAULT_NODE_IMAGE = "node:lts-slim";
+
+export const suggestedImages = {
+  "node:lts-slim": {
+    description: "Node.js LTS version, slim variant.",
+    reason: "Lightweight and fast for JavaScript execution tasks.",
+  },
+  "mcr.microsoft.com/playwright:v1.52.0-noble": {
+    description: "Playwright image for browser automation.",
+    reason: "Preconfigured for running Playwright scripts.",
+  },
+  "alfonsograziano/node-chartjs-canvas:latest": {
+    description: "Chart.js image for chart generation.",
+    reason: "Preconfigured for generating charts with chartjs-node-canvas.",
+  },
+};
+
+export const generateSuggestedImages = () => {
+  return Object.entries(suggestedImages)
+    .map(([image, { description, reason }]) => {
+      return `- **${image}**: ${description} (${reason})`;
+    })
+    .join("\n");
+};

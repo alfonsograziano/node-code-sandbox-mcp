@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { z } from "zod";
 import runJsEphemeral, { argSchema } from "../src/tools/runJsEphemeral";
+import { DEFAULT_NODE_IMAGE } from "../src/utils";
 
 vi.mock("fs/promises", async () => {
   const actual = await vi.importActual<typeof import("fs/promises")>(
@@ -19,14 +20,14 @@ vi.mock("fs/promises", async () => {
 describe("argSchema", () => {
   it("should use default values for image and dependencies", () => {
     const parsed = z.object(argSchema).parse({ code: "console.log(1);" });
-    expect(parsed.image).toBe("node:lts-slim");
+    expect(parsed.image).toBe(DEFAULT_NODE_IMAGE);
     expect(parsed.dependencies).toEqual([]);
     expect(parsed.code).toBe("console.log(1);");
   });
 
   it("should accept valid custom image and dependencies", () => {
     const input = {
-      image: "node:18-alpine",
+      image: DEFAULT_NODE_IMAGE,
       dependencies: [
         { name: "lodash", version: "^4.17.21" },
         { name: "axios", version: "^1.0.0" },
@@ -34,7 +35,7 @@ describe("argSchema", () => {
       code: "console.log('hi');",
     };
     const parsed = z.object(argSchema).parse(input);
-    expect(parsed.image).toBe("node:18-alpine");
+    expect(parsed.image).toBe(DEFAULT_NODE_IMAGE);
     expect(parsed.dependencies.length).toBe(2);
     expect(parsed.dependencies[0]).toEqual({
       name: "lodash",
