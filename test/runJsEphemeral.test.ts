@@ -46,10 +46,10 @@ describe("argSchema", () => {
 });
 
 describe("should run runJsEphemeral", () => {
-  it("shoud run runJsEphemeral", async () => {
+  it("shoud run runJsEphemeral base", async () => {
     const result = await runJsEphemeral({
       code: "console.log('Hello, world!');",
-      dependencies: [{ name: "lodash", version: "^4.17.21" }],
+      dependencies: [],
     });
     expect(result).toBeDefined();
     expect(result.content).toBeDefined();

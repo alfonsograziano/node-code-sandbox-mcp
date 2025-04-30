@@ -1,0 +1,52 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import initializeSandbox from "../src/tools/initialize";
+import * as childProcess from "node:child_process";
+import * as crypto from "node:crypto";
+import * as utils from "../src/utils";
+import * as types from "../src/types";
+
+vi.mock("node:child_process");
+vi.mock("node:crypto");
+vi.mock("../types");
+
+describe.only("initializeSandbox", () => {
+  const fakeUUID = "123e4567-e89b-12d3-a456-426614174000";
+  const fakeContainerName = `js-sbx-${fakeUUID}`;
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+    vi.spyOn(crypto, "randomUUID").mockReturnValue(fakeUUID);
+    vi.spyOn(childProcess, "execSync").mockImplementation(() =>
+      Buffer.from("")
+    );
+    vi.spyOn(types, "textContent").mockImplementation((name) => ({
+      type: "text",
+      text: name,
+    }));
+  });
+
+  it("should use the default image when none is provided", async () => {
+    const result = await initializeSandbox({});
+    expect(childProcess.execSync).toHaveBeenCalledWith(
+      expect.stringContaining(
+        `--name ${fakeContainerName} ${utils.DEFAULT_NODE_IMAGE}`
+      )
+    );
+    expect(result).toEqual({
+      content: [{ type: "text", text: fakeContainerName }],
+    });
+  });
+
+  it("should use the provided image", async () => {
+    const customImage = "node:20-alpine";
+    const result = await initializeSandbox({ image: customImage });
+    expect(childProcess.execSync).toHaveBeenCalledWith(
+      expect.stringContaining(`--name ${fakeContainerName} ${customImage}`)
+    );
+    if (result.content[0].type === "text") {
+      expect(result.content[0].text).toBe(fakeContainerName);
+    } else {
+      throw new Error("Unexpected content type");
+    }
+  });
+});
