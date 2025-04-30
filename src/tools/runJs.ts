@@ -30,6 +30,10 @@ export const argSchema = {
         "If none, returns an empty array."
     ),
   code: z.string().describe("JavaScript code to run inside the container."),
+  benchmarkInstallOnly: z
+    .boolean()
+    .optional()
+    .describe("If true, will only benchmark npm install time."),
 };
 
 type DependenciesArray = Array<{ name: string; version: string }>;
@@ -38,10 +42,12 @@ export default async function runJs({
   container_id,
   code,
   dependencies = [],
+  benchmarkInstallOnly = false,
 }: {
   container_id: string;
   code: string;
   dependencies?: DependenciesArray;
+  benchmarkInstallOnly?: boolean;
 }): Promise<McpResponse> {
   const dependenciesRecord: Record<string, string> = Object.fromEntries(
     dependencies.map(({ name, version }) => [name, version])
@@ -64,15 +70,36 @@ export default async function runJs({
     `docker cp ${localWorkspace.name}/. ${container_id}:${containerWorkdir}`
   );
 
-  // 4. Run install + script
-  const installCmd = `cd ${containerWorkdir} && npm install --omit=dev --prefer-offline --no-audit --loglevel=error`;
-  const runCmd = `node ${containerWorkdir}/index.js`;
-  const fullCmd = `${installCmd} && ${runCmd}`;
+  // 4. Install (with benchmark if requested)
+  let rawOutput: string;
+  if (benchmarkInstallOnly) {
+    const jsCode =
+      "const s=Date.now();require('child_process').execSync(\"npm install --omit=dev --prefer-offline --no-audit --loglevel=error\",{stdio:'ignore'});const e=Date.now();console.log('NPM install took',e-s,'ms');";
 
-  const rawOutput = execSync(
-    `docker exec ${container_id} /bin/sh -c ${JSON.stringify(fullCmd)}`,
-    { encoding: "utf8" }
-  );
+    const benchmarkScript = `cd ${containerWorkdir} && node -e ${JSON.stringify(
+      jsCode
+    )}`;
+
+    rawOutput = execSync(
+      `docker exec ${container_id} /bin/sh -c ${JSON.stringify(
+        benchmarkScript
+      )}`,
+      { encoding: "utf8" }
+    );
+  } else {
+    const fullCmd = `
+      cd ${containerWorkdir} && 
+      npm install --omit=dev --prefer-offline --no-audit --loglevel=error && 
+      node index.js
+    `
+      .trim()
+      .replace(/\n\s+/g, " ");
+
+    rawOutput = execSync(
+      `docker exec ${container_id} /bin/sh -c '${fullCmd}'`,
+      { encoding: "utf8" }
+    );
+  }
 
   // 5. Copy output files back out of container
   const tmpOutput = tmp.dirSync({ unsafeCleanup: true });
@@ -93,7 +120,11 @@ export default async function runJs({
 
   return {
     content: [
-      textContent(`Node.js process output:\n${rawOutput}`),
+      textContent(
+        benchmarkInstallOnly
+          ? `NPM install benchmark result:\n${rawOutput}`
+          : `Node.js process output:\n${rawOutput}`
+      ),
       ...extractedContents,
     ],
   };
