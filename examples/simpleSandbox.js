@@ -29,7 +29,7 @@ async function main() {
   const initResult = await client.callTool({
     name: "sandbox_initialize",
     arguments: {
-      /* no args = uses default node:20-slim */
+      /* no args = uses default node:lts-slim */
     },
   });
   const containerId = initResult.content[0].text;

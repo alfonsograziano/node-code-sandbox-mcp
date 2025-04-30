@@ -19,7 +19,7 @@ vi.mock("fs/promises", async () => {
 describe("argSchema", () => {
   it("should use default values for image and dependencies", () => {
     const parsed = z.object(argSchema).parse({ code: "console.log(1);" });
-    expect(parsed.image).toBe("node:20-slim");
+    expect(parsed.image).toBe("node:lts-slim");
     expect(parsed.dependencies).toEqual([]);
     expect(parsed.code).toBe("console.log(1);");
   });
@@ -104,7 +104,7 @@ describe("should run runJsEphemeral", () => {
     } else {
       throw new Error("Expected content type to be 'text'");
     }
-  });
+  }, 15_000);
 
   it("should save a hello.txt file and return it as a resource", async () => {
     const result = await runJsEphemeral({

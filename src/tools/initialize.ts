@@ -5,7 +5,7 @@ import { McpResponse, textContent } from "../types.js";
 
 export const argSchema = { image: z.string().optional() };
 
-const DEFAULT_IMAGE = "node:20-slim";
+const DEFAULT_IMAGE = "node:lts-slim";
 
 export default async function initializeSandbox({
   image = DEFAULT_IMAGE,
