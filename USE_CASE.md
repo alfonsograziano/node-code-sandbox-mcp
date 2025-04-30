@@ -101,3 +101,25 @@ Create and run a JS script that launches a Chromium browser, navigates to `https
 **Tip:** Use the official Playwright Docker image (mcr.microsoft.com/playwright) and install the playwright npm package dynamically.
 
 ---
+
+### Generate a chart
+
+Write a JavaScript script that generates a bar chart using chartjs-node-canvas.
+The chart should show Monthly Revenue Growth for the first 6 months of the year.
+Use the following data:
+
+-January: $12,000
+-February: $15,500
+-March: $14,200
+-April: $18,300
+-May: $21,000
+-June: $24,500
+
+Add the following details:
+
+-Title: "Monthly Revenue Growth (2025)"
+-X-axis label: "Month"
+-Y-axis label: "Revenue (USD)"
+-Save the resulting chart as chart.png.
+
+---

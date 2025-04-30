@@ -7,7 +7,7 @@ import { randomUUID } from "crypto";
 import mime from "mime-types";
 import { McpResponse, textContent, McpContent } from "../types.js";
 import { pathToFileURL } from "url";
-import { isRunningInDocker } from "../utils.js";
+import { isRunningInDocker, preprocessDependencies } from "../utils.js";
 
 const NodeDependency = z.object({
   name: z.string().describe("npm package name, e.g. lodash"),
@@ -20,7 +20,7 @@ export const argSchema = {
     .optional()
     .default("node:lts-slim")
     .describe(
-      'Docker image to use for ephemeral execution, e.g. "node:lts-slim" or "mcr.microsoft.com/playwright:v1.52.0-noble" for Playwright usage.'
+      'Docker image to use for ephemeral execution, e.g. "node:lts-slim", "mcr.microsoft.com/playwright:v1.52.0-noble" for Playwright usage, or "alfonsograziano/node-chartjs-canvas:latest" to generate charts with chartjs-node-canvas v4.0.0.'
     ),
   // We use an array of { name, version } items instead of a record
   // because the OpenAI function-calling schema doesn’t reliably support arbitrary
@@ -52,9 +52,10 @@ export default async function runJsEphemeral({
   dependencies?: NodeDependenciesArray;
 }): Promise<McpResponse> {
   // Convert array of { name, version } into dependencies object
-  const dependenciesRecord: Record<string, string> = Object.fromEntries(
-    dependencies.map(({ name, version }) => [name, version])
-  );
+  const dependenciesRecord = preprocessDependencies({
+    dependencies,
+    image,
+  });
 
   const containerId = `js-ephemeral-${randomUUID()}`;
   const tmpDir = tmp.dirSync({ unsafeCleanup: true });
@@ -81,7 +82,7 @@ export default async function runJsEphemeral({
     execSync(`docker cp ${tmpDir.name}/. ${containerId}:/workspace`);
 
     // 4. Install dependencies and execute
-    const installCmd = `npm install --omit=dev --ignore-scripts --no-audit --loglevel=error`;
+    const installCmd = `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`;
     const runCmd = `node index.js`;
     const fullCmd = `${installCmd} && ${runCmd}`;
 

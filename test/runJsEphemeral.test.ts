@@ -50,7 +50,6 @@ describe("should run runJsEphemeral", () => {
       code: "console.log('Hello, world!');",
       dependencies: [{ name: "lodash", version: "^4.17.21" }],
     });
-    // console.log(JSON.stringify(result, null, 2));
     expect(result).toBeDefined();
     expect(result.content).toBeDefined();
     expect(result.content.length).toBe(1);
@@ -234,4 +233,116 @@ describe("runJsEphemeral screenshot with Playwright", () => {
     );
     expect(image).toBeDefined();
   }, 15_000);
+});
+
+describe("runJsEphemeral generate charts", () => {
+  it("should correctly generate a chart", async () => {
+    const result = await runJsEphemeral({
+      code: `
+        import { ChartJSNodeCanvas } from 'chartjs-node-canvas';
+        import fs from 'fs';
+
+        const width = 800; // Set the width of the chart
+        const height = 400; // Set the height of the chart
+        const chartJSNodeCanvas = new ChartJSNodeCanvas({ width, height });
+
+        const data = {
+            labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+            datasets: [{
+                label: 'Monthly Revenue Growth (2025)',
+                data: [12000, 15500, 14200, 18300, 21000, 24500],
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        const config = {
+            type: 'bar',
+            data: data,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Monthly Revenue Growth (2025)',
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Month'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Revenue (USD)'
+                        },
+                        beginAtZero: true
+                    }
+                }
+            }
+        };
+
+        async function generateChart() {
+            const image = await chartJSNodeCanvas.renderToBuffer(config);
+            fs.writeFileSync('chart_test.png', image);
+            console.log('Chart saved as chart.png');
+        }
+
+        generateChart();
+      `,
+      dependencies: [
+        // You don't need to add this dependency here, as it is already included in the image
+        // {
+        //   name: "chartjs-node-canvas",
+        //   version: "4.0.0",
+        // },
+      ],
+      image: "alfonsograziano/node-chartjs-canvas:latest",
+    });
+
+    expect(result).toBeDefined();
+    expect(result.content).toBeDefined();
+    expect(result.content.length).toBeGreaterThan(1);
+
+    const output = result.content.find((c) => c.type === "text");
+    expect(output).toBeDefined();
+    if (output?.type === "text") {
+      expect(output.text).toContain("Node.js process output:");
+    }
+
+    const image = result.content.find(
+      (c) => c.type === "image" && c.mimeType === "image/png"
+    );
+    expect(image).toBeDefined();
+  });
+
+  it("shoud still be able to add new dependencies with the node-chartjs-canvas image", async () => {
+    const result = await runJsEphemeral({
+      code: `
+        import _ from 'lodash';
+        console.log('_.chunk([1,2,3,4,5], 2):', _.chunk([1,2,3,4,5], 2));
+      `,
+      dependencies: [{ name: "lodash", version: "^4.17.21" }],
+      image: "alfonsograziano/node-chartjs-canvas:latest",
+    });
+
+    expect(result).toBeDefined();
+    expect(result.content).toBeDefined();
+    expect(result.content.length).toBe(1);
+    expect(result.content[0].type).toBe("text");
+
+    if (result.content[0].type === "text") {
+      expect(result.content[0].text).toContain("[ [ 1, 2 ], [ 3, 4 ], [ 5 ] ]");
+    } else {
+      throw new Error("Expected content type to be 'text'");
+    }
+  });
 });
