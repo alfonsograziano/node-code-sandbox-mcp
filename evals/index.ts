@@ -41,7 +41,6 @@ async function run() {
   const client = new OpenAIAuditClient({
     apiKey: process.env.OPENAI_API_KEY!,
     model: "gpt-4o-mini",
-    logFilePath: "./logs/audit.jsonl",
   });
   await client.initializeClient();
   console.log("OpenAI Audit Client initialized");
@@ -62,7 +61,6 @@ async function run() {
       const startHumanRadableTime = new Date().toISOString();
       try {
         const fullResponse = await client.chat({
-          evalId: id,
           messages: [{ role: "user", content: prompt }],
         });
         const endTimeInMillis = new Date().getTime();

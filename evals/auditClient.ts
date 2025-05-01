@@ -1,6 +1,4 @@
 import { OpenAI } from "openai";
-import fs from "fs";
-import path from "path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
@@ -10,38 +8,27 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 export interface AuditClientSettings {
   apiKey?: string; // OpenAI API key
   model: string; // Model to use for chat completions
-  logFilePath: string; // File path where audit logs will be written
 }
 
 /**
- * A client wrapper that calls OpenAI chat completions and logs each interaction.
+ * A client wrapper that calls OpenAI chat completions with tool support and returns detailed audit entries.
  */
 export class OpenAIAuditClient {
   private openai: OpenAI;
   private model: string;
-  // This should be a jsonl file with each line being a JSON object
-  // representing a single audit entry.
-  private logFilePath: string;
   private client: Client;
   private availableTools: OpenAI.Chat.ChatCompletionTool[];
 
   constructor(settings: AuditClientSettings) {
-    const { apiKey, model, logFilePath } = settings;
+    const { apiKey, model } = settings;
     this.openai = new OpenAI({ apiKey });
     this.model = model;
-    this.logFilePath = path.resolve(logFilePath);
     this.client = new Client({ name: "node_js_sandbox", version: "1.0.0" });
-
-    const dir = path.dirname(this.logFilePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-
-    if (!fs.existsSync(this.logFilePath)) {
-      fs.writeFileSync(this.logFilePath, "", { encoding: "utf8" });
-    }
   }
 
+  /**
+   * Initializes the sandbox client by launching the Docker-based MCP server and loading available tools.
+   */
   public async initializeClient() {
     const userOutputDir = process.env.JS_SANDBOX_OUTPUT_DIR;
     await this.client.connect(
@@ -73,27 +60,21 @@ export class OpenAIAuditClient {
   }
 
   /**
-   * Call OpenAI's chat completions endpoint and log the full audit, supporting auto tool usage.
-   * @param requestOptions - same structure as ChatCompletionRequest
+   * Call OpenAI's chat completions with automatic tool usage.
+   * Returns both the sequence of messages and a complete audit entry.
+   * @param requestOptions - Includes messages
    */
   public async chat(
-    requestOptions: Omit<OpenAI.Chat.ChatCompletionCreateParams, "model"> & {
-      evalId?: string;
-    }
+    requestOptions: Omit<OpenAI.Chat.ChatCompletionCreateParams, "model">
   ): Promise<{
-    responses: (OpenAI.Chat.Completions.ChatCompletion & {
-      _request_id?: string | null;
-    })[];
+    responses: OpenAI.Chat.Completions.ChatCompletion[];
     messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[];
   }> {
     const messages = [...requestOptions.messages];
     const timestamp = new Date().toISOString();
     let interactionCount = 0;
     const maxInteractions = 10;
-
-    const responses: (OpenAI.Chat.Completions.ChatCompletion & {
-      _request_id?: string | null;
-    })[] = [];
+    const responses: OpenAI.Chat.Completions.ChatCompletion[] = [];
 
     while (interactionCount++ < maxInteractions) {
       const response = await this.openai.chat.completions.create({
@@ -103,7 +84,6 @@ export class OpenAIAuditClient {
         tool_choice: "auto",
       });
       responses.push(response);
-
       const message = response.choices[0].message;
       messages.push(message);
 
@@ -124,32 +104,16 @@ export class OpenAIAuditClient {
           });
         }
       } else {
-        const auditEntry = {
-          evalId: requestOptions.evalId,
-          timestamp,
-          request: {
-            model: this.model,
-            messages: requestOptions.messages,
-            tools: this.availableTools,
-          },
-          response: messages,
-        };
-
-        fs.appendFileSync(
-          this.logFilePath,
-          JSON.stringify(auditEntry, null, 2) + "\n",
-          { encoding: "utf8" }
-        );
-
-        return { responses, messages };
+        break;
       }
     }
 
-    throw new Error(
-      "Max interaction count exceeded without reaching final answer."
-    );
+    return { responses, messages };
   }
 
+  /**
+   * Exposes the list of available tools for inspection.
+   */
   public getAvailableTools() {
     return this.availableTools;
   }
