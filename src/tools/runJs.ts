@@ -8,6 +8,7 @@ import {
   getHostOutputDir,
 } from "../runUtils.js";
 import tmp from "tmp";
+import { waitForPortHttp } from "../utils.js";
 
 const NodeDependency = z.object({
   name: z.string().describe("npm package name, e.g. lodash"),
@@ -34,6 +35,12 @@ export const argSchema = {
     .boolean()
     .optional()
     .describe("If true, will only benchmark npm install time."),
+  listenOnPort: z
+    .number()
+    .optional()
+    .describe(
+      "If set, leaves the process running and exposes this port to the host."
+    ),
 };
 
 type DependenciesArray = Array<{ name: string; version: string }>;
@@ -43,11 +50,13 @@ export default async function runJs({
   code,
   dependencies = [],
   benchmarkInstallOnly = false,
+  listenOnPort,
 }: {
   container_id: string;
   code: string;
   dependencies?: DependenciesArray;
   benchmarkInstallOnly?: boolean;
+  listenOnPort?: number;
 }): Promise<McpResponse> {
   const dependenciesRecord: Record<string, string> = Object.fromEntries(
     dependencies.map(({ name, version }) => [name, version])
@@ -70,7 +79,6 @@ export default async function runJs({
     `docker cp ${localWorkspace.name}/. ${container_id}:${containerWorkdir}`
   );
 
-  // 4. Install (with benchmark if requested)
   let rawOutput: string;
   if (benchmarkInstallOnly) {
     const jsCode =
@@ -86,6 +94,30 @@ export default async function runJs({
       )}`,
       { encoding: "utf8" }
     );
+  } else if (listenOnPort) {
+    // Install dependencies first
+    execSync(
+      `docker exec ${container_id} /bin/sh -c ${JSON.stringify(
+        `cd ${containerWorkdir} && npm install --omit=dev --prefer-offline --no-audit --loglevel=error`
+      )}`,
+      { encoding: "utf8" }
+    );
+
+    // Run the script in the background and leave the port open
+    const runScript = `
+      cd ${containerWorkdir} && \
+      nohup node index.js > output.log 2>&1 &
+    `
+      .trim()
+      .replace(/\n\s+/g, " ");
+
+    execSync(
+      `docker exec ${container_id} /bin/sh -c ${JSON.stringify(runScript)}`
+    );
+
+    await waitForPortHttp(listenOnPort);
+
+    rawOutput = `Server started in background and listening on port ${listenOnPort}. Logs: ${containerWorkdir}/output.log`;
   } else {
     const fullCmd = `
       cd ${containerWorkdir} && 
@@ -101,14 +133,14 @@ export default async function runJs({
     );
   }
 
-  // 5. Copy output files back out of container
   const tmpOutput = tmp.dirSync({ unsafeCleanup: true });
   execSync(`docker cp ${container_id}:${containerWorkdir}/. ${tmpOutput.name}`);
 
-  // 6. Cleanup inside the container
-  execSync(`docker exec ${container_id} rm -rf ${containerWorkdir}`);
+  // Cleanup unless we expect the process to still be running
+  if (!listenOnPort) {
+    execSync(`docker exec ${container_id} rm -rf ${containerWorkdir}`);
+  }
 
-  // 7. Parse and return output
   const outputDir = getHostOutputDir();
   const extractedContents = await extractOutputsFromDir({
     dirPath: tmpOutput.name,

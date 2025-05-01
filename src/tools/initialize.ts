@@ -4,16 +4,27 @@ import { randomUUID } from "node:crypto";
 import { McpResponse, textContent } from "../types.js";
 import { DEFAULT_NODE_IMAGE } from "../utils.js";
 
-export const argSchema = { image: z.string().optional() };
+export const argSchema = {
+  image: z.string().optional(),
+  port: z
+    .number()
+    .optional()
+    .describe("If set, maps this container port to the host"),
+};
 
 export default async function initializeSandbox({
   image = DEFAULT_NODE_IMAGE,
+  port,
 }: {
   image?: string;
+  port?: number;
 }): Promise<McpResponse> {
   const container = `js-sbx-${randomUUID()}`;
+
+  const portOption = port ? `-p ${port}:${port}` : `--network host`; // prefer --network host if no explicit port mapping
+
   execSync(
-    `docker run -d --network host --memory 512m --cpus 1 ` +
+    `docker run -d ${portOption} --memory 512m --cpus 1 ` +
       `--workdir /workspace --name ${container} ${image} tail -f /dev/null`
   );
   return {

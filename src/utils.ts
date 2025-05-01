@@ -61,3 +61,26 @@ export const generateSuggestedImages = () => {
     })
     .join("\n");
 };
+
+export async function waitForPortHttp(
+  port: number,
+  timeoutMs = 10_000,
+  intervalMs = 250
+): Promise<void> {
+  const start = Date.now();
+
+  while (Date.now() - start < timeoutMs) {
+    try {
+      const res = await fetch(`http://localhost:${port}`);
+      if (res.ok || res.status === 404) return; // server is up
+    } catch {
+      // server not ready
+    }
+
+    await new Promise((r) => setTimeout(r, intervalMs));
+  }
+
+  throw new Error(
+    `Timeout: Server did not respond on http://localhost:${port} within ${timeoutMs}ms`
+  );
+}
