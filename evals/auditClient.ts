@@ -32,13 +32,11 @@ export class OpenAIAuditClient {
     this.logFilePath = path.resolve(logFilePath);
     this.client = new Client({ name: "node_js_sandbox", version: "1.0.0" });
 
-    // Ensure the log directory exists
     const dir = path.dirname(this.logFilePath);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
 
-    // Initialize log file if not present
     if (!fs.existsSync(this.logFilePath)) {
       fs.writeFileSync(this.logFilePath, "", { encoding: "utf8" });
     }
@@ -75,46 +73,68 @@ export class OpenAIAuditClient {
   }
 
   /**
-   * Call OpenAI's chat completions endpoint and log the full audit.
+   * Call OpenAI's chat completions endpoint and log the full audit, supporting auto tool usage.
    * @param requestOptions - same structure as ChatCompletionRequest
    */
   public async chat(
     requestOptions: Omit<OpenAI.Chat.ChatCompletionCreateParams, "model">
-  ): Promise<OpenAI.Chat.ChatCompletion> {
+  ): Promise<OpenAI.Chat.ChatCompletionMessage> {
+    const messages = [...requestOptions.messages];
     const timestamp = new Date().toISOString();
-    const payload: OpenAI.Chat.ChatCompletionCreateParams = {
-      model: this.model,
-      tools: this.availableTools,
-      ...requestOptions,
-    };
+    let interactionCount = 0;
+    const maxInteractions = 10;
 
-    // Call OpenAI
-    const response = await this.openai.chat.completions.create(payload);
+    while (interactionCount++ < maxInteractions) {
+      const response = await this.openai.chat.completions.create({
+        model: this.model,
+        messages,
+        tools: this.availableTools,
+        tool_choice: "auto",
+      });
 
-    let finalResponse: OpenAI.Chat.ChatCompletion;
-    if ("choices" in response) {
-      finalResponse = response as OpenAI.Chat.ChatCompletion;
-    } else {
-      throw new Error(
-        "Streaming responses are not supported in this implementation."
-      );
+      const message = response.choices[0].message;
+      messages.push(message);
+
+      if (message.tool_calls) {
+        for (const toolCall of message.tool_calls) {
+          const functionName = toolCall.function.name;
+          const args = JSON.parse(toolCall.function.arguments || "{}");
+
+          const result = await this.client.callTool({
+            name: functionName,
+            arguments: args,
+          });
+
+          messages.push({
+            role: "tool",
+            tool_call_id: toolCall.id,
+            content: JSON.stringify(result),
+          });
+        }
+      } else {
+        const auditEntry = {
+          timestamp,
+          request: {
+            model: this.model,
+            messages: requestOptions.messages,
+            tools: this.availableTools,
+          },
+          response: messages,
+        };
+
+        fs.appendFileSync(
+          this.logFilePath,
+          JSON.stringify(auditEntry, null, 2) + "\n",
+          { encoding: "utf8" }
+        );
+
+        return message;
+      }
     }
 
-    // Prepare audit entry
-    const auditEntry = {
-      timestamp,
-      request: payload,
-      response: finalResponse,
-    };
-
-    // Append to log file
-    fs.appendFileSync(
-      this.logFilePath,
-      JSON.stringify(auditEntry, null, 2) + "\n",
-      { encoding: "utf8" }
+    throw new Error(
+      "Max interaction count exceeded without reaching final answer."
     );
-
-    return finalResponse;
   }
 
   public getAvailableTools() {
