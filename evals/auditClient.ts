@@ -11,7 +11,8 @@ export interface AuditClientSettings {
 }
 
 /**
- * A client wrapper that calls OpenAI chat completions with tool support and returns detailed audit entries.
+ * A client wrapper that calls OpenAI chat completions with tool support and returns detailed audit entries,
+ * including timing for each tool invocation.
  */
 export class OpenAIAuditClient {
   private openai: OpenAI;
@@ -61,20 +62,31 @@ export class OpenAIAuditClient {
 
   /**
    * Call OpenAI's chat completions with automatic tool usage.
-   * Returns both the sequence of messages and a complete audit entry.
-   * @param requestOptions - Includes messages
+   * Returns the sequence of messages, responses, and timing details for each tool invocation.
+   * @param requestOptions - Includes messages to send
    */
   public async chat(
     requestOptions: Omit<OpenAI.Chat.ChatCompletionCreateParams, "model">
   ): Promise<{
     responses: OpenAI.Chat.Completions.ChatCompletion[];
     messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[];
+    toolRuns: Array<{
+      toolName: string;
+      toolCallId: string;
+      params: any;
+      durationMs: number;
+    }>;
   }> {
     const messages = [...requestOptions.messages];
-    const timestamp = new Date().toISOString();
+    const responses: OpenAI.Chat.Completions.ChatCompletion[] = [];
+    const toolRuns: Array<{
+      toolName: string;
+      toolCallId: string;
+      params: any;
+      durationMs: number;
+    }> = [];
     let interactionCount = 0;
     const maxInteractions = 10;
-    const responses: OpenAI.Chat.Completions.ChatCompletion[] = [];
 
     while (interactionCount++ < maxInteractions) {
       const response = await this.openai.chat.completions.create({
@@ -90,11 +102,20 @@ export class OpenAIAuditClient {
       if (message.tool_calls) {
         for (const toolCall of message.tool_calls) {
           const functionName = toolCall.function.name;
-          const args = JSON.parse(toolCall.function.arguments || "{}");
-
+          const params = JSON.parse(toolCall.function.arguments || "{}");
+          const start = Date.now();
           const result = await this.client.callTool({
             name: functionName,
-            arguments: args,
+            arguments: params,
+          });
+          const durationMs = Date.now() - start;
+
+          // record tool invocation details
+          toolRuns.push({
+            toolName: functionName,
+            toolCallId: toolCall.id,
+            params,
+            durationMs,
           });
 
           messages.push({
@@ -108,7 +129,7 @@ export class OpenAIAuditClient {
       }
     }
 
-    return { responses, messages };
+    return { responses, messages, toolRuns };
   }
 
   /**
