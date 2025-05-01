@@ -123,3 +123,96 @@ Add the following details:
 -Save the resulting chart as chart.png.
 
 ---
+
+### Summarize a Long Article
+
+Fetch the content of https://en.wikipedia.org/wiki/Node.js, strip HTML tags, and send the plain text to the AI. Ask it to return a bullet-point summary of the most important sections in less than 300 words.
+
+---
+
+### Refactor and Optimize a JS Function
+
+Here's an unoptimized JavaScript function:
+
+```javascript
+function getUniqueValues(arr) {
+  let result = [];
+  for (let i = 0; i < arr.length; i++) {
+    let exists = false;
+    for (let j = 0; j < result.length; j++) {
+      if (arr[i] === result[j]) {
+        exists = true;
+        break;
+      }
+    }
+    if (!exists) {
+      result.push(arr[i]);
+    }
+  }
+  return result;
+}
+```
+
+Please refactor and optimize this function for performance and readability.
+Then, write and run basic tests with the Node.js test runner to make sure it works (covering common and edge cases).
+As soon as all tests pass, return only the refactored function.
+
+---
+
+Here’s a complete and clear prompt that includes the schema and instructions for the AI:
+
+---
+
+### Create a Mock Book API from a JSON Schema
+
+Here is a JSON Schema describing a `Book` entity:
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Book",
+  "type": "object",
+  "required": ["title", "author", "isbn"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "author": {
+      "type": "string",
+      "minLength": 1
+    },
+    "isbn": {
+      "type": "string",
+      "pattern": "^(97(8|9))?\\d{9}(\\d|X)$"
+    },
+    "publishedYear": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2100
+    },
+    "genres": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "available": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "additionalProperties": false
+}
+```
+
+Using this schema:
+
+1. Generate **mock data** for at least 5 different books.
+2. Create a simple **Node.js REST API** (you can use Express or Fastify) that:
+   - Serves a `GET /books` endpoint on **port 5007**, which returns all mock books.
+   - Serves a `GET /books/:isbn` endpoint that returns a single book matching the provided ISBN (or a 404 if not found).
+3. Run the server and print a message like:  
+   `"Mock Book API is running on http://localhost:5007"`
+
+---
