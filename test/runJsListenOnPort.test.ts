@@ -42,7 +42,7 @@ describe("runJs with listenOnPort", () => {
       const body = await res.text();
       expect(body).toBe("ok");
     } finally {
-      //await stopSandbox({ container_id: containerId });
+      await stopSandbox({ container_id: containerId });
     }
   }, 40000);
 });
