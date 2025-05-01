@@ -26,8 +26,6 @@ describe("runJs with listenOnPort", () => {
         listenOnPort: port,
       });
 
-      console.log("Result:", JSON.stringify(result, null, 2));
-
       expect(result).toBeDefined();
       expect(result.content[0].type).toBe("text");
 
