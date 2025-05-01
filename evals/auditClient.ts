@@ -77,12 +77,23 @@ export class OpenAIAuditClient {
    * @param requestOptions - same structure as ChatCompletionRequest
    */
   public async chat(
-    requestOptions: Omit<OpenAI.Chat.ChatCompletionCreateParams, "model">
-  ): Promise<OpenAI.Chat.ChatCompletionMessage> {
+    requestOptions: Omit<OpenAI.Chat.ChatCompletionCreateParams, "model"> & {
+      evalId?: string;
+    }
+  ): Promise<{
+    responses: (OpenAI.Chat.Completions.ChatCompletion & {
+      _request_id?: string | null;
+    })[];
+    messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[];
+  }> {
     const messages = [...requestOptions.messages];
     const timestamp = new Date().toISOString();
     let interactionCount = 0;
     const maxInteractions = 10;
+
+    const responses: (OpenAI.Chat.Completions.ChatCompletion & {
+      _request_id?: string | null;
+    })[] = [];
 
     while (interactionCount++ < maxInteractions) {
       const response = await this.openai.chat.completions.create({
@@ -91,6 +102,7 @@ export class OpenAIAuditClient {
         tools: this.availableTools,
         tool_choice: "auto",
       });
+      responses.push(response);
 
       const message = response.choices[0].message;
       messages.push(message);
@@ -113,6 +125,7 @@ export class OpenAIAuditClient {
         }
       } else {
         const auditEntry = {
+          evalId: requestOptions.evalId,
           timestamp,
           request: {
             model: this.model,
@@ -128,7 +141,7 @@ export class OpenAIAuditClient {
           { encoding: "utf8" }
         );
 
-        return message;
+        return { responses, messages };
       }
     }
 

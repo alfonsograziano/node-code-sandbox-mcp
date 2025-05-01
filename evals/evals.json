@@ -1,0 +1,50 @@
+[
+  {
+    "id": "generate-qr-code",
+    "prompt": "Create and run a JS script that generates a QR code for the URL 'https://nodejs.org/en' and saves it as 'qrcode.png'. Use the 'qrcode' package."
+  },
+  {
+    "id": "test-regular-expressions",
+    "prompt": "Create and run a JavaScript script that defines a complex regular expression to match valid mathematical expressions containing nested parentheses (e.g., ((2+3)_(4-5))), allowing numbers, +, -, _, / operators, and properly nested parentheses. The script must handle nesting up to 3-4 levels, include at least 10 unit tests covering correct and incorrect cases using assert or manual errors, and include a short comment explaining the regex structure."
+  },
+  {
+    "id": "create-csv-random-data",
+    "prompt": "Create and execute a JS script that generates 200 rows of CSV data with full name, random number, and valid email, then writes it to a file called 'fake_data.csv'."
+  },
+  {
+    "id": "scrape-webpage-title",
+    "prompt": "Create and run a JS script that fetches 'https://example.com', saves the HTML to 'example.html', extracts the <title> tag, and prints it to the console. Use 'cheerio'."
+  },
+  {
+    "id": "create-pdf-report",
+    "prompt": "Create a JS script that generates a PDF file named 'getting-started-javascript.pdf' containing a playful, colorful 'Getting Started with JavaScript' tutorial for a 10-year-old, covering console.log(), variables, and a first program. Use 'pdf-lib' or 'pdfkit' and save via fs."
+  },
+  {
+    "id": "fetch-api-save-json",
+    "prompt": "Create and run a JS script that fetches data from the GitHub API endpoint 'https://api.github.com/repos/nodejs/node' and saves part of the response to 'nodejs_info.json'."
+  },
+  {
+    "id": "markdown-to-html-converter",
+    "prompt": "Write a JS script that takes a Markdown string and converts it into HTML, then saves the result to 'content_converted.html'. Use the example markdown: '# Welcome to My Page\n\nThis is a simple page created from **Markdown**!\n\n- Learn JavaScript\n- Learn Markdown\n- Build Cool Stuff 🚀'. Use 'marked'."
+  },
+  {
+    "id": "generate-random-data",
+    "prompt": "Create a JS script that generates a list of 100 fake users with names, emails, and addresses, then saves them to a JSON file called 'fake_users.json'. Use '@faker-js/faker'."
+  },
+  {
+    "id": "evaluate-complex-math-expression",
+    "prompt": "Create a JS script that evaluates the expression '((5 + 8) * (15 / 3) - (9 - (4 * 6)) + (10 / (2 + 6))) ^ 2 + sqrt(64) - factorial(6) + (24 / (5 + 7 * (3 ^ 2))) + log(1000) * sin(30 * pi / 180) - cos(60 * pi / 180) + tan(45 * pi / 180) + (4 ^ 3 - 2 ^ (5 - 2)) * (sqrt(81) / 9)'. Use 'math.js'."
+  },
+  {
+    "id": "take-screenshot-with-playwright",
+    "prompt": "Create and run a JS script that launches a Chromium browser, navigates to 'https://example.com', and takes a screenshot saved as 'screenshot_test.png'. Use the official Playwright Docker image and install the 'playwright' package dynamically."
+  },
+  {
+    "id": "generate-chart",
+    "prompt": "Write a JS script that generates a bar chart using 'chartjs-node-canvas' showing Monthly Revenue Growth for January ($12,000), February ($15,500), March ($14,200), April ($18,300), May ($21,000), and June ($24,500). Title: 'Monthly Revenue Growth (2025)', X-axis 'Month', Y-axis 'Revenue (USD)', and save as 'chart.png'."
+  },
+  {
+    "id": "hello-world",
+    "prompt": "Create and run a simple Node.js script that prints \"Hello, World!\" to the console."
+  }
+]

@@ -1,0 +1,6 @@
+[
+  {
+    "id": "hello-world",
+    "prompt": "Create and run a simple Node.js script that prints \"Hello, World!\" to the console."
+  }
+]
