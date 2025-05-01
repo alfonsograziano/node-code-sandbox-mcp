@@ -31,10 +31,11 @@ export const argSchema = {
         "If none, returns an empty array."
     ),
   code: z.string().describe("JavaScript code to run inside the container."),
-  benchmarkInstallOnly: z
-    .boolean()
-    .optional()
-    .describe("If true, will only benchmark npm install time."),
+  // As this is a utility function used for testing, we don’t need to expose it within the tool.
+  // benchmarkInstallOnly: z
+  //   .boolean()
+  //   .optional()
+  //   .describe("If true, will only benchmark npm install time."),
   listenOnPort: z
     .number()
     .optional()

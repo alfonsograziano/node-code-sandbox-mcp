@@ -9,6 +9,7 @@ Node.js server implementing the Model Context Protocol (MCP) for running arbitra
 - Install specified npm dependencies per job
 - Run ES module JavaScript snippets and capture stdout
 - Tear down containers cleanly
+- **Detached Mode:** Keep the container alive after script execution (e.g. for long-running servers)
 
 > Note: Containers run with controlled CPU/memory limits.
 
@@ -16,6 +17,18 @@ Node.js server implementing the Model Context Protocol (MCP) for running arbitra
 
 If you want ideas for cool and powerful ways to use this library, check out the [USE_CASES.md](https://github.com/alfonsograziano/node-code-sandbox-mcp/blob/master/USE_CASE.md) file!
 It contains a curated list of prompts, examples, and creative experiments you can try with the Node.js Sandbox MCP Server.
+
+## ⚠️ Prerequisites
+
+To use this MCP server, Docker must be installed and running on your machine.
+
+**Tip:** Pre-pull any Docker images you'll need to avoid delays during first execution.
+
+Example recommended images:
+
+- node:lts-slim
+- mcr.microsoft.com/playwright:v1.52.0-noble
+- alfonsograziano/node-chartjs-canvas:latest
 
 ## API
 
@@ -76,6 +89,7 @@ Start a fresh sandbox container.
 
 - **Input**:
   - `image` (_string_, optional, default: `node:lts-slim`): Docker image for the sandbox
+  - `port` (_number_, optional): If set, maps this container port to the host
 - **Output**: Container ID string
 
 ### sandbox_exec
@@ -92,16 +106,21 @@ Run shell commands inside the running sandbox.
 Install npm dependencies and execute JavaScript code.
 
 - **Input**:
+
   - `container_id` (_string_): ID from `sandbox_initialize`
   - `code` (_string_): JS source to run (ES modules supported)
   - `dependencies` (_array of `{ name, version }`_, optional, default: `[]`): npm package names → semver versions
-- **Behavior**:
+  - `listenOnPort` (_number_, optional): If set, leaves the process running and exposes this port to the host (**Detached Mode**)
+
+- **Behavior:**
+
   1. Creates a temp workspace inside the container
   2. Writes `index.js` and a minimal `package.json`
   3. Runs `npm install --omit=dev --ignore-scripts --no-audit --loglevel=error`
-  4. Executes `node index.js` and captures stdout
-  5. Cleans up workspace
-- **Output**: Script stdout
+  4. Executes `node index.js` and captures stdout, or leaves process running in background if `listenOnPort` is set
+  5. Cleans up workspace unless running in detached mode
+
+- **Output**: Script stdout or background execution notice
 
 ### sandbox_stop
 
@@ -121,6 +140,9 @@ Terminate and remove the sandbox container.
   - Quick experiments or simple scripts.
   - Cases where you don’t need to maintain state or cache dependencies.
   - Clean, atomic runs without worrying about manual teardown.
+- **Detached mode** is useful when you want to:
+  - Spin up servers or long-lived services on-the-fly
+  - Expose and test endpoints from running containers
 
 Choose the workflow that best fits your use-case!
 
@@ -134,18 +156,22 @@ You can follow the [Official Guide](https://modelcontextprotocol.io/quickstart/u
   "mcpServers": {
     "servers": {
       "js-sandbox": {
-          "command": "docker",
-          "args": [
-            "run",
-            "-i",
-            "--rm",
-            "-v", "/var/run/docker.sock:/var/run/docker.sock",
-            "-v", "$HOME/Desktop/sandbox-output:$HOME/Desktop/sandbox-output",
-            "-e", "JS_SANDBOX_OUTPUT_DIR=$HOME/Desktop/sandbox-output",
-            "alfonsograziano/node-code-sandbox-mcp"
-          ],
+        "command": "docker",
+        "args": [
+          "run",
+          "-i",
+          "--rm",
+          "-v",
+          "/var/run/docker.sock:/var/run/docker.sock",
+          "-v",
+          "$HOME/Desktop/sandbox-output:$HOME/Desktop/sandbox-output",
+          "-e",
+          "JS_SANDBOX_OUTPUT_DIR=$HOME/Desktop/sandbox-output",
+          "alfonsograziano/node-code-sandbox-mcp"
+        ]
       }
     }
+  }
 }
 ```
 
@@ -189,7 +215,7 @@ Install js-sandbox-mcp (NPX) Install js-sandbox-mcp (Docker)
                 "-v", "$HOME/Desktop/sandbox-output:$HOME/Desktop/sandbox-output",
                 "-e", "JS_SANDBOX_OUTPUT_DIR=$HOME/Desktop/sandbox-output",
                 "alfonsograziano/node-code-sandbox-mcp"
-              ],
+              ]
         }
     }
 }
