@@ -8,7 +8,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
+    env:
+      # force all pulls/runs to use amd64 images
+      DOCKER_DEFAULT_PLATFORM: linux/amd64
+      
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
