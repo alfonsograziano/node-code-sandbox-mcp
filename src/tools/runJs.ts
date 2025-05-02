@@ -69,6 +69,8 @@ export default async function runJs({
     };
   }
 
+  const telemetry: Record<string, any> = {};
+
   const dependenciesRecord: Record<string, string> = Object.fromEntries(
     dependencies.map(({ name, version }) => [name, version])
   );
@@ -92,8 +94,12 @@ export default async function runJs({
 
   let rawOutput: string;
   if (benchmarkInstallOnly) {
-    const jsCode =
-      "const s=Date.now();require('child_process').execSync(\"npm install --omit=dev --prefer-offline --no-audit --loglevel=error\",{stdio:'ignore'});const e=Date.now();console.log('NPM install took',e-s,'ms');";
+    const jsCode = `
+      const s = Date.now();
+      require('child_process').execSync("npm install --omit=dev --prefer-offline --no-audit --loglevel=error", { stdio: 'ignore' });
+      const e = Date.now();
+      console.log('NPM install took', e - s, 'ms');
+    `;
 
     const benchmarkScript = `cd ${containerWorkdir} && node -e ${JSON.stringify(
       jsCode
@@ -106,13 +112,16 @@ export default async function runJs({
       { encoding: "utf8" }
     );
   } else if (listenOnPort) {
+    const installStart = Date.now();
     // Install dependencies first
-    execSync(
+    const installOutput = execSync(
       `docker exec ${container_id} /bin/sh -c ${JSON.stringify(
         `cd ${containerWorkdir} && npm install --omit=dev --prefer-offline --no-audit --loglevel=error`
       )}`,
       { encoding: "utf8" }
     );
+    telemetry.installTimeMs = Date.now() - installStart;
+    telemetry.installOutput = installOutput;
 
     // Run the script in the background and leave the port open
     const runScript = `
@@ -130,18 +139,35 @@ export default async function runJs({
 
     rawOutput = `Server started in background and listening on port ${listenOnPort}. Logs: ${containerWorkdir}/output.log`;
   } else {
+    const installStart = Date.now();
     const fullCmd = `
       cd ${containerWorkdir} && 
-      npm install --omit=dev --prefer-offline --no-audit --loglevel=error && 
+      npm install --omit=dev --prefer-offline --no-audit --loglevel=error
+    `
+      .trim()
+      .replace(/\n\s+/g, " ");
+
+    const installOutput = execSync(
+      `docker exec ${container_id} /bin/sh -c '${fullCmd}'`,
+      {
+        encoding: "utf8",
+      }
+    );
+    telemetry.installTimeMs = Date.now() - installStart;
+    telemetry.installOutput = installOutput;
+
+    const runStart = Date.now();
+    const runCmd = `
+      cd ${containerWorkdir} && 
       node index.js
     `
       .trim()
       .replace(/\n\s+/g, " ");
 
-    rawOutput = execSync(
-      `docker exec ${container_id} /bin/sh -c '${fullCmd}'`,
-      { encoding: "utf8" }
-    );
+    rawOutput = execSync(`docker exec ${container_id} /bin/sh -c '${runCmd}'`, {
+      encoding: "utf8",
+    });
+    telemetry.runTimeMs = Date.now() - runStart;
   }
 
   const tmpOutput = tmp.dirSync({ unsafeCleanup: true });
@@ -169,6 +195,7 @@ export default async function runJs({
           : `Node.js process output:\n${rawOutput}`
       ),
       ...extractedContents,
+      textContent(`Telemetry:\n${JSON.stringify(telemetry, null, 2)}`),
     ],
   };
 }
