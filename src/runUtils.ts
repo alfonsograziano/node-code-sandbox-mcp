@@ -4,6 +4,7 @@ import tmp from "tmp";
 import { pathToFileURL } from "url";
 import mime from "mime-types";
 import { textContent, McpContent } from "./types.js";
+import { isRunningInDocker } from "./utils.js";
 
 export async function prepareWorkspace({
   code,
@@ -86,7 +87,7 @@ export async function extractOutputsFromDir({
 }
 
 export function getHostOutputDir(): string {
-  const isContainer = Boolean(process.env.IN_DOCKER === "true");
+  const isContainer = isRunningInDocker();
   return isContainer
     ? path.resolve(process.env.HOME || process.cwd())
     : path.resolve(
