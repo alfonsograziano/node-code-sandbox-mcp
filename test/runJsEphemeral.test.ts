@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { z } from "zod";
 import runJsEphemeral, { argSchema } from "../src/tools/runJsEphemeral";
 import { DEFAULT_NODE_IMAGE } from "../src/utils";
+import { describeIfLocal } from "./utils";
 
 vi.mock("fs/promises", async () => {
   const actual = await vi.importActual<typeof import("fs/promises")>(
@@ -259,7 +260,9 @@ describe("runJsEphemeral screenshot with Playwright", () => {
   }, 15_000);
 });
 
-describe("runJsEphemeral generate charts", () => {
+// Skipping this on the CI as it requires a lot of resources
+// and an image that is not available in the CI environment
+describeIfLocal("runJsEphemeral generate charts", () => {
   it("should correctly generate a chart", async () => {
     const result = await runJsEphemeral({
       code: `
