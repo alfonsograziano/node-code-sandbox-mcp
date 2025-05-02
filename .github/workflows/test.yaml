@@ -27,5 +27,13 @@ jobs:
           docker pull mcr.microsoft.com/playwright:v1.52.0-noble
           docker pull alfonsograziano/node-chartjs-canvas:latest
 
-      - name: Run tests
-        run: npm test
+      - name: Run tests with Vitest
+        run: npx vitest run --reporter=default --reporter=junit
+
+      - name: Upload test results to PR
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Vitest Unit Tests
+          path: junit.xml
+          reporter: jest-junit
