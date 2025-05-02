@@ -49,6 +49,33 @@ describe("runJs basic execution", () => {
     }
   });
 
+  it("should generate telemetry", async () => {
+    const result = await runJs({
+      container_id: containerId,
+      code: "console.log('Hello telemetry!');",
+    });
+
+    const telemetryItem = result.content.find(
+      (c) => c.type === "text" && c.text.startsWith("Telemetry:")
+    );
+
+    expect(telemetryItem).toBeDefined();
+    if (telemetryItem?.type === "text") {
+      const telemetry = JSON.parse(
+        telemetryItem.text.replace("Telemetry:\n", "")
+      );
+
+      expect(telemetry).toHaveProperty("installTimeMs");
+      expect(typeof telemetry.installTimeMs).toBe("number");
+      expect(telemetry).toHaveProperty("runTimeMs");
+      expect(typeof telemetry.runTimeMs).toBe("number");
+      expect(telemetry).toHaveProperty("installOutput");
+      expect(typeof telemetry.installOutput).toBe("string");
+    } else {
+      throw new Error("Expected telemetry item to be of type 'text'");
+    }
+  });
+
   it("should write and retrieve a file", async () => {
     const result = await runJs({
       container_id: containerId,
