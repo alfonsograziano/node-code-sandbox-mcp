@@ -8,7 +8,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -20,12 +19,13 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
       - name: Pull required Docker images
         run: |
-          docker pull node:lts-slim
-          docker pull mcr.microsoft.com/playwright:v1.52.0-noble
-          docker pull alfonsograziano/node-chartjs-canvas:latest
+          docker pull --platform=linux/amd64 node:lts-slim
+          docker pull --platform=linux/amd64 mcr.microsoft.com/playwright:v1.52.0-noble
+          
+        # Not adding tbis one as has been built only for arm64 for now
+        # docker pull --platform=linux/amd64 alfonsograziano/node-chartjs-canvas:latest
 
       - name: Run tests
         run: npm test

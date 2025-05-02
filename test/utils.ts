@@ -1,4 +1,5 @@
 import { execSync } from "node:child_process";
+import { describe, it, expect } from "vitest";
 
 /**
  * Utility to check if a Docker container is running
@@ -27,3 +28,6 @@ export function containerExists(containerId: string): boolean {
     return false;
   }
 }
+
+export const describeIfLocal = process.env.CI ? describe.skip : describe;
+export const testIfLocal = process.env.CI ? it.skip : it;
