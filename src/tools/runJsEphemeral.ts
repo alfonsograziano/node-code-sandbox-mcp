@@ -5,7 +5,9 @@ import { randomUUID } from "crypto";
 import { McpResponse, textContent } from "../types.js";
 import {
   DEFAULT_NODE_IMAGE,
+  DOCKER_NOT_RUNNING_ERROR,
   generateSuggestedImages,
+  isDockerRunning,
   preprocessDependencies,
 } from "../utils.js";
 import {
@@ -57,6 +59,12 @@ export default async function runJsEphemeral({
   code: string;
   dependencies?: NodeDependenciesArray;
 }): Promise<McpResponse> {
+  if (!isDockerRunning()) {
+    return {
+      content: [textContent(DOCKER_NOT_RUNNING_ERROR)],
+    };
+  }
+
   const dependenciesRecord = preprocessDependencies({
     dependencies,
     image,

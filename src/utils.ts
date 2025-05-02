@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from "fs";
+import { execSync } from "node:child_process";
 
 export function isRunningInDocker() {
   // 1. The “/.dockerenv” sentinel file
@@ -84,3 +85,14 @@ export async function waitForPortHttp(
     `Timeout: Server did not respond on http://localhost:${port} within ${timeoutMs}ms`
   );
 }
+
+export function isDockerRunning() {
+  try {
+    execSync("docker info");
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+export const DOCKER_NOT_RUNNING_ERROR =
+  "Error: Docker is not running. Please start Docker and try again.";

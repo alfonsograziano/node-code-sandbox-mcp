@@ -25,6 +25,19 @@ describe.only("initializeSandbox", () => {
     }));
   });
 
+  it("should return an error message if Docker is not running", async () => {
+    vi.spyOn(utils, "isDockerRunning").mockReturnValue(false);
+    const result = await initializeSandbox({});
+    expect(result).toEqual({
+      content: [
+        {
+          type: "text",
+          text: "Error: Docker is not running. Please start Docker and try again.",
+        },
+      ],
+    });
+  });
+
   it("should use the default image when none is provided", async () => {
     const result = await initializeSandbox({});
     expect(childProcess.execSync).toHaveBeenCalledWith(
