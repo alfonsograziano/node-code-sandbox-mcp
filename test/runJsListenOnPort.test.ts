@@ -5,7 +5,7 @@ import stopSandbox from "../src/tools/stop";
 
 describe("runJs with listenOnPort using Node.js http module", () => {
   it("should start a basic HTTP server in the container and expose it on the given port", async () => {
-    const port = 3003;
+    const port = 20000 + Math.floor(Math.random() * 10000);
     const start = await initializeSandbox({ port });
     const content = start.content[0];
     if (content.type !== "text") throw new Error("Unexpected content type");

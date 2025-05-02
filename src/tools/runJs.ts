@@ -35,11 +35,6 @@ export const argSchema = {
         "If none, returns an empty array."
     ),
   code: z.string().describe("JavaScript code to run inside the container."),
-  // As this is a utility function used for testing, we don’t need to expose it within the tool.
-  // benchmarkInstallOnly: z
-  //   .boolean()
-  //   .optional()
-  //   .describe("If true, will only benchmark npm install time."),
   listenOnPort: z
     .number()
     .optional()
@@ -54,13 +49,11 @@ export default async function runJs({
   container_id,
   code,
   dependencies = [],
-  benchmarkInstallOnly = false,
   listenOnPort,
 }: {
   container_id: string;
   code: string;
   dependencies?: DependenciesArray;
-  benchmarkInstallOnly?: boolean;
   listenOnPort?: number;
 }): Promise<McpResponse> {
   if (!isDockerRunning()) {
@@ -93,25 +86,7 @@ export default async function runJs({
   );
 
   let rawOutput: string;
-  if (benchmarkInstallOnly) {
-    const jsCode = `
-      const s = Date.now();
-      require('child_process').execSync("npm install --omit=dev --prefer-offline --no-audit --loglevel=error", { stdio: 'ignore' });
-      const e = Date.now();
-      console.log('NPM install took', e - s, 'ms');
-    `;
-
-    const benchmarkScript = `cd ${containerWorkdir} && node -e ${JSON.stringify(
-      jsCode
-    )}`;
-
-    rawOutput = execSync(
-      `docker exec ${container_id} /bin/sh -c ${JSON.stringify(
-        benchmarkScript
-      )}`,
-      { encoding: "utf8" }
-    );
-  } else if (listenOnPort) {
+  if (listenOnPort) {
     const installStart = Date.now();
     // Install dependencies first
     const installOutput = execSync(
@@ -189,11 +164,7 @@ export default async function runJs({
 
   return {
     content: [
-      textContent(
-        benchmarkInstallOnly
-          ? `NPM install benchmark result:\n${rawOutput}`
-          : `Node.js process output:\n${rawOutput}`
-      ),
+      textContent(`Node.js process output:\n${rawOutput}`),
       ...extractedContents,
       textContent(`Telemetry:\n${JSON.stringify(telemetry, null, 2)}`),
     ],
