@@ -8,7 +8,11 @@ import {
   getHostOutputDir,
 } from "../runUtils.js";
 import tmp from "tmp";
-import { waitForPortHttp } from "../utils.js";
+import {
+  DOCKER_NOT_RUNNING_ERROR,
+  isDockerRunning,
+  waitForPortHttp,
+} from "../utils.js";
 
 const NodeDependency = z.object({
   name: z.string().describe("npm package name, e.g. lodash"),
@@ -59,6 +63,12 @@ export default async function runJs({
   benchmarkInstallOnly?: boolean;
   listenOnPort?: number;
 }): Promise<McpResponse> {
+  if (!isDockerRunning()) {
+    return {
+      content: [textContent(DOCKER_NOT_RUNNING_ERROR)],
+    };
+  }
+
   const dependenciesRecord: Record<string, string> = Object.fromEntries(
     dependencies.map(({ name, version }) => [name, version])
   );

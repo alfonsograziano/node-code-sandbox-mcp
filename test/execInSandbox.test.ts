@@ -2,6 +2,8 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import initializeSandbox from "../src/tools/initialize";
 import execInSandbox from "../src/tools/exec";
 import stopSandbox from "../src/tools/stop";
+import * as utils from "../src/utils";
+import { vi } from "vitest";
 
 let containerId: string;
 
@@ -17,6 +19,19 @@ afterAll(async () => {
 });
 
 describe("execInSandbox", () => {
+  it("should return an error if Docker is not running", async () => {
+    vi.spyOn(utils, "isDockerRunning").mockReturnValue(false);
+
+    const result = await initializeSandbox({});
+    expect(result).toEqual({
+      content: [
+        {
+          type: "text",
+          text: "Error: Docker is not running. Please start Docker and try again.",
+        },
+      ],
+    });
+  });
   it("should execute a single command and return its output", async () => {
     const result = await execInSandbox({
       container_id: containerId,
