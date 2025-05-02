@@ -14,6 +14,8 @@ describe("runJsEphemeral via MCP client (files)", () => {
 
   beforeAll(async () => {
     workspaceDir = mkdtempSync(path.join(tmpdir(), "ws-"));
+
+    console.log("Workspace directory:", workspaceDir);
     client = new Client({ name: "node_js_sandbox_test", version: "1.0.0" });
 
     await client.connect(
@@ -82,5 +84,29 @@ describe("runJsEphemeral via MCP client (files)", () => {
 
     const actualContent = fs.readFileSync(writtenFilePath, "utf-8");
     expect(actualContent).toBe(expectedContent);
+  });
+
+  it.only("should read a file from the host system", async () => {
+    const fileName = "input-from-host.txt";
+    const fileContent = "This is coming from the host workspace.";
+    const fullFilePath = path.join(workspaceDir, fileName);
+    console.log("Full file path:", fullFilePath);
+
+    // Write the file from the host side
+    fs.writeFileSync(fullFilePath, fileContent, "utf-8");
+
+    const code = `
+      import fs from "fs";
+      const content = fs.readFileSync("${fileName}", "utf-8");
+      console.log("File content:", content);
+    `;
+    const result = await client.callTool({
+      name: "run_js_ephemeral",
+      arguments: { code: code, dependencies: [] },
+    });
+
+    expect(result).toBeDefined();
+    const output = result.content?.[0]?.text || "";
+    expect(output).toContain(fileContent);
   });
 }, 20_000);

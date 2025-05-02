@@ -67,9 +67,14 @@ export default async function runJsEphemeral({
 
   try {
     // Start an ephemeral container
+    const jsOutputHost =
+      process.env.JS_SANDBOX_OUTPUT_DIR || process.env.HOME || process.cwd();
+    console.log("mounting  => jsOutputHost", jsOutputHost);
     execSync(
       `docker run -d --network host --memory 512m --cpus 1 ` +
-        `--workdir /workspace --name ${containerId} ${image} tail -f /dev/null`
+        `--workdir /workspace --name ${containerId} ` +
+        `-v "${jsOutputHost}:/workspace" ` +
+        `${image} tail -f /dev/null`
     );
 
     // Prepare workspace locally
