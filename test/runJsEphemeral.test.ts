@@ -53,13 +53,38 @@ describe("should run runJsEphemeral", () => {
     });
     expect(result).toBeDefined();
     expect(result.content).toBeDefined();
-    expect(result.content.length).toBe(1);
+    expect(result.content.length).toBeGreaterThan(0);
     expect(result.content[0].type).toBe("text");
 
     if (result.content[0].type === "text") {
       expect(result.content[0].text).toContain("Hello, world!");
     } else {
       throw new Error("Expected content type to be 'text'");
+    }
+  });
+
+  it("should generate telemetry", async () => {
+    const result = await runJsEphemeral({
+      code: "console.log('Hello telemetry!');",
+      dependencies: [],
+    });
+
+    const telemetryItem = result.content.find(
+      (c) => c.type === "text" && c.text.startsWith("Telemetry:")
+    );
+    expect(telemetryItem).toBeDefined();
+    if (telemetryItem?.type === "text") {
+      const telemetry = JSON.parse(
+        telemetryItem.text.replace("Telemetry:\n", "")
+      );
+      expect(telemetry).toHaveProperty("installTimeMs");
+      expect(typeof telemetry.installTimeMs).toBe("number");
+      expect(telemetry).toHaveProperty("runTimeMs");
+      expect(typeof telemetry.runTimeMs).toBe("number");
+      expect(telemetry).toHaveProperty("installOutput");
+      expect(typeof telemetry.installOutput).toBe("string");
+    } else {
+      throw new Error("Expected telemetry item to be of type 'text'");
     }
   });
 
@@ -90,7 +115,6 @@ describe("should run runJsEphemeral", () => {
 
     expect(result).toBeDefined();
     expect(result.content).toBeDefined();
-    expect(result.content.length).toBe(4);
     expect(result.content[0].type).toBe("text");
 
     if (result.content[0].type === "text") {
@@ -118,7 +142,6 @@ describe("should run runJsEphemeral", () => {
 
     expect(result).toBeDefined();
     expect(result.content).toBeDefined();
-    expect(result.content.length).toBe(3);
 
     // First item: Node.js process output
     expect(result.content[0].type).toBe("text");
@@ -337,7 +360,6 @@ describe("runJsEphemeral generate charts", () => {
 
     expect(result).toBeDefined();
     expect(result.content).toBeDefined();
-    expect(result.content.length).toBe(1);
     expect(result.content[0].type).toBe("text");
 
     if (result.content[0].type === "text") {

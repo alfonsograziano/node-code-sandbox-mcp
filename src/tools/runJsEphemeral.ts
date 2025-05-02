@@ -65,6 +65,8 @@ export default async function runJsEphemeral({
     };
   }
 
+  const telemetry: Record<string, any> = {};
+
   const dependenciesRecord = preprocessDependencies({
     dependencies,
     image,
@@ -92,12 +94,21 @@ export default async function runJsEphemeral({
     // Run install and script inside container
     const installCmd = `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`;
     const runCmd = `node index.js`;
-    const fullCmd = `${installCmd} && ${runCmd}`;
 
-    const rawOutput = execSync(
-      `docker exec ${containerId} /bin/sh -c ${JSON.stringify(fullCmd)}`,
+    const installStart = Date.now();
+    const installOutput = execSync(
+      `docker exec ${containerId} /bin/sh -c ${JSON.stringify(installCmd)}`,
       { encoding: "utf8" }
     );
+    telemetry.installTimeMs = Date.now() - installStart;
+    telemetry.installOutput = installOutput;
+
+    const runStart = Date.now();
+    const rawOutput = execSync(
+      `docker exec ${containerId} /bin/sh -c ${JSON.stringify(runCmd)}`,
+      { encoding: "utf8" }
+    );
+    telemetry.runTimeMs = Date.now() - runStart;
 
     // Copy everything back out of the container
     execSync(`docker cp ${containerId}:/workspace/. ${tmpDir.name}`);
@@ -112,6 +123,7 @@ export default async function runJsEphemeral({
       content: [
         textContent(`Node.js process output:\n${rawOutput}`),
         ...extractedContents,
+        textContent(`Telemetry:\n${JSON.stringify(telemetry, null, 2)}`),
       ],
     };
   } finally {
