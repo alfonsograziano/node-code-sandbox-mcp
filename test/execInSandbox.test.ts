@@ -31,6 +31,8 @@ describe("execInSandbox", () => {
         },
       ],
     });
+
+    vi.restoreAllMocks();
   });
   it("should execute a single command and return its output", async () => {
     const result = await execInSandbox({
