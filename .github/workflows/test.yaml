@@ -1,14 +1,17 @@
-name: Run Docker-Based Tests
+name: Run Docker‑Based Tests
 
 on:
   pull_request:
-    branches:
-      - master
-  workflow_dispatch: {}
+    branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest ]
+    runs-on: ${{ matrix.os }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -16,15 +19,25 @@ jobs:
       - name: Set up Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
       - name: Install dependencies
         run: npm ci
+        shell: bash
+
+      # on Windows runners we need to start Docker Desktop service
+      - name: Ensure Docker is running (Windows)
+        if: runner.os == 'Windows'
+        run: Start-Service Docker
+        shell: pwsh
+
       - name: Pull required Docker images
         run: |
           docker pull --platform=linux/amd64 node:lts-slim
           docker pull --platform=linux/amd64 mcr.microsoft.com/playwright:v1.52.0-noble
           docker pull --platform=linux/amd64 alfonsograziano/node-code-sandbox-mcp:latest
+        shell: bash
 
       - name: Run tests
         run: npm test
+        shell: bash
