@@ -1,10 +1,11 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { tmpdir } from "os";
-import { mkdtempSync, writeFileSync, rmSync } from "fs";
+import { mkdtempSync, rmSync } from "fs";
 import path from "path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import dotenv from "dotenv";
+import { McpResponse } from "../src/types";
 import fs from "fs";
 dotenv.config();
 
@@ -58,29 +59,82 @@ describe("runJsEphemeral via MCP client (files)", () => {
     expect(outputText).toContain("Node.js process output");
   });
 
-  it("should write a file to the host system", async () => {
-    const filePath = "test-output_from_MCP.txt";
-    const expectedContent = "This is written from the sandbox.";
+  describe("runJsEphemeral via MCP client (host workspace mounting)", () => {
+    it("should read and write files using the host-mounted /files", async () => {
+      console.log("Workspace dir:", workspaceDir);
+      const inputFileName = "text.txt";
+      const inputFilePath = path.join(workspaceDir, inputFileName);
+      const inputContent = "This is a file from the host.";
+      fs.writeFileSync(inputFilePath, inputContent, "utf-8");
 
-    const code = `
-      import fs from "fs";
-      fs.writeFileSync("${filePath}", "${expectedContent}");
-      console.log("File written.");
-    `;
+      const outputFileName = "output-host.txt";
+      const outputContent = "This file was created in the sandbox.";
 
-    const result = await client.callTool({
-      name: "run_js_ephemeral",
-      arguments: { code, dependencies: [] },
+      const code = `
+        import fs from 'fs';
+        const input = fs.readFileSync('./files/${inputFileName}', 'utf-8');
+        console.log('Input file content:', input);
+        fs.writeFileSync('./files/${outputFileName}', input + ' | ${outputContent}');
+        console.log('Files processed.');
+      `;
+
+      const result = (await client.callTool({
+        name: "run_js_ephemeral",
+        arguments: { code, dependencies: [] },
+      })) as McpResponse;
+
+      expect(result).toBeDefined();
+      expect(result.content).toBeDefined();
+
+      // Process output
+      const processOutput = result.content.find(
+        (item) =>
+          item.type === "text" &&
+          item.text.startsWith("Node.js process output:")
+      );
+      expect(processOutput).toBeDefined();
+      expect((processOutput as { text: string }).text).toContain(
+        "Input file content: This is a file from the host."
+      );
+      expect((processOutput as { text: string }).text).toContain(
+        "Files processed."
+      );
+
+      // File creation message
+      const fileChangeInfo = result.content.find(
+        (item) =>
+          item.type === "text" && item.text.startsWith("List of changed files:")
+      );
+      expect(fileChangeInfo).toBeDefined();
+      expect((fileChangeInfo as { text: string }).text).toContain(
+        "- output-host.txt was created"
+      );
+
+      // Resource
+      const resource = result.content.find(
+        (item) =>
+          item.type === "resource" &&
+          "resource" in item &&
+          typeof item.resource?.uri === "string"
+      );
+      expect(resource).toBeDefined();
+      const resourceData = (
+        resource as {
+          resource: { mimeType: string; uri: string; text: string };
+        }
+      ).resource;
+      expect(resourceData.mimeType).toBe("text/plain");
+      expect(resourceData.uri).toContain("output-host.txt");
+      expect(resourceData.uri).toContain("file://");
+      expect(resourceData.text).toBe("output-host.txt");
+
+      // Telemetry
+      const telemetry = result.content.find(
+        (item) => item.type === "text" && item.text.startsWith("Telemetry:")
+      );
+      expect(telemetry).toBeDefined();
+      expect((telemetry as { text: string }).text).toContain('"installTimeMs"');
+      expect((telemetry as { text: string }).text).toContain('"runTimeMs"');
     });
-
-    expect(result).toBeDefined();
-    expect(result.content?.[0]?.text || "").toContain("File written.");
-
-    const writtenFilePath = path.join(workspaceDir, filePath);
-    const fileExists = fs.existsSync(writtenFilePath);
-    expect(fileExists).toBe(true);
-
-    const actualContent = fs.readFileSync(writtenFilePath, "utf-8");
-    expect(actualContent).toBe(expectedContent);
   });
 }, 20_000);

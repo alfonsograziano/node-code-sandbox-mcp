@@ -10,11 +10,13 @@ import {
   isDockerRunning,
   preprocessDependencies,
 } from "../utils.js";
+import { prepareWorkspace, getJsSandboxOutputDir } from "../runUtils.js";
 import {
-  prepareWorkspace,
-  extractOutputsFromDir,
-  getHostOutputDir,
-} from "../runUtils.js";
+  changesToMcpContent,
+  detectChanges,
+  getSnapshot,
+  getMountPointDir,
+} from "../snapshotUtils.js";
 
 const NodeDependency = z.object({
   name: z.string().describe("npm package name, e.g. lodash"),
@@ -79,7 +81,8 @@ export default async function runJsEphemeral({
     // Start an ephemeral container
     execSync(
       `docker run -d --network host --memory 512m --cpus 1 ` +
-        `--workdir /workspace --name ${containerId} ${image} tail -f /dev/null`
+        `--workdir /workspace -v ${getJsSandboxOutputDir()}:/workspace/files ` +
+        `--name ${containerId} ${image} tail -f /dev/null`
     );
 
     // Prepare workspace locally
@@ -90,6 +93,10 @@ export default async function runJsEphemeral({
 
     // Copy files into container
     execSync(`docker cp ${localWorkspace.name}/. ${containerId}:/workspace`);
+
+    // Generate snapshot of the workspace
+    const snapshotStartTime = Date.now();
+    const snapshot = getSnapshot(getMountPointDir());
 
     // Run install and script inside container
     const installCmd = `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`;
@@ -113,11 +120,11 @@ export default async function runJsEphemeral({
     // Copy everything back out of the container
     execSync(`docker cp ${containerId}:/workspace/. ${tmpDir.name}`);
 
-    const outputDir = getHostOutputDir();
-    const extractedContents = await extractOutputsFromDir({
-      dirPath: tmpDir.name,
-      outputDir,
-    });
+    // Detect the file changed during the execution of the tool in the mounted workspace
+    // and report the changes to the user
+    const extractedContents = await changesToMcpContent(
+      detectChanges(snapshot, getMountPointDir(), snapshotStartTime)
+    );
 
     return {
       content: [
