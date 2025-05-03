@@ -58,22 +58,20 @@ You can follow the [Official Guide](https://modelcontextprotocol.io/quickstart/u
 ```json
 {
   "mcpServers": {
-    "servers": {
-      "js-sandbox": {
-        "command": "docker",
-        "args": [
-          "run",
-          "-i",
-          "--rm",
-          "-v",
-          "/var/run/docker.sock:/var/run/docker.sock",
-          "-v",
-          "$HOME/Desktop/sandbox-output:/root",
-          "-e",
-          "FILES_DIR=$HOME/Desktop/sandbox-output",
-          "alfonsograziano/node-code-sandbox-mcp"
-        ]
-      }
+    "js-sandbox": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-v",
+        "/var/run/docker.sock:/var/run/docker.sock",
+        "-v",
+        "$HOME/Desktop/sandbox-output:/root",
+        "-e",
+        "FILES_DIR=$HOME/Desktop/sandbox-output",
+        "alfonsograziano/node-code-sandbox-mcp"
+      ]
     }
   }
 }
