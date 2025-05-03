@@ -2,8 +2,7 @@ name: Run Docker‑Based Tests
 
 on:
   pull_request:
-    branches:
-      - master
+    branches: [ master ]
   workflow_dispatch:
 
 jobs:
@@ -26,26 +25,19 @@ jobs:
         run: npm ci
         shell: bash
 
-      - name: Ensure Docker is running (Windows)
+      # On Windows, switch Docker to the Linux VM context
+      - name: Switch Docker to Linux containers (Windows)
         if: runner.os == 'Windows'
-        run: Start-Service Docker
         shell: pwsh
+        run: |
+          docker context use desktop-linux
 
-      - name: Pull required Docker images (Linux)
-        if: runner.os == 'Linux'
+      - name: Pull required Docker images
         run: |
           docker pull --platform=linux/amd64 node:lts-slim
           docker pull --platform=linux/amd64 mcr.microsoft.com/playwright:v1.52.0-noble
           docker pull --platform=linux/amd64 alfonsograziano/node-code-sandbox-mcp:latest
         shell: bash
-
-      - name: Pull required Docker images (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          docker pull node:lts-slim
-          docker pull mcr.microsoft.com/playwright:v1.52.0-noble
-          docker pull alfonsograziano/node-code-sandbox-mcp:latest
-        shell: pwsh
 
       - name: Run tests
         run: npm test
