@@ -5,20 +5,6 @@ import runJsEphemeral, { argSchema } from "../src/tools/runJsEphemeral";
 import { DEFAULT_NODE_IMAGE } from "../src/utils";
 import { describeIfLocal } from "./utils";
 
-vi.mock("fs/promises", async () => {
-  const actual = await vi.importActual<typeof import("fs/promises")>(
-    "fs/promises"
-  );
-  return {
-    ...actual,
-    copyFile: vi.fn(async (src, dest) => {
-      console.log(`Mocked copyFile from ${src} to ${dest}`);
-      // no-op as copyFile is used within runJsEphemeral to copy files to the host system
-      // and we don't want to actually copy files in the test environment
-    }),
-  };
-});
-
 let tmpDir: tmp.DirResult;
 
 describe("runJsEphemeral", () => {
