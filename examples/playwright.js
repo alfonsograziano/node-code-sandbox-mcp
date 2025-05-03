@@ -18,7 +18,7 @@ async function main() {
       env: {
         ...process.env,
         //TODO: Change this with your user!
-        JS_SANDBOX_OUTPUT_DIR: "/Users/your_user/Desktop",
+        FILES_DIR: "/Users/your_user/Desktop",
       },
     })
   );

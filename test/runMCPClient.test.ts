@@ -39,7 +39,7 @@ describe("runJsEphemeral via MCP client (files) ", () => {
           "-v",
           `${workspaceDir}:/root`,
           "-e",
-          `JS_SANDBOX_OUTPUT_DIR=${workspaceDir}`,
+          `FILES_DIR=${workspaceDir}`,
           "alfonsograziano/node-code-sandbox-mcp",
         ],
       })

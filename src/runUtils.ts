@@ -57,9 +57,7 @@ export async function extractOutputsFromDir({
     const destPath = path.join(outputDir, fname);
     await fs.copyFile(fullPath, destPath);
 
-    const jsOutputHost =
-      process.env.JS_SANDBOX_OUTPUT_DIR || process.env.HOME || process.cwd();
-    const hostPath = path.join(jsOutputHost, fname);
+    const hostPath = path.join(getFilesDir(), fname);
     contents.push(textContent(`I saved the file ${fname} at ${hostPath}`));
 
     const mimeType = mime.lookup(fname) || "application/octet-stream";
@@ -90,10 +88,10 @@ export function getHostOutputDir(): string {
   const isContainer = isRunningInDocker();
   return isContainer
     ? path.resolve(process.env.HOME || process.cwd())
-    : path.resolve(
-        process.env.JS_SANDBOX_OUTPUT_DIR || process.env.HOME || process.cwd()
-      );
+    : getFilesDir();
 }
 
-export const getJsSandboxOutputDir = () =>
-  process.env.JS_SANDBOX_OUTPUT_DIR as string;
+// This FILES_DIR is an env var coming from the user
+// JS_SANDBOX_OUTPUT_DIR is kept for retrocompatibility as this is the name of the old env var
+export const getFilesDir = () =>
+  (process.env.FILES_DIR || process.env.JS_SANDBOX_OUTPUT_DIR) as string;

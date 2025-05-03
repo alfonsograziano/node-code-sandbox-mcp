@@ -1,4 +1,5 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import * as tmp from "tmp";
 import { execSync } from "node:child_process";
 import runJs from "../src/tools/runJs";
 import { DEFAULT_NODE_IMAGE } from "../src/utils";
@@ -9,12 +10,23 @@ function startSandboxContainer(): string {
     { encoding: "utf-8" }
   ).trim();
 }
+let tmpDir: tmp.DirResult;
 
 function stopSandboxContainer(containerId: string) {
   execSync(`docker rm -f ${containerId}`);
 }
 
 describe("runJs npm install benchmarking", () => {
+  beforeEach(() => {
+    tmpDir = tmp.dirSync({ unsafeCleanup: true });
+    process.env.FILES_DIR = tmpDir.name;
+  });
+
+  afterEach(() => {
+    tmpDir.removeCallback();
+    delete process.env.FILES_DIR;
+  });
+
   it("should install dependency faster on second run due to caching", async () => {
     const containerId = startSandboxContainer();
 

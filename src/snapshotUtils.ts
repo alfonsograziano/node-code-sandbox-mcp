@@ -3,7 +3,7 @@ import * as path from "path";
 import { McpContent, textContent } from "./types.js";
 import mime from "mime-types";
 import { pathToFileURL } from "url";
-import { getJsSandboxOutputDir } from "./runUtils.js";
+import { getFilesDir } from "./runUtils.js";
 import { isRunningInDocker } from "./utils.js";
 
 type ChangeType = "created" | "updated" | "deleted";
@@ -19,7 +19,7 @@ export const getMountPointDir = () => {
   if (isRunningInDocker()) {
     return "/root";
   }
-  return getJsSandboxOutputDir();
+  return getFilesDir();
 };
 
 export function getSnapshot(dir: string): FileSnapshot {
@@ -128,10 +128,7 @@ export async function changesToMcpContent(
       });
     }
 
-    const hostPath = path.join(
-      getJsSandboxOutputDir(),
-      path.basename(change.path)
-    );
+    const hostPath = path.join(getFilesDir(), path.basename(change.path));
 
     contents.push({
       type: "resource",

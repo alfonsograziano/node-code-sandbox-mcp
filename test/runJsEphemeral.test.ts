@@ -10,12 +10,12 @@ let tmpDir: tmp.DirResult;
 describe("runJsEphemeral", () => {
   beforeEach(() => {
     tmpDir = tmp.dirSync({ unsafeCleanup: true });
-    process.env.JS_SANDBOX_OUTPUT_DIR = tmpDir.name;
+    process.env.FILES_DIR = tmpDir.name;
   });
 
   afterEach(() => {
     tmpDir.removeCallback();
-    delete process.env.JS_SANDBOX_OUTPUT_DIR;
+    delete process.env.FILES_DIR;
   });
   describe("argSchema", () => {
     it("should use default values for image and dependencies", () => {
@@ -132,8 +132,6 @@ describe("runJsEphemeral", () => {
     }, 15_000);
 
     it("should save a hello.txt file and return it as a resource", async () => {
-      process.env.JS_SANDBOX_OUTPUT_DIR = tmpDir.name;
-
       const result = await runJsEphemeral({
         code: `
           import fs from 'fs/promises';
@@ -183,16 +181,6 @@ describe("runJsEphemeral", () => {
   });
 
   describe("runJsEphemeral error handling", () => {
-    beforeEach(() => {
-      tmpDir = tmp.dirSync({ unsafeCleanup: true });
-      process.env.JS_SANDBOX_OUTPUT_DIR = tmpDir.name;
-    });
-
-    afterEach(() => {
-      tmpDir.removeCallback();
-      delete process.env.JS_SANDBOX_OUTPUT_DIR;
-    });
-
     it("should reject when the code throws an exception", async () => {
       await expect(
         runJsEphemeral({ code: "throw new Error('Test error');" })

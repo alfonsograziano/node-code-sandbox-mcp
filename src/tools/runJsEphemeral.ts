@@ -10,7 +10,7 @@ import {
   isDockerRunning,
   preprocessDependencies,
 } from "../utils.js";
-import { prepareWorkspace, getJsSandboxOutputDir } from "../runUtils.js";
+import { prepareWorkspace, getFilesDir } from "../runUtils.js";
 import {
   changesToMcpContent,
   detectChanges,
@@ -81,7 +81,7 @@ export default async function runJsEphemeral({
     // Start an ephemeral container
     execSync(
       `docker run -d --network host --memory 512m --cpus 1 ` +
-        `--workdir /workspace -v ${getJsSandboxOutputDir()}:/workspace/files ` +
+        `--workdir /workspace -v ${getFilesDir()}:/workspace/files ` +
         `--name ${containerId} ${image} tail -f /dev/null`
     );
 

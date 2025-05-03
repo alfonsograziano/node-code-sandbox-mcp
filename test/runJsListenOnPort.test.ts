@@ -1,9 +1,23 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import * as tmp from "tmp";
+
 import runJs from "../src/tools/runJs";
 import initializeSandbox from "../src/tools/initialize";
 import stopSandbox from "../src/tools/stop";
 
+let tmpDir: tmp.DirResult;
+
 describe("runJs with listenOnPort using Node.js http module", () => {
+  beforeEach(() => {
+    tmpDir = tmp.dirSync({ unsafeCleanup: true });
+    process.env.FILES_DIR = tmpDir.name;
+  });
+
+  afterEach(() => {
+    tmpDir.removeCallback();
+    delete process.env.FILES_DIR;
+  });
+
   it("should start a basic HTTP server in the container and expose it on the given port", async () => {
     const port = 20000 + Math.floor(Math.random() * 10000);
     const start = await initializeSandbox({ port });
