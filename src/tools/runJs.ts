@@ -57,13 +57,10 @@ export default async function runJs({
   listenOnPort?: number;
 }): Promise<McpResponse> {
   if (!isDockerRunning()) {
-    return {
-      content: [textContent(DOCKER_NOT_RUNNING_ERROR)],
-    };
+    return { content: [textContent(DOCKER_NOT_RUNNING_ERROR)] };
   }
 
   const telemetry: Record<string, any> = {};
-
   const dependenciesRecord: Record<string, string> = Object.fromEntries(
     dependencies.map(({ name, version }) => [name, version])
   );
@@ -71,84 +68,57 @@ export default async function runJs({
   const dirName = `job-${Date.now()}-${randomUUID()}`;
   const containerWorkdir = `/workspace/${dirName}`;
 
-  // 1. Create workspace folder inside container
+  // Create workspace in container
   execSync(`docker exec ${container_id} mkdir -p ${containerWorkdir}`);
-
-  // 2. Prepare local files using shared utility
-  const localWorkspace = await prepareWorkspace({
-    code,
-    dependenciesRecord,
-  });
-
-  // 3. Copy into container
-  execSync(
-    `docker cp ${localWorkspace.name}/. ${container_id}:${containerWorkdir}`
-  );
+  const localWorkspace = await prepareWorkspace({ code, dependenciesRecord });
+  execSync(`docker cp ${localWorkspace.name}/. ${container_id}:${containerWorkdir}`);
 
   let rawOutput: string;
   if (listenOnPort) {
     const installStart = Date.now();
-    // Install dependencies first
     const installOutput = execSync(
       `docker exec ${container_id} /bin/sh -c ${JSON.stringify(
         `cd ${containerWorkdir} && npm install --omit=dev --prefer-offline --no-audit --loglevel=error`
       )}`,
-      { encoding: "utf8" }
+      { encoding: 'utf8' }
     );
     telemetry.installTimeMs = Date.now() - installStart;
     telemetry.installOutput = installOutput;
 
-    // Run the script in the background and leave the port open
-    const runScript = `
-      cd ${containerWorkdir} && \
-      nohup node index.js > output.log 2>&1 &
-    `
-      .trim()
-      .replace(/\n\s+/g, " ");
-
+    const runScript = `cd ${containerWorkdir} && nohup node index.js > output.log 2>&1 &`;
     execSync(
       `docker exec ${container_id} /bin/sh -c ${JSON.stringify(runScript)}`
     );
 
     await waitForPortHttp(listenOnPort);
-
-    rawOutput = `Server started in background and listening on port ${listenOnPort}. Logs: ${containerWorkdir}/output.log`;
+    rawOutput = `Server started in background; logs at ${containerWorkdir}/output.log`;
   } else {
     const installStart = Date.now();
-    const fullCmd = `
-      cd ${containerWorkdir} && 
-      npm install --omit=dev --prefer-offline --no-audit --loglevel=error
-    `
-      .trim()
-      .replace(/\n\s+/g, " ");
-
+    const fullCmd = `cd ${containerWorkdir} && npm install --omit=dev --prefer-offline --no-audit --loglevel=error`;
     const installOutput = execSync(
-      `docker exec ${container_id} /bin/sh -c '${fullCmd}'`,
-      {
-        encoding: "utf8",
-      }
+      `docker exec ${container_id} /bin/sh -c ${JSON.stringify(fullCmd)}`,
+      { encoding: 'utf8' }
     );
     telemetry.installTimeMs = Date.now() - installStart;
     telemetry.installOutput = installOutput;
 
     const runStart = Date.now();
-    const runCmd = `
-      cd ${containerWorkdir} && 
-      node index.js
-    `
-      .trim()
-      .replace(/\n\s+/g, " ");
-
-    rawOutput = execSync(`docker exec ${container_id} /bin/sh -c '${runCmd}'`, {
-      encoding: "utf8",
-    });
+    const runCmd = `cd ${containerWorkdir} && node index.js`;
+    rawOutput = execSync(
+      `docker exec ${container_id} /bin/sh -c ${JSON.stringify(runCmd)}`,
+      { encoding: 'utf8' }
+    );
     telemetry.runTimeMs = Date.now() - runStart;
   }
 
+  // Gather outputs: use tar to dereference symlinks on Windows hosts
   const tmpOutput = tmp.dirSync({ unsafeCleanup: true });
-  execSync(`docker cp ${container_id}:${containerWorkdir}/. ${tmpOutput.name}`);
+  execSync(
+    `docker exec ${container_id} /bin/sh -c ${JSON.stringify(
+      `tar -C ${containerWorkdir} -ch .`
+    )} | tar -x -f - -C ${JSON.stringify(tmpOutput.name)}`
+  );
 
-  // Cleanup unless we expect the process to still be running
   if (!listenOnPort) {
     execSync(`docker exec ${container_id} rm -rf ${containerWorkdir}`);
   }

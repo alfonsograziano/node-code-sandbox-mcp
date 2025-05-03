@@ -7,9 +7,10 @@ import { describe, it, expect } from "vitest";
 export function isContainerRunning(containerId: string): boolean {
   try {
     const output = execSync(
-      `docker inspect -f '{{.State.Running}}' ${containerId}`
+      // use double‑quotes so Windows cmd strips them correctly
+      `docker inspect -f "{{.State.Running}}" ${containerId}`,
+      { encoding: "utf8" }
     )
-      .toString()
       .trim();
     return output === "true";
   } catch {
