@@ -11,7 +11,7 @@ import { execSync } from "child_process";
 
 dotenv.config();
 
-describe("runJsEphemeral via MCP client (files)", () => {
+describe("runJsEphemeral via MCP client (files) ", () => {
   let workspaceDir: string;
   let client: Client;
 
