@@ -1,17 +1,14 @@
-name: Run Docker‑Based Tests
+name: Run Docker-Based Tests
 
 on:
   pull_request:
-    branches: [ master ]
-  workflow_dispatch:
+    branches:
+      - master
+  workflow_dispatch: {}
 
 jobs:
   test:
-    strategy:
-      matrix:
-        os: [ ubuntu-latest, windows-latest ]
-    runs-on: ${{ matrix.os }}
-
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,22 +20,11 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-        shell: bash
-
-      # On Windows, switch Docker to the Linux VM context
-      - name: Switch Docker to Linux containers (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          docker context use desktop-linux
-
       - name: Pull required Docker images
         run: |
           docker pull --platform=linux/amd64 node:lts-slim
           docker pull --platform=linux/amd64 mcr.microsoft.com/playwright:v1.52.0-noble
           docker pull --platform=linux/amd64 alfonsograziano/node-code-sandbox-mcp:latest
-        shell: bash
 
       - name: Run tests
         run: npm test
-        shell: bash
