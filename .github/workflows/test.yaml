@@ -23,9 +23,7 @@ jobs:
         run: |
           docker pull --platform=linux/amd64 node:lts-slim
           docker pull --platform=linux/amd64 mcr.microsoft.com/playwright:v1.52.0-noble
-          
-        # Not adding tbis one as has been built only for arm64 for now
-        # docker pull --platform=linux/amd64 alfonsograziano/node-chartjs-canvas:latest
+          docker pull --platform=linux/amd64 alfonsograziano/node-chartjs-canvas:latest
 
       - name: Run tests
         run: npm test
