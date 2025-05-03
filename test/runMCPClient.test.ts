@@ -85,8 +85,6 @@ describe("runJsEphemeral via MCP client (files)", () => {
       expect(result).toBeDefined();
       expect(result.content).toBeDefined();
 
-      console.log("Result:", JSON.stringify(result, null, 2));
-
       // Process output
       const processOutput = result.content.find(
         (item) =>
