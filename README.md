@@ -30,6 +30,101 @@ Example recommended images:
 - mcr.microsoft.com/playwright:v1.52.0-noble
 - alfonsograziano/node-chartjs-canvas:latest
 
+## Getting started
+
+In order to get started with this MCP server, first of all you need to connect it to a client (for example Claude Desktop).
+
+Once it's running, you can test that it's fully working with a couple of test prompts:
+
+- Validate that the tool can run:
+
+  ```markdown
+  Create and run a JS script with a console.log("Hello World")
+  ```
+
+  This should run a console.log and in the tool response you should be able to see Hello World.
+
+- Validate that you can install dependencies and save files
+  ```markdown
+  Create and run a JS script that generates a QR code for the URL `https://nodejs.org/en`, and save it as `qrcode.png` **Tip:** Use the `qrcode` package.
+  ```
+  This should create a file in your mounted directory (for example the Desktop) called "qrcode.png"
+
+### Usage with Claude Desktop
+
+Add this to your `claude_desktop_config.json`:
+You can follow the [Official Guide](https://modelcontextprotocol.io/quickstart/user) to install this MCP server
+
+```json
+{
+  "mcpServers": {
+    "servers": {
+      "js-sandbox": {
+        "command": "docker",
+        "args": [
+          "run",
+          "-i",
+          "--rm",
+          "-v",
+          "/var/run/docker.sock:/var/run/docker.sock",
+          "-v",
+          "$HOME/Desktop/sandbox-output:/root",
+          "-e",
+          "JS_SANDBOX_OUTPUT_DIR=$HOME/Desktop/sandbox-output",
+          "alfonsograziano/node-code-sandbox-mcp"
+        ]
+      }
+    }
+  }
+}
+```
+
+> Note: Ensure your working directory points to the built server, and Docker is installed/running.
+
+### Docker
+
+Run the server in a container (mount Docker socket if needed), and pass through your desired host output directory as an env var:
+
+```shell
+# Build locally if necessary
+# docker build -t alfonsograziano/node-code-sandbox-mcp .
+
+docker run --rm -it \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v "$HOME/Desktop/sandbox-output":"/root" \
+  -e JS_SANDBOX_OUTPUT_DIR="$HOME/Desktop/sandbox-output" \
+  alfonsograziano/node-code-sandbox-mcp stdio
+```
+
+This bind-mounts your host folder into the container at the **same absolute path** and makes `JS_SANDBOX_OUTPUT_DIR` available inside the MCP server.
+
+### Usage with VS Code
+
+**Quick install** buttons (VS Code & Insiders):
+
+Install js-sandbox-mcp (NPX) Install js-sandbox-mcp (Docker)
+
+**Manual configuration**: Add to your VS Code `settings.json` or `.vscode/mcp.json`:
+
+```json
+"mcp": {
+    "servers": {
+        "js-sandbox": {
+            "command": "docker",
+            "args": [
+                "run",
+                "-i",
+                "--rm",
+                "-v", "/var/run/docker.sock:/var/run/docker.sock",
+                "-v", "$HOME/Desktop/sandbox-output:/root",
+                "-e", "JS_SANDBOX_OUTPUT_DIR=$HOME/Desktop/sandbox-output",
+                "alfonsograziano/node-code-sandbox-mcp"
+              ]
+        }
+    }
+}
+```
+
 ## API
 
 ## Tools
