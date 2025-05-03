@@ -117,9 +117,6 @@ export default async function runJsEphemeral({
     );
     telemetry.runTimeMs = Date.now() - runStart;
 
-    // Copy everything back out of the container
-    execSync(`docker cp ${containerId}:/workspace/. ${tmpDir.name}`);
-
     // Detect the file changed during the execution of the tool in the mounted workspace
     // and report the changes to the user
     const extractedContents = await changesToMcpContent(
