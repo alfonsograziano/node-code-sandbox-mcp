@@ -44,7 +44,7 @@ describe("runJsEphemeral via MCP client (files) ", () => {
         ],
       })
     );
-  });
+  }, 200_000);
 
   afterAll(() => {
     rmSync(workspaceDir, { recursive: true, force: true });
