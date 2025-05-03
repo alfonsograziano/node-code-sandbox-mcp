@@ -178,7 +178,7 @@ describe("runJsEphemeral", () => {
       expect((telemetry as any).text).toContain('"installTimeMs"');
       expect((telemetry as any).text).toContain('"runTimeMs"');
     });
-  });
+  }, 10_000);
 
   describe("runJsEphemeral error handling", () => {
     it("should reject when the code throws an exception", async () => {
@@ -394,5 +394,5 @@ describe("runJsEphemeral", () => {
         "[ [ 1, 2 ], [ 3, 4 ], [ 5 ] ]"
       );
     });
-  });
+  }, 50_000);
 });

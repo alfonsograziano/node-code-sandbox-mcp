@@ -8,15 +8,18 @@ import dotenv from "dotenv";
 import { McpResponse } from "../src/types";
 import fs from "fs";
 import { execSync } from "child_process";
+import { normalizeMountPath } from "./utils";
 
 dotenv.config();
 
 describe("runJsEphemeral via MCP client (files) ", () => {
-  let workspaceDir: string;
+  let hostWorkspaceDir: string;
+  let containerWorkspaceDir: string;
   let client: Client;
 
   beforeAll(async () => {
-    workspaceDir = mkdtempSync(path.join(tmpdir(), "ws-"));
+    hostWorkspaceDir = mkdtempSync(path.join(tmpdir(), "ws-"));
+    containerWorkspaceDir = normalizeMountPath(hostWorkspaceDir);
 
     // Build the latest version of the Docker image
     // I need to build the image before running the test which requires it
@@ -37,9 +40,9 @@ describe("runJsEphemeral via MCP client (files) ", () => {
           "-v",
           "/var/run/docker.sock:/var/run/docker.sock",
           "-v",
-          `${workspaceDir}:/root`,
+          `${hostWorkspaceDir}:/root`,
           "-e",
-          `FILES_DIR=${workspaceDir}`,
+          `FILES_DIR=${containerWorkspaceDir}`,
           "alfonsograziano/node-code-sandbox-mcp",
         ],
       })
@@ -47,7 +50,7 @@ describe("runJsEphemeral via MCP client (files) ", () => {
   }, 200_000);
 
   afterAll(() => {
-    rmSync(workspaceDir, { recursive: true, force: true });
+    rmSync(hostWorkspaceDir, { recursive: true, force: true });
   });
 
   it("should run a console.log", async () => {
@@ -72,7 +75,7 @@ describe("runJsEphemeral via MCP client (files) ", () => {
   describe("runJsEphemeral via MCP client (host workspace mounting)", () => {
     it("should read and write files using the host-mounted /files", async () => {
       const inputFileName = "text.txt";
-      const inputFilePath = path.join(workspaceDir, inputFileName);
+      const inputFilePath = path.join(hostWorkspaceDir, inputFileName);
       const inputContent = "This is a file from the host.";
       fs.writeFileSync(inputFilePath, inputContent, "utf-8");
 

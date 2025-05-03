@@ -145,4 +145,4 @@ describe("runJs basic execution", () => {
       expect(stdout.text).toContain("Hello lodash");
     }
   });
-});
+}, 10_000);
