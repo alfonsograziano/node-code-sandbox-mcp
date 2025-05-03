@@ -61,7 +61,6 @@ describe("runJsEphemeral via MCP client (files)", () => {
 
   describe("runJsEphemeral via MCP client (host workspace mounting)", () => {
     it("should read and write files using the host-mounted /files", async () => {
-      console.log("Workspace dir:", workspaceDir);
       const inputFileName = "text.txt";
       const inputFilePath = path.join(workspaceDir, inputFileName);
       const inputContent = "This is a file from the host.";
