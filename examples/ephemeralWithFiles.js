@@ -10,10 +10,10 @@ async function main() {
   });
 
   // Host path where you want outputs to land
-  const JS_SANDBOX_OUTPUT_DIR = "/Users/alfonsograziano/Desktop";
+  const FILES_DIR = "/Users/alfonsograziano/Desktop";
 
   // Resolve it against $HOME (in case you ever switch to a relative subfolder)
-  const hostOutput = path.resolve(process.env.HOME, JS_SANDBOX_OUTPUT_DIR);
+  const hostOutput = path.resolve(process.env.HOME, FILES_DIR);
 
   // Where we’ll mount that folder _inside_ the MCP‐server container
   const containerOutput = "/root";
@@ -25,7 +25,7 @@ async function main() {
       command: "npm",
       args: ["run", "dev"],
       cwd: path.resolve(".."),
-      env: { ...process.env, JS_SANDBOX_OUTPUT_DIR },
+      env: { ...process.env, FILES_DIR },
     })
   );
 
@@ -51,7 +51,7 @@ async function main() {
 
   //       // 6) Pass your host’s output-dir env var _into_ the MCP-server
   //       "-e",
-  //       `JS_SANDBOX_OUTPUT_DIR=${hostOutput}`,
+  //       `FILES_DIR=${hostOutput}`,
 
   //       // 7) The MCP-server image that will manage your ephemeral sandboxes
   //       "alfonsograziano/node-code-sandbox-mcp",
@@ -59,8 +59,8 @@ async function main() {
   //     env: {
   //       // inherit your shell’s env
   //       ...process.env,
-  //       // also set JS_SANDBOX_OUTPUT_DIR inside the MCP-server process
-  //       JS_SANDBOX_OUTPUT_DIR,
+  //       // also set FILES_DIR inside the MCP-server process
+  //       FILES_DIR,
   //     },
   //   })
   // );

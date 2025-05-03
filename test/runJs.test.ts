@@ -1,10 +1,20 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll,
+} from "vitest";
+import * as tmp from "tmp";
 import { z } from "zod";
 import { execSync } from "node:child_process";
 import runJs, { argSchema } from "../src/tools/runJs";
 import { DEFAULT_NODE_IMAGE } from "../src/utils";
 
 let containerId: string;
+let tmpDir: tmp.DirResult;
 
 beforeAll(() => {
   // Start a lightweight container
@@ -33,6 +43,16 @@ describe("argSchema", () => {
 });
 
 describe("runJs basic execution", () => {
+  beforeEach(() => {
+    tmpDir = tmp.dirSync({ unsafeCleanup: true });
+    process.env.FILES_DIR = tmpDir.name;
+  });
+
+  afterEach(() => {
+    tmpDir.removeCallback();
+    delete process.env.FILES_DIR;
+  });
+
   it("should run simple JS in container", async () => {
     const result = await runJs({
       container_id: containerId,

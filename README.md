@@ -70,7 +70,7 @@ You can follow the [Official Guide](https://modelcontextprotocol.io/quickstart/u
           "-v",
           "$HOME/Desktop/sandbox-output:/root",
           "-e",
-          "JS_SANDBOX_OUTPUT_DIR=$HOME/Desktop/sandbox-output",
+          "FILES_DIR=$HOME/Desktop/sandbox-output",
           "alfonsograziano/node-code-sandbox-mcp"
         ]
       }
@@ -92,11 +92,11 @@ Run the server in a container (mount Docker socket if needed), and pass through 
 docker run --rm -it \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v "$HOME/Desktop/sandbox-output":"/root" \
-  -e JS_SANDBOX_OUTPUT_DIR="$HOME/Desktop/sandbox-output" \
+  -e FILES_DIR="$HOME/Desktop/sandbox-output" \
   alfonsograziano/node-code-sandbox-mcp stdio
 ```
 
-This bind-mounts your host folder into the container at the **same absolute path** and makes `JS_SANDBOX_OUTPUT_DIR` available inside the MCP server.
+This bind-mounts your host folder into the container at the **same absolute path** and makes `FILES_DIR` available inside the MCP server.
 
 ### Usage with VS Code
 
@@ -117,7 +117,7 @@ Install js-sandbox-mcp (NPX) Install js-sandbox-mcp (Docker)
                 "--rm",
                 "-v", "/var/run/docker.sock:/var/run/docker.sock",
                 "-v", "$HOME/Desktop/sandbox-output:/root",
-                "-e", "JS_SANDBOX_OUTPUT_DIR=$HOME/Desktop/sandbox-output",
+                "-e", "FILES_DIR=$HOME/Desktop/sandbox-output",
                 "alfonsograziano/node-code-sandbox-mcp"
               ]
         }
@@ -240,81 +240,6 @@ Terminate and remove the sandbox container.
   - Expose and test endpoints from running containers
 
 Choose the workflow that best fits your use-case!
-
-### Usage with Claude Desktop
-
-Add this to your `claude_desktop_config.json`:
-You can follow the [Official Guide](https://modelcontextprotocol.io/quickstart/user) to install this MCP server
-
-```json
-{
-  "mcpServers": {
-    "servers": {
-      "js-sandbox": {
-        "command": "docker",
-        "args": [
-          "run",
-          "-i",
-          "--rm",
-          "-v",
-          "/var/run/docker.sock:/var/run/docker.sock",
-          "-v",
-          "$HOME/Desktop/sandbox-output:$HOME/Desktop/sandbox-output",
-          "-e",
-          "JS_SANDBOX_OUTPUT_DIR=$HOME/Desktop/sandbox-output",
-          "alfonsograziano/node-code-sandbox-mcp"
-        ]
-      }
-    }
-  }
-}
-```
-
-> Note: Ensure your working directory points to the built server, and Docker is installed/running.
-
-### Docker
-
-Run the server in a container (mount Docker socket if needed), and pass through your desired host output directory as an env var:
-
-```shell
-# Build locally if necessary
-# docker build -t alfonsograziano/node-code-sandbox-mcp .
-
-docker run --rm -it \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v "$HOME/Desktop/sandbox-output":"$HOME/Desktop/sandbox-output" \
-  -e JS_SANDBOX_OUTPUT_DIR="$HOME/Desktop/sandbox-output" \
-  alfonsograziano/node-code-sandbox-mcp stdio
-```
-
-This bind-mounts your host folder into the container at the **same absolute path** and makes `JS_SANDBOX_OUTPUT_DIR` available inside the MCP server.
-
-### Usage with VS Code
-
-**Quick install** buttons (VS Code & Insiders):
-
-Install js-sandbox-mcp (NPX) Install js-sandbox-mcp (Docker)
-
-**Manual configuration**: Add to your VS Code `settings.json` or `.vscode/mcp.json`:
-
-```json
-"mcp": {
-    "servers": {
-        "js-sandbox": {
-            "command": "docker",
-            "args": [
-                "run",
-                "-i",
-                "--rm",
-                "-v", "/var/run/docker.sock:/var/run/docker.sock",
-                "-v", "$HOME/Desktop/sandbox-output:$HOME/Desktop/sandbox-output",
-                "-e", "JS_SANDBOX_OUTPUT_DIR=$HOME/Desktop/sandbox-output",
-                "alfonsograziano/node-code-sandbox-mcp"
-              ]
-        }
-    }
-}
-```
 
 ## Build
 

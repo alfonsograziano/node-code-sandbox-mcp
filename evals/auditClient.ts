@@ -31,7 +31,7 @@ export class OpenAIAuditClient {
    * Initializes the sandbox client by launching the Docker-based MCP server and loading available tools.
    */
   public async initializeClient() {
-    const userOutputDir = process.env.JS_SANDBOX_OUTPUT_DIR;
+    const userOutputDir = process.env.FILES_DIR;
     await this.client.connect(
       new StdioClientTransport({
         command: "docker",
@@ -44,7 +44,7 @@ export class OpenAIAuditClient {
           "-v",
           `${userOutputDir}:/root`,
           "-e",
-          `JS_SANDBOX_OUTPUT_DIR=${userOutputDir}`,
+          `FILES_DIR=${userOutputDir}`,
           "alfonsograziano/node-code-sandbox-mcp",
         ],
       })
