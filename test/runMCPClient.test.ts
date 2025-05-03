@@ -7,6 +7,8 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import dotenv from "dotenv";
 import { McpResponse } from "../src/types";
 import fs from "fs";
+import { execSync } from "child_process";
+
 dotenv.config();
 
 describe("runJsEphemeral via MCP client (files)", () => {
@@ -15,6 +17,14 @@ describe("runJsEphemeral via MCP client (files)", () => {
 
   beforeAll(async () => {
     workspaceDir = mkdtempSync(path.join(tmpdir(), "ws-"));
+
+    // Build the latest version of the Docker image
+    // I need to build the image before running the test which requires it
+
+    execSync("docker build -t alfonsograziano/node-code-sandbox-mcp .", {
+      stdio: "inherit",
+    });
+
     client = new Client({ name: "node_js_sandbox_test", version: "1.0.0" });
 
     await client.connect(
@@ -136,4 +146,4 @@ describe("runJsEphemeral via MCP client (files)", () => {
       expect((telemetry as { text: string }).text).toContain('"runTimeMs"');
     });
   });
-}, 20_000);
+}, 200_000);
