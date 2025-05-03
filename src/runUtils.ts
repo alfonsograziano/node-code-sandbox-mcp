@@ -94,3 +94,6 @@ export function getHostOutputDir(): string {
         process.env.JS_SANDBOX_OUTPUT_DIR || process.env.HOME || process.cwd()
       );
 }
+
+export const getJsSandboxOutputDir = () =>
+  process.env.JS_SANDBOX_OUTPUT_DIR as string;
