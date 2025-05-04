@@ -1,49 +1,49 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { tmpdir } from "os";
-import { mkdtempSync, rmSync } from "fs";
-import path from "path";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import dotenv from "dotenv";
-import { McpResponse } from "../src/types";
-import fs from "fs";
-import { execSync } from "child_process";
-import { normalizeMountPath } from "./utils";
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { tmpdir } from 'os';
+import { mkdtempSync, rmSync } from 'fs';
+import path from 'path';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import dotenv from 'dotenv';
+import { McpResponse } from '../src/types';
+import fs from 'fs';
+import { execSync } from 'child_process';
+import { normalizeMountPath } from './utils';
 
 dotenv.config();
 
-describe("runJsEphemeral via MCP client (files) ", () => {
+describe('runJsEphemeral via MCP client (files) ', () => {
   let hostWorkspaceDir: string;
   let containerWorkspaceDir: string;
   let client: Client;
 
   beforeAll(async () => {
-    hostWorkspaceDir = mkdtempSync(path.join(tmpdir(), "ws-"));
+    hostWorkspaceDir = mkdtempSync(path.join(tmpdir(), 'ws-'));
     containerWorkspaceDir = normalizeMountPath(hostWorkspaceDir);
 
     // Build the latest version of the Docker image
     // I need to build the image before running the test which requires it
 
-    execSync("docker build -t alfonsograziano/node-code-sandbox-mcp .", {
-      stdio: "inherit",
+    execSync('docker build -t alfonsograziano/node-code-sandbox-mcp .', {
+      stdio: 'inherit',
     });
 
-    client = new Client({ name: "node_js_sandbox_test", version: "1.0.0" });
+    client = new Client({ name: 'node_js_sandbox_test', version: '1.0.0' });
 
     await client.connect(
       new StdioClientTransport({
-        command: "docker",
+        command: 'docker',
         args: [
-          "run",
-          "-i",
-          "--rm",
-          "-v",
-          "/var/run/docker.sock:/var/run/docker.sock",
-          "-v",
+          'run',
+          '-i',
+          '--rm',
+          '-v',
+          '/var/run/docker.sock:/var/run/docker.sock',
+          '-v',
           `${hostWorkspaceDir}:/root`,
-          "-e",
+          '-e',
           `FILES_DIR=${containerWorkspaceDir}`,
-          "alfonsograziano/node-code-sandbox-mcp",
+          'alfonsograziano/node-code-sandbox-mcp',
         ],
       })
     );
@@ -53,34 +53,34 @@ describe("runJsEphemeral via MCP client (files) ", () => {
     rmSync(hostWorkspaceDir, { recursive: true, force: true });
   });
 
-  it("should run a console.log", async () => {
+  it('should run a console.log', async () => {
     const code = `console.log("Hello from workspace!");`;
 
     const result = (await client.callTool({
-      name: "run_js_ephemeral",
+      name: 'run_js_ephemeral',
       arguments: { code, dependencies: [] },
     })) as { content: Array<{ type: string; text: string }> };
 
     expect(result).toBeDefined();
     expect(result.content).toBeInstanceOf(Array);
     expect(result.content[0]).toMatchObject({
-      type: "text",
+      type: 'text',
     });
 
     const outputText = result.content[0].text;
-    expect(outputText).toContain("Hello from workspace!");
-    expect(outputText).toContain("Node.js process output");
+    expect(outputText).toContain('Hello from workspace!');
+    expect(outputText).toContain('Node.js process output');
   });
 
-  describe("runJsEphemeral via MCP client (host workspace mounting)", () => {
-    it("should read and write files using the host-mounted /files", async () => {
-      const inputFileName = "text.txt";
+  describe('runJsEphemeral via MCP client (host workspace mounting)', () => {
+    it('should read and write files using the host-mounted /files', async () => {
+      const inputFileName = 'text.txt';
       const inputFilePath = path.join(hostWorkspaceDir, inputFileName);
-      const inputContent = "This is a file from the host.";
-      fs.writeFileSync(inputFilePath, inputContent, "utf-8");
+      const inputContent = 'This is a file from the host.';
+      fs.writeFileSync(inputFilePath, inputContent, 'utf-8');
 
-      const outputFileName = "output-host.txt";
-      const outputContent = "This file was created in the sandbox.";
+      const outputFileName = 'output-host.txt';
+      const outputContent = 'This file was created in the sandbox.';
 
       const code = `
         import fs from 'fs';
@@ -91,7 +91,7 @@ describe("runJsEphemeral via MCP client (files) ", () => {
       `;
 
       const result = (await client.callTool({
-        name: "run_js_ephemeral",
+        name: 'run_js_ephemeral',
         arguments: { code, dependencies: [] },
       })) as McpResponse;
 
@@ -101,33 +101,33 @@ describe("runJsEphemeral via MCP client (files) ", () => {
       // Process output
       const processOutput = result.content.find(
         (item) =>
-          item.type === "text" &&
-          item.text.startsWith("Node.js process output:")
+          item.type === 'text' &&
+          item.text.startsWith('Node.js process output:')
       );
       expect(processOutput).toBeDefined();
       expect((processOutput as { text: string }).text).toContain(
-        "Input file content: This is a file from the host."
+        'Input file content: This is a file from the host.'
       );
       expect((processOutput as { text: string }).text).toContain(
-        "Files processed."
+        'Files processed.'
       );
 
       // File creation message
       const fileChangeInfo = result.content.find(
         (item) =>
-          item.type === "text" && item.text.startsWith("List of changed files:")
+          item.type === 'text' && item.text.startsWith('List of changed files:')
       );
       expect(fileChangeInfo).toBeDefined();
       expect((fileChangeInfo as { text: string }).text).toContain(
-        "- output-host.txt was created"
+        '- output-host.txt was created'
       );
 
       // Resource
       const resource = result.content.find(
         (item) =>
-          item.type === "resource" &&
-          "resource" in item &&
-          typeof item.resource?.uri === "string"
+          item.type === 'resource' &&
+          'resource' in item &&
+          typeof item.resource?.uri === 'string'
       );
       expect(resource).toBeDefined();
       const resourceData = (
@@ -135,14 +135,14 @@ describe("runJsEphemeral via MCP client (files) ", () => {
           resource: { mimeType: string; uri: string; text: string };
         }
       ).resource;
-      expect(resourceData.mimeType).toBe("text/plain");
-      expect(resourceData.uri).toContain("output-host.txt");
-      expect(resourceData.uri).toContain("file://");
-      expect(resourceData.text).toBe("output-host.txt");
+      expect(resourceData.mimeType).toBe('text/plain');
+      expect(resourceData.uri).toContain('output-host.txt');
+      expect(resourceData.uri).toContain('file://');
+      expect(resourceData.text).toBe('output-host.txt');
 
       // Telemetry
       const telemetry = result.content.find(
-        (item) => item.type === "text" && item.text.startsWith("Telemetry:")
+        (item) => item.type === 'text' && item.text.startsWith('Telemetry:')
       );
       expect(telemetry).toBeDefined();
       expect((telemetry as { text: string }).text).toContain('"installTimeMs"');

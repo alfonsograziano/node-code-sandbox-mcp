@@ -1,21 +1,26 @@
-import { z } from "zod";
-import { execSync } from "node:child_process";
-import { McpResponse, textContent } from "../types.js";
-import { prepareWorkspace } from "../runUtils.js";
+import { z } from 'zod';
+import { execSync } from 'node:child_process';
+import { McpResponse, textContent } from '../types.js';
+import { prepareWorkspace } from '../runUtils.js';
 import {
   DOCKER_NOT_RUNNING_ERROR,
   isDockerRunning,
   waitForPortHttp,
-} from "../utils.js";
-import { changesToMcpContent, detectChanges, getMountPointDir, getSnapshot } from "../snapshotUtils.js";
+} from '../utils.js';
+import {
+  changesToMcpContent,
+  detectChanges,
+  getMountPointDir,
+  getSnapshot,
+} from '../snapshotUtils.js';
 
 const NodeDependency = z.object({
-  name: z.string().describe("npm package name, e.g. lodash"),
-  version: z.string().describe("npm package version range, e.g. ^4.17.21"),
+  name: z.string().describe('npm package name, e.g. lodash'),
+  version: z.string().describe('npm package version range, e.g. ^4.17.21'),
 });
 
 export const argSchema = {
-  container_id: z.string().describe("Docker container identifier"),
+  container_id: z.string().describe('Docker container identifier'),
   // We use an array of { name, version } items instead of a record
   // because the OpenAI function-calling schema doesn’t reliably support arbitrary
   // object keys. An explicit array ensures each dependency has a clear, uniform
@@ -25,16 +30,16 @@ export const argSchema = {
     .array(NodeDependency)
     .default([])
     .describe(
-      "A list of npm dependencies to install before running the code. " +
-        "Each item must have a `name` (package) and `version` (range). " +
-        "If none, returns an empty array."
+      'A list of npm dependencies to install before running the code. ' +
+        'Each item must have a `name` (package) and `version` (range). ' +
+        'If none, returns an empty array.'
     ),
-  code: z.string().describe("JavaScript code to run inside the container."),
+  code: z.string().describe('JavaScript code to run inside the container.'),
   listenOnPort: z
     .number()
     .optional()
     .describe(
-      "If set, leaves the process running and exposes this port to the host."
+      'If set, leaves the process running and exposes this port to the host.'
     ),
 };
 
@@ -59,7 +64,6 @@ export default async function runJs({
   const dependenciesRecord: Record<string, string> = Object.fromEntries(
     dependencies.map(({ name, version }) => [name, version])
   );
-
 
   // Create workspace in container
   const localWorkspace = await prepareWorkspace({ code, dependenciesRecord });
@@ -107,7 +111,6 @@ export default async function runJs({
     );
     telemetry.runTimeMs = Date.now() - runStart;
   }
-
 
   // Detect the file changed during the execution of the tool in the mounted workspace
   // and report the changes to the user

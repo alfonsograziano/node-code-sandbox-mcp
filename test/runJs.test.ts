@@ -1,40 +1,32 @@
-import {
-  describe,
-  it,
-  expect,
-  beforeEach,
-  afterEach,
-} from "vitest";
-import * as tmp from "tmp";
-import { z } from "zod";
-import runJs, { argSchema } from "../src/tools/runJs";
-import initializeSandbox from "../src/tools/initialize"
-import stopSandbox from "../src/tools/stop"
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import * as tmp from 'tmp';
+import { z } from 'zod';
+import runJs, { argSchema } from '../src/tools/runJs';
+import initializeSandbox from '../src/tools/initialize';
+import stopSandbox from '../src/tools/stop';
 
-
-describe("argSchema", () => {
-  it("should accept code and container_id and set defaults", () => {
+describe('argSchema', () => {
+  it('should accept code and container_id and set defaults', () => {
     const parsed = z.object(argSchema).parse({
       code: "console.log('hi');",
-      container_id: "dummy",
+      container_id: 'dummy',
     });
-    expect(parsed.container_id).toBe("dummy");
+    expect(parsed.container_id).toBe('dummy');
     expect(parsed.dependencies).toEqual([]);
     expect(parsed.code).toBe("console.log('hi');");
   });
 });
 
-describe("runJs basic execution", () => {
-  let containerId: string
+describe('runJs basic execution', () => {
+  let containerId: string;
   let tmpDir: tmp.DirResult;
 
   beforeEach(async () => {
-
     tmpDir = tmp.dirSync({ unsafeCleanup: true });
     process.env.FILES_DIR = tmpDir.name;
 
-    const result = await initializeSandbox({})
-    if (result.content[0].type === "text") {
+    const result = await initializeSandbox({});
+    if (result.content[0].type === 'text') {
       containerId = result.content[0].text;
     } else {
       throw new Error("Expected the first content item to be of type 'text'");
@@ -46,11 +38,11 @@ describe("runJs basic execution", () => {
     delete process.env.FILES_DIR;
 
     if (containerId) {
-      stopSandbox({container_id: containerId})
+      stopSandbox({ container_id: containerId });
     }
   });
 
-  it("should run simple JS in container", async () => {
+  it('should run simple JS in container', async () => {
     const result = await runJs({
       container_id: containerId,
       code: `console.log("Hello from runJs")`,
@@ -60,34 +52,34 @@ describe("runJs basic execution", () => {
     expect(result.content.length).toBeGreaterThan(0);
 
     const output = result.content[0];
-    expect(output.type).toBe("text");
-    if (output.type === "text") {
-      expect(output.text).toContain("Hello from runJs");
+    expect(output.type).toBe('text');
+    if (output.type === 'text') {
+      expect(output.text).toContain('Hello from runJs');
     }
   });
 
-  it("should generate telemetry", async () => {
+  it('should generate telemetry', async () => {
     const result = await runJs({
       container_id: containerId,
       code: "console.log('Hello telemetry!');",
     });
 
     const telemetryItem = result.content.find(
-      (c) => c.type === "text" && c.text.startsWith("Telemetry:")
+      (c) => c.type === 'text' && c.text.startsWith('Telemetry:')
     );
 
     expect(telemetryItem).toBeDefined();
-    if (telemetryItem?.type === "text") {
+    if (telemetryItem?.type === 'text') {
       const telemetry = JSON.parse(
-        telemetryItem.text.replace("Telemetry:\n", "")
+        telemetryItem.text.replace('Telemetry:\n', '')
       );
 
-      expect(telemetry).toHaveProperty("installTimeMs");
-      expect(typeof telemetry.installTimeMs).toBe("number");
-      expect(telemetry).toHaveProperty("runTimeMs");
-      expect(typeof telemetry.runTimeMs).toBe("number");
-      expect(telemetry).toHaveProperty("installOutput");
-      expect(typeof telemetry.installOutput).toBe("string");
+      expect(telemetry).toHaveProperty('installTimeMs');
+      expect(typeof telemetry.installTimeMs).toBe('number');
+      expect(telemetry).toHaveProperty('runTimeMs');
+      expect(typeof telemetry.runTimeMs).toBe('number');
+      expect(telemetry).toHaveProperty('installOutput');
+      expect(typeof telemetry.installOutput).toBe('string');
     } else {
       throw new Error("Expected telemetry item to be of type 'text'");
     }
@@ -131,20 +123,20 @@ describe("runJs basic execution", () => {
     }
   });
 
-  it("should install lodash and use it", async () => {
+  it('should install lodash and use it', async () => {
     const result = await runJs({
       container_id: containerId,
       code: `
         import _ from 'lodash';
         console.log(_.join(['Hello', 'lodash'], ' '));
       `,
-      dependencies: [{ name: "lodash", version: "^4.17.21" }],
+      dependencies: [{ name: 'lodash', version: '^4.17.21' }],
     });
 
-    const stdout = result.content.find((c) => c.type === "text");
+    const stdout = result.content.find((c) => c.type === 'text');
     expect(stdout).toBeDefined();
-    if (stdout?.type === "text") {
-      expect(stdout.text).toContain("Hello lodash");
+    if (stdout?.type === 'text') {
+      expect(stdout.text).toContain('Hello lodash');
     }
   });
 }, 10_000);

@@ -160,18 +160,18 @@ Run a one-off JS script in a brand-new disposable container.
   "arguments": {
     "image": "node:lts-slim",
     "code": "console.log('One-shot run!');",
-    "dependencies": [{ "name": "lodash", "version": "^4.17.21" }]
-  }
+    "dependencies": [{ "name": "lodash", "version": "^4.17.21" }],
+  },
 }
 ```
 
 **Example to save a file:**
 
 ```javascript
-import fs from "fs/promises";
+import fs from 'fs/promises';
 
-await fs.writeFile("hello.txt", "Hello world!");
-console.log("Saved hello.txt");
+await fs.writeFile('hello.txt', 'Hello world!');
+console.log('Saved hello.txt');
 ```
 
 This will return the console output **and** the `hello.txt` file.

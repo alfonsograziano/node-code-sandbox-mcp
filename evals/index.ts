@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-import fs from "fs";
-import path from "path";
-import dotenv from "dotenv";
-import { OpenAIAuditClient } from "./auditClient";
+import fs from 'fs';
+import path from 'path';
+import dotenv from 'dotenv';
+import { OpenAIAuditClient } from './auditClient';
 
 dotenv.config();
 
@@ -18,9 +18,9 @@ dotenv.config();
  * - outputPath:  Path to write results in JSONL format.
  */
 const config = {
-  evalsPath: "./evals/basicEvals.json",
+  evalsPath: './evals/basicEvals.json',
   batchSize: 5,
-  outputPath: "./evalResults.jsonl",
+  outputPath: './evalResults.jsonl',
 };
 
 async function run() {
@@ -31,19 +31,19 @@ async function run() {
     console.error(`Evals file not found at ${evalsPath}`);
     process.exit(1);
   }
-  const evals = JSON.parse(fs.readFileSync(evalsPath, "utf-8"));
+  const evals = JSON.parse(fs.readFileSync(evalsPath, 'utf-8'));
   if (!Array.isArray(evals)) {
-    console.error("Evals file must export an array of {id, prompt} objects.");
+    console.error('Evals file must export an array of {id, prompt} objects.');
     process.exit(1);
   }
 
   // Initialize OpenAI Audit Client
   const client = new OpenAIAuditClient({
     apiKey: process.env.OPENAI_API_KEY!,
-    model: "gpt-4o-mini",
+    model: 'gpt-4o-mini',
   });
   await client.initializeClient();
-  console.log("OpenAI Audit Client initialized");
+  console.log('OpenAI Audit Client initialized');
 
   // Ensure output directory exists
   const outDir = path.dirname(outputPath);
@@ -61,7 +61,7 @@ async function run() {
       const startHumanRadableTime = new Date().toISOString();
       try {
         const fullResponse = await client.chat({
-          messages: [{ role: "user", content: prompt }],
+          messages: [{ role: 'user', content: prompt }],
         });
         const endTimeInMillis = new Date().getTime();
         const endHumanRadableTime = new Date().toISOString();
@@ -89,15 +89,15 @@ async function run() {
 
     // Append each result as a JSON line
     for (const result of results) {
-      fs.appendFileSync(outputPath, JSON.stringify(result, null, 2) + "\n");
+      fs.appendFileSync(outputPath, JSON.stringify(result, null, 2) + '\n');
     }
     console.log(`Batch ${i / batchSize + 1} done.`);
   }
 
-  console.log("All evals processed. Results saved to", config.outputPath);
+  console.log('All evals processed. Results saved to', config.outputPath);
 }
 
 run().catch((err) => {
-  console.error("Error running evalRunner:", err);
+  console.error('Error running evalRunner:', err);
   process.exit(1);
 });

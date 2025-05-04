@@ -1,7 +1,7 @@
-import { z } from "zod";
-import { execSync } from "node:child_process";
-import { McpResponse, textContent } from "../types.js";
-import { DOCKER_NOT_RUNNING_ERROR, isDockerRunning } from "../utils.js";
+import { z } from 'zod';
+import { execSync } from 'node:child_process';
+import { McpResponse, textContent } from '../types.js';
+import { DOCKER_NOT_RUNNING_ERROR, isDockerRunning } from '../utils.js';
 
 export const argSchema = { container_id: z.string() };
 
