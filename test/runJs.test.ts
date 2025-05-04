@@ -4,31 +4,13 @@ import {
   expect,
   beforeEach,
   afterEach,
-  beforeAll,
-  afterAll,
 } from "vitest";
 import * as tmp from "tmp";
 import { z } from "zod";
-import { execSync } from "node:child_process";
 import runJs, { argSchema } from "../src/tools/runJs";
-import { DEFAULT_NODE_IMAGE } from "../src/utils";
+import initializeSandbox from "../src/tools/initialize"
+import stopSandbox from "../src/tools/stop"
 
-let containerId: string;
-let tmpDir: tmp.DirResult;
-
-beforeAll(() => {
-  // Start a lightweight container
-  containerId = execSync(
-    `docker run -d --network host --memory 512m --cpus 1 --workdir /workspace ${DEFAULT_NODE_IMAGE} tail -f /dev/null`,
-    { encoding: "utf-8" }
-  ).trim();
-});
-
-afterAll(() => {
-  if (containerId) {
-    execSync(`docker rm -f ${containerId}`);
-  }
-});
 
 describe("argSchema", () => {
   it("should accept code and container_id and set defaults", () => {
@@ -43,14 +25,29 @@ describe("argSchema", () => {
 });
 
 describe("runJs basic execution", () => {
-  beforeEach(() => {
+  let containerId: string
+  let tmpDir: tmp.DirResult;
+
+  beforeEach(async () => {
+
     tmpDir = tmp.dirSync({ unsafeCleanup: true });
     process.env.FILES_DIR = tmpDir.name;
+
+    const result = await initializeSandbox({})
+    if (result.content[0].type === "text") {
+      containerId = result.content[0].text;
+    } else {
+      throw new Error("Expected the first content item to be of type 'text'");
+    }
   });
 
   afterEach(() => {
     tmpDir.removeCallback();
     delete process.env.FILES_DIR;
+
+    if (containerId) {
+      stopSandbox({container_id: containerId})
+    }
   });
 
   it("should run simple JS in container", async () => {
@@ -95,37 +92,42 @@ describe("runJs basic execution", () => {
       throw new Error("Expected telemetry item to be of type 'text'");
     }
   });
-
-  it("should write and retrieve a file", async () => {
+  it('should write and retrieve a file', async () => {
     const result = await runJs({
       container_id: containerId,
       code: `
         import fs from 'fs/promises';
-        await fs.writeFile('test-output.txt', 'This is a test file!');
-        console.log('File written');
+        await fs.writeFile('./files/hello test.txt', 'Hello world!');
+        console.log('Saved hello test.txt');
       `,
     });
 
-    const stdout = result.content.find((c) => c.type === "text");
-    expect(stdout).toBeDefined();
-    if (stdout?.type === "text") {
-      expect(stdout.text).toContain("File written");
-    }
-
-    const fileText = result.content.find(
-      (c) => c.type === "text" && c.text.includes("test-output.txt")
+    // Assert stdout contains the save confirmation
+    const stdoutEntry = result.content.find(
+      (c) => c.type === 'text' && c.text.includes('Saved hello test.txt')
     );
-    expect(fileText).toBeDefined();
+    expect(stdoutEntry).toBeDefined();
 
-    const resource = result.content.find(
+    // Assert the change list mentions the created file
+    const changeList = result.content.find(
       (c) =>
-        c.type === "resource" &&
-        "text" in c.resource &&
-        c.resource.text === "test-output.txt"
+        c.type === 'text' &&
+        c.text.includes('List of changed files') &&
+        c.text.includes('- hello test.txt was created')
     );
-    expect(resource).toBeDefined();
-    if (resource?.type === "resource") {
-      expect(resource.resource.uri).toContain("test-output.txt");
+    expect(changeList).toBeDefined();
+
+    // Assert the resource entry has the correct text and URI
+    const resourceEntry = result.content.find(
+      (c) =>
+        c.type === 'resource' &&
+        'text' in c.resource &&
+        c.resource.text === 'hello test.txt'
+    );
+    expect(resourceEntry).toBeDefined();
+    if (resourceEntry?.type === 'resource') {
+      // The URI should include the filename (URL-encoded)
+      expect(resourceEntry.resource.uri).toContain('hello%20test.txt');
     }
   });
 

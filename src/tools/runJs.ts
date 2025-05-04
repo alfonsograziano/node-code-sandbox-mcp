@@ -1,18 +1,14 @@
 import { z } from "zod";
 import { execSync } from "node:child_process";
-import { randomUUID } from "crypto";
 import { McpResponse, textContent } from "../types.js";
-import {
-  prepareWorkspace,
-  extractOutputsFromDir,
-  getHostOutputDir,
-} from "../runUtils.js";
+import { prepareWorkspace } from "../runUtils.js";
 import tmp from "tmp";
 import {
   DOCKER_NOT_RUNNING_ERROR,
   isDockerRunning,
   waitForPortHttp,
 } from "../utils.js";
+import { changesToMcpContent, detectChanges, getMountPointDir, getSnapshot } from "../snapshotUtils.js";
 
 const NodeDependency = z.object({
   name: z.string().describe("npm package name, e.g. lodash"),
@@ -65,36 +61,38 @@ export default async function runJs({
     dependencies.map(({ name, version }) => [name, version])
   );
 
-  const dirName = `job-${Date.now()}-${randomUUID()}`;
-  const containerWorkdir = `/workspace/${dirName}`;
 
   // Create workspace in container
-  execSync(`docker exec ${container_id} mkdir -p ${containerWorkdir}`);
   const localWorkspace = await prepareWorkspace({ code, dependenciesRecord });
-  execSync(`docker cp ${localWorkspace.name}/. ${container_id}:${containerWorkdir}`);
+  execSync(`docker cp ${localWorkspace.name}/. ${container_id}:/workspace`);
 
   let rawOutput: string;
+
+  // Generate snapshot of the workspace
+  const snapshotStartTime = Date.now();
+  const snapshot = getSnapshot(getMountPointDir());
+
   if (listenOnPort) {
     const installStart = Date.now();
     const installOutput = execSync(
       `docker exec ${container_id} /bin/sh -c ${JSON.stringify(
-        `cd ${containerWorkdir} && npm install --omit=dev --prefer-offline --no-audit --loglevel=error`
+        `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`
       )}`,
       { encoding: 'utf8' }
     );
     telemetry.installTimeMs = Date.now() - installStart;
     telemetry.installOutput = installOutput;
 
-    const runScript = `cd ${containerWorkdir} && nohup node index.js > output.log 2>&1 &`;
+    const runScript = `nohup node index.js > output.log 2>&1 &`;
     execSync(
       `docker exec ${container_id} /bin/sh -c ${JSON.stringify(runScript)}`
     );
 
     await waitForPortHttp(listenOnPort);
-    rawOutput = `Server started in background; logs at ${containerWorkdir}/output.log`;
+    rawOutput = `Server started in background; logs at /output.log`;
   } else {
     const installStart = Date.now();
-    const fullCmd = `cd ${containerWorkdir} && npm install --omit=dev --prefer-offline --no-audit --loglevel=error`;
+    const fullCmd = `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`;
     const installOutput = execSync(
       `docker exec ${container_id} /bin/sh -c ${JSON.stringify(fullCmd)}`,
       { encoding: 'utf8' }
@@ -103,7 +101,7 @@ export default async function runJs({
     telemetry.installOutput = installOutput;
 
     const runStart = Date.now();
-    const runCmd = `cd ${containerWorkdir} && node index.js`;
+    const runCmd = `node index.js`;
     rawOutput = execSync(
       `docker exec ${container_id} /bin/sh -c ${JSON.stringify(runCmd)}`,
       { encoding: 'utf8' }
@@ -111,25 +109,12 @@ export default async function runJs({
     telemetry.runTimeMs = Date.now() - runStart;
   }
 
-  // Gather outputs: use tar to dereference symlinks on Windows hosts
-  const tmpOutput = tmp.dirSync({ unsafeCleanup: true });
-  execSync(
-    `docker exec ${container_id} /bin/sh -c ${JSON.stringify(
-      `tar -C ${containerWorkdir} -ch .`
-    )} | tar -x -f - -C ${JSON.stringify(tmpOutput.name)}`
+
+  // Detect the file changed during the execution of the tool in the mounted workspace
+  // and report the changes to the user
+  const extractedContents = await changesToMcpContent(
+    detectChanges(snapshot, getMountPointDir(), snapshotStartTime)
   );
-
-  if (!listenOnPort) {
-    execSync(`docker exec ${container_id} rm -rf ${containerWorkdir}`);
-  }
-
-  const outputDir = getHostOutputDir();
-  const extractedContents = await extractOutputsFromDir({
-    dirPath: tmpOutput.name,
-    outputDir,
-  });
-
-  tmpOutput.removeCallback();
   localWorkspace.removeCallback();
 
   return {
