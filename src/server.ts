@@ -3,6 +3,9 @@ import {
   ResourceTemplate,
 } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { randomUUID } from 'crypto';
+import { exec } from 'child_process';
+import util from 'util';
 import initializeSandbox, {
   argSchema as initializeSchema,
 } from './tools/initialize.js';
@@ -15,6 +18,86 @@ import runJsEphemeral, {
 import mime from 'mime-types';
 import fs from 'fs/promises';
 import { z } from 'zod';
+
+const execPromise = util.promisify(exec);
+
+export const serverRunId = randomUUID();
+export const activeSandboxContainers = new Map<string, number>();
+
+const containerTimeoutSeconds = parseInt(
+  process.env.NODE_CONTAINER_TIMEOUT || '3600',
+  10
+);
+const containerTimeoutMilliseconds = isNaN(containerTimeoutSeconds)
+  ? 3600 * 1000
+  : containerTimeoutSeconds * 1000;
+
+export async function forceStopContainer(containerId: string): Promise<void> {
+  console.log(`Attempting to stop and remove container: ${containerId}`);
+  try {
+    await execPromise(`docker stop ${containerId} || true`);
+    await execPromise(`docker rm -f ${containerId} || true`);
+    console.log(`Successfully stopped and removed container: ${containerId}`);
+  } catch (error) {
+    console.error(
+      `Error during forced stop/remove of container ${containerId}:`,
+      typeof error === 'object' &&
+        error !== null &&
+        ('stderr' in error || 'message' in error)
+        ? (error as { stderr?: string; message?: string }).stderr ||
+            (error as { message: string }).message
+        : String(error)
+    );
+  } finally {
+    activeSandboxContainers.delete(containerId);
+  }
+}
+
+const scavengerInterval = setInterval(() => {
+  const now = Date.now();
+  console.log(
+    `[Scavenger] Checking ${activeSandboxContainers.size} active containers for timeout (${containerTimeoutSeconds}s)...`
+  );
+  for (const [
+    containerId,
+    creationTimestamp,
+  ] of activeSandboxContainers.entries()) {
+    if (now - creationTimestamp > containerTimeoutMilliseconds) {
+      console.warn(
+        `[Scavenger] Container ${containerId} timed out. Forcing removal.`
+      );
+      forceStopContainer(containerId);
+    }
+  }
+}, 60 * 1000);
+
+async function gracefulShutdown(signal: string) {
+  console.log(`
+Received ${signal}. Starting graceful shutdown...`);
+
+  clearInterval(scavengerInterval);
+
+  const containersToClean = Array.from(activeSandboxContainers.keys());
+  if (containersToClean.length > 0) {
+    console.log(`Cleaning up ${containersToClean.length} active containers...`);
+    const cleanupPromises = containersToClean.map((id) =>
+      forceStopContainer(id)
+    );
+    await Promise.allSettled(cleanupPromises);
+    console.log('Container cleanup finished.');
+  } else {
+    console.log('No active containers to clean up.');
+  }
+
+  setTimeout(() => {
+    console.log('Exiting.');
+    process.exit(0);
+  }, 500);
+}
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGUSR2', () => gracefulShutdown('SIGUSR2'));
 
 const server = new McpServer({
   name: 'js-sandbox-mcp',
@@ -99,9 +182,7 @@ server.prompt('run-node-js-script', { prompt: z.string() }, ({ prompt }) => ({
         text:
           `Here is my prompt:\n\n${prompt}\n\n` +
           `Follow modern Node.js best practices:\n` +
-          // I've noticed that gpt4o-mini tends to use CommonJS
           `- Use ECMAScript Modules (ESM) syntax (import/export), avoid CommonJS (require/module.exports)\n` +
-          // gpt4o-mini tends to try to install node-fetch
           `- Use native fetch, avoid node-fetch or axios unless absolutely necessary or requested\n` +
           `- Prefer top-level await in ES modules when appropriate\n` +
           `- Use async/await consistently for asynchronous code, avoid mixing with .then/.catch\n` +
@@ -114,4 +195,7 @@ server.prompt('run-node-js-script', { prompt: z.string() }, ({ prompt }) => ({
 }));
 
 const transport = new StdioServerTransport();
+
+console.log(`Starting MCP server with run ID: ${serverRunId}`);
+console.log(`Container timeout set to: ${containerTimeoutSeconds} seconds`);
 await server.connect(transport);

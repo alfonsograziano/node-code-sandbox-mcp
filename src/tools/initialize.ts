@@ -8,6 +8,7 @@ import {
   isDockerRunning,
 } from '../utils.js';
 import { getFilesDir } from '../runUtils.js';
+import { serverRunId, activeSandboxContainers } from '../server.js';
 
 export const argSchema = {
   image: z.string().optional(),
@@ -30,16 +31,51 @@ export default async function initializeSandbox({
     };
   }
 
-  const container = `js-sbx-${randomUUID()}`;
+  const containerId = `js-sbx-${randomUUID()}`;
+  const creationTimestamp = Date.now();
 
   const portOption = port ? `-p ${port}:${port}` : `--network host`; // prefer --network host if no explicit port mapping
 
-  execSync(
-    `docker run -d ${portOption} --memory 512m --cpus 1 ` +
-      `--workdir /workspace -v ${getFilesDir()}:/workspace/files ` +
-      `--name ${container} ${image} tail -f /dev/null`
-  );
-  return {
-    content: [textContent(container)],
-  };
+  // Construct labels
+  const labels = [
+    `mcp-sandbox=true`,
+    `mcp-server-run-id=${serverRunId}`,
+    `mcp-creation-timestamp=${creationTimestamp}`,
+  ];
+  const labelArgs = labels.map((label) => `--label "${label}"`).join(' ');
+
+  try {
+    execSync(
+      `docker run -d ${portOption} --memory 512m --cpus 1 ` +
+        `--workdir /workspace -v ${getFilesDir()}:/workspace/files ` +
+        `${labelArgs} ` + // Add labels here
+        `--name ${containerId} ${image} tail -f /dev/null`
+    );
+
+    // Register the container only after successful creation
+    activeSandboxContainers.set(containerId, creationTimestamp);
+    console.log(`Registered container ${containerId}`);
+
+    return {
+      content: [textContent(containerId)],
+    };
+  } catch (error) {
+    console.error(`Failed to initialize container ${containerId}:`, error);
+    // Ensure partial cleanup if execSync fails after container might be created but before registration
+    try {
+      execSync(`docker rm -f ${containerId}`);
+    } catch (cleanupError: unknown) {
+      // Ignore cleanup errors - log it just in case
+      console.warn(
+        `Ignoring error during cleanup attempt for ${containerId}: ${String(cleanupError)}`
+      );
+    }
+    return {
+      content: [
+        textContent(
+          `Failed to initialize sandbox container: ${error instanceof Error ? error.message : String(error)}`
+        ),
+      ],
+    };
+  }
 }

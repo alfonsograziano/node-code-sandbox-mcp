@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { execSync } from 'node:child_process';
 import { McpResponse, textContent } from '../types.js';
 import { DOCKER_NOT_RUNNING_ERROR, isDockerRunning } from '../utils.js';
+import { forceStopContainer } from '../server.js';
 
 export const argSchema = { container_id: z.string() };
 
@@ -16,8 +16,9 @@ export default async function stopSandbox({
     };
   }
 
-  execSync(`docker rm -f ${container_id}`);
+  await forceStopContainer(container_id);
+
   return {
-    content: [textContent(`Container ${container_id} removed.`)],
+    content: [textContent(`Container ${container_id} stop requested.`)],
   };
 }
