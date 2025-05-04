@@ -1,30 +1,30 @@
-import path from "path";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import path from 'path';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
 async function main() {
   // 1️⃣ Create the MCP client
   const client = new Client({
-    name: "ephemeral-with-deps-example",
-    version: "1.0.0",
+    name: 'ephemeral-with-deps-example',
+    version: '1.0.0',
   });
 
   // Host path where you want outputs to land
-  const FILES_DIR = "/Users/alfonsograziano/Desktop";
+  const FILES_DIR = '/Users/alfonsograziano/Desktop';
 
   // Resolve it against $HOME (in case you ever switch to a relative subfolder)
   const hostOutput = path.resolve(process.env.HOME, FILES_DIR);
 
   // Where we’ll mount that folder _inside_ the MCP‐server container
-  const containerOutput = "/root";
+  const containerOutput = '/root';
 
   // 2️⃣ Connect to your js-sandbox-mcp server
 
   await client.connect(
     new StdioClientTransport({
-      command: "npm",
-      args: ["run", "dev"],
-      cwd: path.resolve(".."),
+      command: 'npm',
+      args: ['run', 'dev'],
+      cwd: path.resolve('..'),
       env: { ...process.env, FILES_DIR },
     })
   );
@@ -65,32 +65,32 @@ async function main() {
   //   })
   // );
 
-  console.log("✅ Connected to js-sandbox-mcp");
+  console.log('✅ Connected to js-sandbox-mcp');
 
   // 3️⃣ Use the run_js_ephemeral tool with a dependency (lodash)
   const result = await client.callTool({
-    name: "run_js_ephemeral",
+    name: 'run_js_ephemeral',
     arguments: {
-      image: "node:lts-slim",
+      image: 'node:lts-slim',
       code: `
           import fs from 'fs/promises';  
           await fs.writeFile('hello_world.txt', 'Hello world!');
       `,
       dependencies: [
         {
-          name: "lodash",
-          version: "^4.17.21",
+          name: 'lodash',
+          version: '^4.17.21',
         },
       ],
     },
   });
 
-  console.log("▶️ run_js_ephemeral output:\n", JSON.stringify(result, null, 2));
+  console.log('▶️ run_js_ephemeral output:\n', JSON.stringify(result, null, 2));
 
   process.exit(0);
 }
 
 main().catch((err) => {
-  console.error("❌ Error in ephemeral-with-deps example:", err);
+  console.error('❌ Error in ephemeral-with-deps example:', err);
   process.exit(1);
 });

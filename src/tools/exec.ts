@@ -1,7 +1,7 @@
-import { z } from "zod";
-import { execSync } from "node:child_process";
-import { McpResponse, textContent } from "../types.js";
-import { DOCKER_NOT_RUNNING_ERROR, isDockerRunning } from "../utils.js";
+import { z } from 'zod';
+import { execSync } from 'node:child_process';
+import { McpResponse, textContent } from '../types.js';
+import { DOCKER_NOT_RUNNING_ERROR, isDockerRunning } from '../utils.js';
 
 export const argSchema = {
   container_id: z.string(),
@@ -27,10 +27,10 @@ export default async function execInSandbox({
       execSync(
         `docker exec ${container_id} /bin/sh -c ${JSON.stringify(cmd)}`,
         {
-          encoding: "utf8",
+          encoding: 'utf8',
         }
       )
     );
   }
-  return { content: [textContent(output.join("\n"))] };
+  return { content: [textContent(output.join('\n'))] };
 }

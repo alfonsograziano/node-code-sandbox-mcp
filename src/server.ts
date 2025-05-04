@@ -1,97 +1,97 @@
 import {
   McpServer,
   ResourceTemplate,
-} from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+} from '@modelcontextprotocol/sdk/server/mcp.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import initializeSandbox, {
   argSchema as initializeSchema,
-} from "./tools/initialize.js";
-import execInSandbox, { argSchema as execSchema } from "./tools/exec.js";
-import runJs, { argSchema as runJsSchema } from "./tools/runJs.js";
-import stopSandbox, { argSchema as stopSchema } from "./tools/stop.js";
+} from './tools/initialize.js';
+import execInSandbox, { argSchema as execSchema } from './tools/exec.js';
+import runJs, { argSchema as runJsSchema } from './tools/runJs.js';
+import stopSandbox, { argSchema as stopSchema } from './tools/stop.js';
 import runJsEphemeral, {
   argSchema as ephemeralSchema,
-} from "./tools/runJsEphemeral.js";
-import mime from "mime-types";
-import fs from "fs/promises";
-import { z } from "zod";
+} from './tools/runJsEphemeral.js';
+import mime from 'mime-types';
+import fs from 'fs/promises';
+import { z } from 'zod';
 
 const server = new McpServer({
-  name: "js-sandbox-mcp",
-  version: "0.1.0",
+  name: 'js-sandbox-mcp',
+  version: '0.1.0',
   description:
-    "Run arbitrary JavaScript inside disposable Docker containers and install npm dependencies on the fly.",
+    'Run arbitrary JavaScript inside disposable Docker containers and install npm dependencies on the fly.',
 });
 server.tool(
-  "sandbox_initialize",
-  "Start a new isolated Docker container running Node.js. Used to set up a sandbox session for multiple commands and scripts.",
+  'sandbox_initialize',
+  'Start a new isolated Docker container running Node.js. Used to set up a sandbox session for multiple commands and scripts.',
   initializeSchema,
   initializeSandbox
 );
 
 server.tool(
-  "sandbox_exec",
-  "Execute one or more shell commands inside a running sandbox container. Requires a sandbox initialized beforehand.",
+  'sandbox_exec',
+  'Execute one or more shell commands inside a running sandbox container. Requires a sandbox initialized beforehand.',
   execSchema,
   execInSandbox
 );
 
 server.tool(
-  "run_js",
-  "Install npm dependencies and run JavaScript code inside a running sandbox container. After running, you must manually stop the sandbox to free resources. The code must be valid ESModules (import/export syntax). Best for complex workflows where you want to reuse the environment across multiple executions.",
+  'run_js',
+  'Install npm dependencies and run JavaScript code inside a running sandbox container. After running, you must manually stop the sandbox to free resources. The code must be valid ESModules (import/export syntax). Best for complex workflows where you want to reuse the environment across multiple executions.',
   runJsSchema,
   runJs
 );
 
 server.tool(
-  "sandbox_stop",
-  "Terminate and remove a running sandbox container. Should be called after finishing work in a sandbox initialized with sandbox_initialize.",
+  'sandbox_stop',
+  'Terminate and remove a running sandbox container. Should be called after finishing work in a sandbox initialized with sandbox_initialize.',
   stopSchema,
   stopSandbox
 );
 
 server.tool(
-  "run_js_ephemeral",
-  "Run a JavaScript snippet in a temporary disposable container with optional npm dependencies, then automatically clean up. " +
-    "The code must be valid ESModules (import/export syntax). Ideal for simple one-shot executions without maintaining a sandbox or managing cleanup manually. " +
-    "If your script saves files in the current directory, these files will be returned automatically as part of the result. " +
-    "This includes images (e.g., PNG, JPEG) and other files (e.g., text, JSON, binaries).\n\n" +
-    "Example:\n\n" +
-    "```js\n" +
+  'run_js_ephemeral',
+  'Run a JavaScript snippet in a temporary disposable container with optional npm dependencies, then automatically clean up. ' +
+    'The code must be valid ESModules (import/export syntax). Ideal for simple one-shot executions without maintaining a sandbox or managing cleanup manually. ' +
+    'If your script saves files in the current directory, these files will be returned automatically as part of the result. ' +
+    'This includes images (e.g., PNG, JPEG) and other files (e.g., text, JSON, binaries).\n\n' +
+    'Example:\n\n' +
+    '```js\n' +
     'import fs from "fs/promises";\n\n' +
     'await fs.writeFile("hello.txt", "Hello world!");\n' +
     'console.log("Saved hello.txt");\n' +
-    "```\n\n" +
-    "In this example, the tool will return the console output **and** the `hello.txt` file as resource.",
+    '```\n\n' +
+    'In this example, the tool will return the console output **and** the `hello.txt` file as resource.',
   ephemeralSchema,
   runJsEphemeral
 );
 
 server.resource(
-  "file",
-  new ResourceTemplate("file://{+filepath}", { list: undefined }),
+  'file',
+  new ResourceTemplate('file://{+filepath}', { list: undefined }),
   async (uri) => {
     const filepath = new URL(uri).pathname;
     const data = await fs.readFile(filepath);
-    const mimeType = mime.lookup(filepath) || "application/octet-stream";
+    const mimeType = mime.lookup(filepath) || 'application/octet-stream';
     return {
       contents: [
         {
           uri: uri.toString(),
           mimeType,
-          blob: data.toString("base64"),
+          blob: data.toString('base64'),
         },
       ],
     };
   }
 );
 
-server.prompt("run-node-js-script", { prompt: z.string() }, ({ prompt }) => ({
+server.prompt('run-node-js-script', { prompt: z.string() }, ({ prompt }) => ({
   messages: [
     {
-      role: "user",
+      role: 'user',
       content: {
-        type: "text",
+        type: 'text',
         text:
           `Here is my prompt:\n\n${prompt}\n\n` +
           `Follow modern Node.js best practices:\n` +

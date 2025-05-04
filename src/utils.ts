@@ -1,18 +1,18 @@
-import { existsSync, readFileSync } from "fs";
-import { execSync } from "node:child_process";
+import { existsSync, readFileSync } from 'fs';
+import { execSync } from 'node:child_process';
 
 export function isRunningInDocker() {
   // 1. The “/.dockerenv” sentinel file
-  if (existsSync("/.dockerenv")) return true;
+  if (existsSync('/.dockerenv')) return true;
 
   // 2. cgroup data often embeds “docker” or “kubepods”
   try {
-    const cgroup = readFileSync("/proc/1/cgroup", "utf8");
-    if (cgroup.includes("docker") || cgroup.includes("kubepods")) {
+    const cgroup = readFileSync('/proc/1/cgroup', 'utf8');
+    if (cgroup.includes('docker') || cgroup.includes('kubepods')) {
       return true;
     }
   } catch (err) {
-    console.log(err)
+    console.log(err);
     // unreadable or missing → assume “not”
   }
 
@@ -32,27 +32,27 @@ export function preprocessDependencies({
 
   // This image has a pre-cached version of chartjs-node-canvas,
   // but we still need to explicitly declare it in package.json
-  if (image?.includes("alfonsograziano/node-chartjs-canvas")) {
-    dependenciesRecord["chartjs-node-canvas"] = "4.0.0";
+  if (image?.includes('alfonsograziano/node-chartjs-canvas')) {
+    dependenciesRecord['chartjs-node-canvas'] = '4.0.0';
   }
 
   return dependenciesRecord;
 }
 
-export const DEFAULT_NODE_IMAGE = "node:lts-slim";
+export const DEFAULT_NODE_IMAGE = 'node:lts-slim';
 
 export const suggestedImages = {
-  "node:lts-slim": {
-    description: "Node.js LTS version, slim variant.",
-    reason: "Lightweight and fast for JavaScript execution tasks.",
+  'node:lts-slim': {
+    description: 'Node.js LTS version, slim variant.',
+    reason: 'Lightweight and fast for JavaScript execution tasks.',
   },
-  "mcr.microsoft.com/playwright:v1.52.0-noble": {
-    description: "Playwright image for browser automation.",
-    reason: "Preconfigured for running Playwright scripts.",
+  'mcr.microsoft.com/playwright:v1.52.0-noble': {
+    description: 'Playwright image for browser automation.',
+    reason: 'Preconfigured for running Playwright scripts.',
   },
-  "alfonsograziano/node-chartjs-canvas:latest": {
-    description: "Chart.js image for chart generation.",
-    reason: "Preconfigured for generating charts with chartjs-node-canvas.",
+  'alfonsograziano/node-chartjs-canvas:latest': {
+    description: 'Chart.js image for chart generation.',
+    reason: 'Preconfigured for generating charts with chartjs-node-canvas.',
   },
 };
 
@@ -61,7 +61,7 @@ export const generateSuggestedImages = () => {
     .map(([image, { description, reason }]) => {
       return `- **${image}**: ${description} (${reason})`;
     })
-    .join("\n");
+    .join('\n');
 };
 
 export async function waitForPortHttp(
@@ -89,12 +89,12 @@ export async function waitForPortHttp(
 
 export function isDockerRunning() {
   try {
-    execSync("docker info");
+    execSync('docker info');
     return true;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     return false;
   }
 }
 export const DOCKER_NOT_RUNNING_ERROR =
-  "Error: Docker is not running. Please start Docker and try again.";
+  'Error: Docker is not running. Please start Docker and try again.';

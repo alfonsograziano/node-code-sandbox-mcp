@@ -1,10 +1,10 @@
-import fs from "fs/promises";
-import path from "path";
-import tmp from "tmp";
-import { pathToFileURL } from "url";
-import mime from "mime-types";
-import { textContent, McpContent } from "./types.js";
-import { isRunningInDocker } from "./utils.js";
+import fs from 'fs/promises';
+import path from 'path';
+import tmp from 'tmp';
+import { pathToFileURL } from 'url';
+import mime from 'mime-types';
+import { textContent, McpContent } from './types.js';
+import { isRunningInDocker } from './utils.js';
 
 export async function prepareWorkspace({
   code,
@@ -15,11 +15,11 @@ export async function prepareWorkspace({
 }) {
   const localTmp = tmp.dirSync({ unsafeCleanup: true });
 
-  await fs.writeFile(path.join(localTmp.name, "index.js"), code);
+  await fs.writeFile(path.join(localTmp.name, 'index.js'), code);
   await fs.writeFile(
-    path.join(localTmp.name, "package.json"),
+    path.join(localTmp.name, 'package.json'),
     JSON.stringify(
-      { type: "module", dependencies: dependenciesRecord },
+      { type: 'module', dependencies: dependenciesRecord },
       null,
       2
     )
@@ -36,7 +36,7 @@ export async function extractOutputsFromDir({
   outputDir: string;
 }): Promise<McpContent[]> {
   const contents: McpContent[] = [];
-  const imageTypes = new Set(["image/jpeg", "image/png"]);
+  const imageTypes = new Set(['image/jpeg', 'image/png']);
 
   await fs.mkdir(outputDir, { recursive: true });
 
@@ -47,9 +47,9 @@ export async function extractOutputsFromDir({
 
     const fname = dirent.name;
     if (
-      fname === "index.js" ||
-      fname === "package.json" ||
-      fname === "package-lock.json"
+      fname === 'index.js' ||
+      fname === 'package.json' ||
+      fname === 'package-lock.json'
     )
       continue;
 
@@ -60,19 +60,19 @@ export async function extractOutputsFromDir({
     const hostPath = path.join(getFilesDir(), fname);
     contents.push(textContent(`I saved the file ${fname} at ${hostPath}`));
 
-    const mimeType = mime.lookup(fname) || "application/octet-stream";
+    const mimeType = mime.lookup(fname) || 'application/octet-stream';
 
     if (imageTypes.has(mimeType)) {
-      const b64 = await fs.readFile(fullPath, { encoding: "base64" });
+      const b64 = await fs.readFile(fullPath, { encoding: 'base64' });
       contents.push({
-        type: "image",
+        type: 'image',
         data: b64,
         mimeType,
       });
     }
 
     contents.push({
-      type: "resource",
+      type: 'resource',
       resource: {
         uri: pathToFileURL(hostPath).href,
         mimeType,

@@ -1,20 +1,20 @@
-import { z } from "zod";
-import { execSync } from "node:child_process";
-import { randomUUID } from "node:crypto";
-import { McpResponse, textContent } from "../types.js";
+import { z } from 'zod';
+import { execSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
+import { McpResponse, textContent } from '../types.js';
 import {
   DEFAULT_NODE_IMAGE,
   DOCKER_NOT_RUNNING_ERROR,
   isDockerRunning,
-} from "../utils.js";
-import { getFilesDir } from "../runUtils.js";
+} from '../utils.js';
+import { getFilesDir } from '../runUtils.js';
 
 export const argSchema = {
   image: z.string().optional(),
   port: z
     .number()
     .optional()
-    .describe("If set, maps this container port to the host"),
+    .describe('If set, maps this container port to the host'),
 };
 
 export default async function initializeSandbox({

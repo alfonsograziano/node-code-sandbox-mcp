@@ -1,12 +1,12 @@
-import * as fs from "fs";
-import * as path from "path";
-import { McpContent, textContent } from "./types.js";
-import mime from "mime-types";
-import { pathToFileURL } from "url";
-import { getFilesDir } from "./runUtils.js";
-import { isRunningInDocker } from "./utils.js";
+import * as fs from 'fs';
+import * as path from 'path';
+import { McpContent, textContent } from './types.js';
+import mime from 'mime-types';
+import { pathToFileURL } from 'url';
+import { getFilesDir } from './runUtils.js';
+import { isRunningInDocker } from './utils.js';
 
-type ChangeType = "created" | "updated" | "deleted";
+type ChangeType = 'created' | 'updated' | 'deleted';
 type Change = {
   type: ChangeType;
   path: string;
@@ -17,7 +17,7 @@ type FileSnapshot = Record<string, { mtimeMs: number; isDirectory: boolean }>;
 
 export const getMountPointDir = () => {
   if (isRunningInDocker()) {
-    return "/root";
+    return '/root';
   }
   return getFilesDir();
 };
@@ -66,13 +66,13 @@ export function detectChanges(
 
     if (!prev && curr && curr.mtimeMs >= sinceTimeMs) {
       changes.push({
-        type: "created",
+        type: 'created',
         path: filePath,
         isDirectory: curr.isDirectory,
       });
     } else if (prev && !curr) {
       changes.push({
-        type: "deleted",
+        type: 'deleted',
         path: filePath,
         isDirectory: prev.isDirectory,
       });
@@ -83,7 +83,7 @@ export function detectChanges(
       curr.mtimeMs >= sinceTimeMs
     ) {
       changes.push({
-        type: "updated",
+        type: 'updated',
         path: filePath,
         isDirectory: curr.isDirectory,
       });
@@ -97,7 +97,7 @@ export async function changesToMcpContent(
   changes: Change[]
 ): Promise<McpContent[]> {
   const contents: McpContent[] = [];
-  const imageTypes = new Set(["image/jpeg", "image/png"]);
+  const imageTypes = new Set(['image/jpeg', 'image/png']);
 
   // Build single summary message
   const summaryLines = changes.map((change) => {
@@ -107,22 +107,22 @@ export async function changesToMcpContent(
 
   if (summaryLines.length > 0) {
     contents.push(
-      textContent(`List of changed files:\n${summaryLines.join("\n")}`)
+      textContent(`List of changed files:\n${summaryLines.join('\n')}`)
     );
   }
 
   // Add image/resource entries for created/updated (not deleted)
   for (const change of changes) {
-    if (change.type === "deleted") continue;
+    if (change.type === 'deleted') continue;
 
-    const mimeType = mime.lookup(change.path) || "application/octet-stream";
+    const mimeType = mime.lookup(change.path) || 'application/octet-stream';
 
     if (imageTypes.has(mimeType)) {
       const b64 = await fs.promises.readFile(change.path, {
-        encoding: "base64",
+        encoding: 'base64',
       });
       contents.push({
-        type: "image",
+        type: 'image',
         data: b64,
         mimeType,
       });
@@ -131,7 +131,7 @@ export async function changesToMcpContent(
     const hostPath = path.join(getFilesDir(), path.basename(change.path));
 
     contents.push({
-      type: "resource",
+      type: 'resource',
       resource: {
         uri: pathToFileURL(hostPath).href,
         mimeType,
