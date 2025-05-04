@@ -2,7 +2,6 @@ import { z } from "zod";
 import { execSync } from "node:child_process";
 import { McpResponse, textContent } from "../types.js";
 import { prepareWorkspace } from "../runUtils.js";
-import tmp from "tmp";
 import {
   DOCKER_NOT_RUNNING_ERROR,
   isDockerRunning,
@@ -56,7 +55,7 @@ export default async function runJs({
     return { content: [textContent(DOCKER_NOT_RUNNING_ERROR)] };
   }
 
-  const telemetry: Record<string, any> = {};
+  const telemetry: Record<string, unknown> = {};
   const dependenciesRecord: Record<string, string> = Object.fromEntries(
     dependencies.map(({ name, version }) => [name, version])
   );

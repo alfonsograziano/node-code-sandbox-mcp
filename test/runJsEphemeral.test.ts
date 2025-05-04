@@ -1,13 +1,19 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import * as tmp from "tmp";
-import { z } from "zod";
-import runJsEphemeral, { argSchema } from "../src/tools/runJsEphemeral";
-import { DEFAULT_NODE_IMAGE } from "../src/utils";
-import { describeIfLocal } from "./utils";
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import * as tmp from 'tmp';
+import { z } from 'zod';
+import runJsEphemeral, { argSchema } from '../src/tools/runJsEphemeral';
+import { DEFAULT_NODE_IMAGE } from '../src/utils';
+import { describeIfLocal } from './utils';
+import {
+  McpContentImage,
+  McpContentResource,
+  McpContentText,
+  McpContentTextResource,
+} from '../src/types';
 
 let tmpDir: tmp.DirResult;
 
-describe("runJsEphemeral", () => {
+describe('runJsEphemeral', () => {
   beforeEach(() => {
     tmpDir = tmp.dirSync({ unsafeCleanup: true });
     process.env.FILES_DIR = tmpDir.name;
@@ -17,20 +23,20 @@ describe("runJsEphemeral", () => {
     tmpDir.removeCallback();
     delete process.env.FILES_DIR;
   });
-  describe("argSchema", () => {
-    it("should use default values for image and dependencies", () => {
-      const parsed = z.object(argSchema).parse({ code: "console.log(1);" });
+  describe('argSchema', () => {
+    it('should use default values for image and dependencies', () => {
+      const parsed = z.object(argSchema).parse({ code: 'console.log(1);' });
       expect(parsed.image).toBe(DEFAULT_NODE_IMAGE);
       expect(parsed.dependencies).toEqual([]);
-      expect(parsed.code).toBe("console.log(1);");
+      expect(parsed.code).toBe('console.log(1);');
     });
 
-    it("should accept valid custom image and dependencies", () => {
+    it('should accept valid custom image and dependencies', () => {
       const input = {
         image: DEFAULT_NODE_IMAGE,
         dependencies: [
-          { name: "lodash", version: "^4.17.21" },
-          { name: "axios", version: "^1.0.0" },
+          { name: 'lodash', version: '^4.17.21' },
+          { name: 'axios', version: '^1.0.0' },
         ],
         code: "console.log('hi');",
       };
@@ -38,15 +44,15 @@ describe("runJsEphemeral", () => {
       expect(parsed.image).toBe(DEFAULT_NODE_IMAGE);
       expect(parsed.dependencies.length).toBe(2);
       expect(parsed.dependencies[0]).toEqual({
-        name: "lodash",
-        version: "^4.17.21",
+        name: 'lodash',
+        version: '^4.17.21',
       });
       expect(parsed.code).toBe("console.log('hi');");
     });
   });
 
-  describe("should run runJsEphemeral", () => {
-    it("shoud run runJsEphemeral base", async () => {
+  describe('should run runJsEphemeral', () => {
+    it('shoud run runJsEphemeral base', async () => {
       const result = await runJsEphemeral({
         code: "console.log('Hello, world!');",
         dependencies: [],
@@ -54,41 +60,41 @@ describe("runJsEphemeral", () => {
       expect(result).toBeDefined();
       expect(result.content).toBeDefined();
       expect(result.content.length).toBeGreaterThan(0);
-      expect(result.content[0].type).toBe("text");
+      expect(result.content[0].type).toBe('text');
 
-      if (result.content[0].type === "text") {
-        expect(result.content[0].text).toContain("Hello, world!");
+      if (result.content[0].type === 'text') {
+        expect(result.content[0].text).toContain('Hello, world!');
       } else {
         throw new Error("Expected content type to be 'text'");
       }
     });
 
-    it("should generate telemetry", async () => {
+    it('should generate telemetry', async () => {
       const result = await runJsEphemeral({
         code: "console.log('Hello telemetry!');",
         dependencies: [],
       });
 
       const telemetryItem = result.content.find(
-        (c) => c.type === "text" && c.text.startsWith("Telemetry:")
+        (c) => c.type === 'text' && c.text.startsWith('Telemetry:')
       );
       expect(telemetryItem).toBeDefined();
-      if (telemetryItem?.type === "text") {
+      if (telemetryItem?.type === 'text') {
         const telemetry = JSON.parse(
-          telemetryItem.text.replace("Telemetry:\n", "")
+          telemetryItem.text.replace('Telemetry:\n', '')
         );
-        expect(telemetry).toHaveProperty("installTimeMs");
-        expect(typeof telemetry.installTimeMs).toBe("number");
-        expect(telemetry).toHaveProperty("runTimeMs");
-        expect(typeof telemetry.runTimeMs).toBe("number");
-        expect(telemetry).toHaveProperty("installOutput");
-        expect(typeof telemetry.installOutput).toBe("string");
+        expect(telemetry).toHaveProperty('installTimeMs');
+        expect(typeof telemetry.installTimeMs).toBe('number');
+        expect(telemetry).toHaveProperty('runTimeMs');
+        expect(typeof telemetry.runTimeMs).toBe('number');
+        expect(telemetry).toHaveProperty('installOutput');
+        expect(typeof telemetry.installOutput).toBe('string');
       } else {
         throw new Error("Expected telemetry item to be of type 'text'");
       }
     });
 
-    it("should generate a valid QR code resource", async () => {
+    it('should generate a valid QR code resource', async () => {
       const result = await runJsEphemeral({
         code: `
           import fs from 'fs';
@@ -106,8 +112,8 @@ describe("runJsEphemeral", () => {
         `,
         dependencies: [
           {
-            name: "qrcode",
-            version: "^1.5.3",
+            name: 'qrcode',
+            version: '^1.5.3',
           },
         ],
       });
@@ -118,20 +124,22 @@ describe("runJsEphemeral", () => {
       // Find process output
       const processOutput = result.content.find(
         (item) =>
-          item.type === "text" &&
-          item.text.startsWith("Node.js process output:")
+          item.type === 'text' &&
+          item.text.startsWith('Node.js process output:')
       );
       expect(processOutput).toBeDefined();
-      expect((processOutput as any).text).toContain("QR code saved as PNG!");
+      expect((processOutput as McpContentText).text).toContain(
+        'QR code saved as PNG!'
+      );
 
       // Find QR image
       const imageResource = result.content.find(
-        (item) => item.type === "image" && item.mimeType === "image/png"
+        (item) => item.type === 'image' && item.mimeType === 'image/png'
       );
       expect(imageResource).toBeDefined();
     }, 15_000);
 
-    it("should save a hello.txt file and return it as a resource", async () => {
+    it('should save a hello.txt file and return it as a resource', async () => {
       const result = await runJsEphemeral({
         code: `
           import fs from 'fs/promises';
@@ -146,52 +154,66 @@ describe("runJsEphemeral", () => {
       // Find process output
       const processOutput = result.content.find(
         (item) =>
-          item.type === "text" &&
-          item.text.startsWith("Node.js process output:")
+          item.type === 'text' &&
+          item.text.startsWith('Node.js process output:')
       );
       expect(processOutput).toBeDefined();
-      expect((processOutput as any).text).toContain("Saved hello test.txt");
+      expect((processOutput as McpContentText).text).toContain(
+        'Saved hello test.txt'
+      );
 
       // Find file change info
       const changeInfo = result.content.find(
         (item) =>
-          item.type === "text" && item.text.startsWith("List of changed files:")
+          item.type === 'text' && item.text.startsWith('List of changed files:')
       );
       expect(changeInfo).toBeDefined();
-      expect((changeInfo as any).text).toContain(
-        "- hello test.txt was created"
+      expect((changeInfo as McpContentText).text).toContain(
+        '- hello test.txt was created'
       );
 
       // Find the resource
-      const resource = result.content.find((item) => item.type === "resource");
+      const resource = result.content.find((item) => item.type === 'resource');
       expect(resource).toBeDefined();
-      expect((resource as any).resource.mimeType).toBe("text/plain");
-      expect((resource as any).resource.uri).toContain("hello%20test.txt");
-      expect((resource as any).resource.uri).toContain("file://");
-      expect((resource as any).resource.text).toBe("hello test.txt");
+      expect((resource as McpContentResource).resource.mimeType).toBe(
+        'text/plain'
+      );
+      expect((resource as McpContentResource).resource.uri).toContain(
+        'hello%20test.txt'
+      );
+      expect((resource as McpContentResource).resource.uri).toContain(
+        'file://'
+      );
+      if ('text' in (resource as McpContentResource).resource) {
+        expect((resource as McpContentTextResource).resource.text).toBe(
+          'hello test.txt'
+        );
+      } else {
+        throw new Error("Expected resource to have a 'text' property");
+      }
 
       // Find telemetry info
       const telemetry = result.content.find(
-        (item) => item.type === "text" && item.text.startsWith("Telemetry:")
+        (item) => item.type === 'text' && item.text.startsWith('Telemetry:')
       );
       expect(telemetry).toBeDefined();
-      expect((telemetry as any).text).toContain('"installTimeMs"');
-      expect((telemetry as any).text).toContain('"runTimeMs"');
+      expect((telemetry as McpContentText).text).toContain('"installTimeMs"');
+      expect((telemetry as McpContentText).text).toContain('"runTimeMs"');
     });
   }, 10_000);
 
-  describe("runJsEphemeral error handling", () => {
-    it("should reject when the code throws an exception", async () => {
+  describe('runJsEphemeral error handling', () => {
+    it('should reject when the code throws an exception', async () => {
       await expect(
         runJsEphemeral({ code: "throw new Error('Test error');" })
-      ).rejects.toThrow("Test error");
+      ).rejects.toThrow('Test error');
     });
   });
 
-  describe("runJsEphemeral multiple file outputs", () => {
-    it("should handle saving both text and JPEG files correctly", async () => {
+  describe('runJsEphemeral multiple file outputs', () => {
+    it('should handle saving both text and JPEG files correctly', async () => {
       const base64 =
-        "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxISEhUSEhIVFhUVFRUVFRUVFRUVFRUVFRUWFhUVFRUYHSggGBolGxUVITEhJSkrLi4uFx8zODMsNygtLisBCgoKDg0OGhAQGy0lHyYtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLf/AABEIAJ8BPgMBIgACEQEDEQH/xAAbAAACAwEBAQAAAAAAAAAAAAAEBgIDBQABB//EADkQAAIBAgQDBgQEBQUBAAAAAAECAwQRAAUSITFBBhTiUWEHFDJxgZEjQrHB0RUjYnLw8RUz/8QAGQEAAgMBAAAAAAAAAAAAAAAAAwQBAgAF/8QAJBEAAgEEAgEFAAAAAAAAAAAAAQIDBBESITFBBRMiUYGh/9oADAMBAAIRAxEAPwD9YKKKAP/Z";
+        '/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxISEhUSEhIVFhUVFRUVFRUVFRUVFRUVFRUWFhUVFRUYHSggGBolGxUVITEhJSkrLi4uFx8zODMsNygtLisBCgoKDg0OGhAQGy0lHyYtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLf/AABEIAJ8BPgMBIgACEQEDEQH/xAAbAAACAwEBAQAAAAAAAAAAAAAEBgIDBQABB//EADkQAAIBAgQDBgQEBQUBAAAAAAECAwQRAAUSITFBBhTiUWEHFDJxgZEjQrHB0RUjYnLw8RUz/8QAGQEAAgMBAAAAAAAAAAAAAAAAAwQBAgAF/8QAJBEAAgEEAgEFAAAAAAAAAAAAAQIDBBESITFBBRMiUYGh/9oADAMBAAIRAxEAPwD9YKKKAP/Z';
 
       const result = await runJsEphemeral({
         code: `
@@ -209,33 +231,33 @@ describe("runJsEphemeral", () => {
       // stdout
       const stdout = result.content.find(
         (c) =>
-          c.type === "text" &&
-          c.text.includes("Done writing foo.txt and bar.jpg")
+          c.type === 'text' &&
+          c.text.includes('Done writing foo.txt and bar.jpg')
       );
       expect(stdout).toBeDefined();
-      expect((stdout as any).text).toContain(
-        "Done writing foo.txt and bar.jpg"
+      expect((stdout as McpContentText).text).toContain(
+        'Done writing foo.txt and bar.jpg'
       );
 
       // resource names (foo.txt and bar.jpg)
       const savedResourceNames = result.content
-        .filter((c) => c.type === "resource")
-        .map((c) => (c as any).resource.text);
+        .filter((c) => c.type === 'resource')
+        .map((c) => (c as McpContentTextResource).resource.text);
 
       expect(savedResourceNames).toEqual(
-        expect.arrayContaining(["foo.txt", "bar.jpg"])
+        expect.arrayContaining(['foo.txt', 'bar.jpg'])
       );
 
       // JPEG image check
       const jpegImage = result.content.find(
-        (c) => c.type === "image" && c.mimeType === "image/jpeg"
+        (c) => c.type === 'image' && c.mimeType === 'image/jpeg'
       );
       expect(jpegImage).toBeDefined();
     });
   });
 
-  describe("runJsEphemeral screenshot with Playwright", () => {
-    it("should take a screenshot of example.com using Playwright and the Playwright image", async () => {
+  describe('runJsEphemeral screenshot with Playwright', () => {
+    it('should take a screenshot of example.com using Playwright and the Playwright image', async () => {
       const result = await runJsEphemeral({
         code: `
           import { chromium } from 'playwright';
@@ -251,11 +273,11 @@ describe("runJsEphemeral", () => {
         `,
         dependencies: [
           {
-            name: "playwright",
-            version: "^1.52.0",
+            name: 'playwright',
+            version: '^1.52.0',
           },
         ],
-        image: "mcr.microsoft.com/playwright:v1.52.0-noble",
+        image: 'mcr.microsoft.com/playwright:v1.52.0-noble',
       });
 
       expect(result).toBeDefined();
@@ -263,14 +285,14 @@ describe("runJsEphemeral", () => {
 
       // stdout check
       const output = result.content.find(
-        (item) => item.type === "text" && item.text.includes("Screenshot saved")
+        (item) => item.type === 'text' && item.text.includes('Screenshot saved')
       );
       expect(output).toBeDefined();
-      expect((output as any).text).toContain("Screenshot saved");
+      expect((output as McpContentText).text).toContain('Screenshot saved');
 
       // PNG image resource check
       const image = result.content.find(
-        (item) => item.type === "image" && item.mimeType === "image/png"
+        (item) => item.type === 'image' && item.mimeType === 'image/png'
       );
       expect(image).toBeDefined();
     }, 15_000);
@@ -278,10 +300,12 @@ describe("runJsEphemeral", () => {
 
   // Skipping this on the CI as it requires a lot of resources
   // and an image that is not available in the CI environment
-  describeIfLocal("runJsEphemeral generate charts", () => {
-    it("should correctly generate a chart", async () => {
-      const result = await runJsEphemeral({
-        code: `
+  describeIfLocal(
+    'runJsEphemeral generate charts',
+    () => {
+      it('should correctly generate a chart', async () => {
+        const result = await runJsEphemeral({
+          code: `
           import { ChartJSNodeCanvas } from 'chartjs-node-canvas';
           import fs from 'fs';
   
@@ -341,58 +365,58 @@ describe("runJsEphemeral", () => {
   
           generateChart();
         `,
-        image: "alfonsograziano/node-chartjs-canvas:latest",
+          image: 'alfonsograziano/node-chartjs-canvas:latest',
+        });
+
+        expect(result).toBeDefined();
+        expect(result.content).toBeDefined();
+
+        const output = result.content.find(
+          (item) =>
+            item.type === 'text' &&
+            typeof item.text === 'string' &&
+            item.text.includes('Chart saved as chart.png')
+        );
+        expect(output).toBeDefined();
+        expect((output as { type: 'text'; text: string }).text).toContain(
+          'Chart saved as chart.png'
+        );
+
+        const image = result.content.find(
+          (item) =>
+            item.type === 'image' &&
+            'mimeType' in item &&
+            item.mimeType === 'image/png'
+        );
+        expect(image).toBeDefined();
+        expect((image as McpContentImage).mimeType).toBe('image/png');
       });
 
-      expect(result).toBeDefined();
-      expect(result.content).toBeDefined();
-
-      const output = result.content.find(
-        (item) =>
-          item.type === "text" &&
-          typeof item.text === "string" &&
-          item.text.includes("Chart saved as chart.png")
-      );
-      expect(output).toBeDefined();
-      expect((output as { type: "text"; text: string }).text).toContain(
-        "Chart saved as chart.png"
-      );
-
-      const image = result.content.find(
-        (item) =>
-          item.type === "image" &&
-          "mimeType" in item &&
-          item.mimeType === "image/png"
-      );
-      expect(image).toBeDefined();
-      expect((image as { type: "image"; mimeType: string }).mimeType).toBe(
-        "image/png"
-      );
-    });
-
-    it("should still be able to add new dependencies with the node-chartjs-canvas image", async () => {
-      const result = await runJsEphemeral({
-        code: `
+      it('should still be able to add new dependencies with the node-chartjs-canvas image', async () => {
+        const result = await runJsEphemeral({
+          code: `
           import _ from 'lodash';
           console.log('_.chunk([1,2,3,4,5], 2):', _.chunk([1,2,3,4,5], 2));
         `,
-        dependencies: [{ name: "lodash", version: "^4.17.21" }],
-        image: "alfonsograziano/node-chartjs-canvas:latest",
+          dependencies: [{ name: 'lodash', version: '^4.17.21' }],
+          image: 'alfonsograziano/node-chartjs-canvas:latest',
+        });
+
+        expect(result).toBeDefined();
+        expect(result.content).toBeDefined();
+
+        const output = result.content.find(
+          (item) =>
+            item.type === 'text' &&
+            typeof item.text === 'string' &&
+            item.text.includes('[ [ 1, 2 ], [ 3, 4 ], [ 5 ] ]')
+        );
+        expect(output).toBeDefined();
+        expect((output as McpContentText).text).toContain(
+          '[ [ 1, 2 ], [ 3, 4 ], [ 5 ] ]'
+        );
       });
-
-      expect(result).toBeDefined();
-      expect(result.content).toBeDefined();
-
-      const output = result.content.find(
-        (item) =>
-          item.type === "text" &&
-          typeof item.text === "string" &&
-          item.text.includes("[ [ 1, 2 ], [ 3, 4 ], [ 5 ] ]")
-      );
-      expect(output).toBeDefined();
-      expect((output as { type: "text"; text: string }).text).toContain(
-        "[ [ 1, 2 ], [ 3, 4 ], [ 5 ] ]"
-      );
-    });
-  }, 50_000);
+    },
+    50_000
+  );
 });

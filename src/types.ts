@@ -1,32 +1,49 @@
+export type McpContentText = {
+  type: 'text';
+  text: string;
+};
+
+export type McpContentImage = {
+  type: 'image';
+  data: string;
+  mimeType: string;
+};
+
+export type McpContentAudio = {
+  type: 'audio';
+  data: string;
+  mimeType: string;
+};
+
+export type McpContentTextResource = {
+  type: 'resource';
+  resource: {
+    text: string;
+    uri: string;
+    mimeType?: string;
+  };
+};
+
+export type McpContentResource = {
+  type: 'resource';
+  resource:
+    | {
+        text: string;
+        uri: string;
+        mimeType?: string;
+      }
+    | {
+        uri: string;
+        blob: string;
+        mimeType?: string;
+      };
+};
+
 export type McpContent =
-  | {
-      type: "text";
-      text: string;
-    }
-  | {
-      type: "image";
-      data: string;
-      mimeType: string;
-    }
-  | {
-      type: "audio";
-      data: string;
-      mimeType: string;
-    }
-  | {
-      type: "resource";
-      resource:
-        | {
-            text: string;
-            uri: string;
-            mimeType?: string;
-          }
-        | {
-            uri: string;
-            blob: string;
-            mimeType?: string;
-          };
-    };
+  | McpContentText
+  | McpContentImage
+  | McpContentAudio
+  | McpContentResource;
 
 export type McpResponse = {
   content: McpContent[];
@@ -35,6 +52,6 @@ export type McpResponse = {
 };
 
 export const textContent = (text: string): McpContent => ({
-  type: "text",
+  type: 'text',
   text,
 });

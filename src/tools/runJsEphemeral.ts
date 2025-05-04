@@ -1,26 +1,26 @@
-import { z } from "zod";
-import { execSync } from "child_process";
-import tmp from "tmp";
-import { randomUUID } from "crypto";
-import { McpResponse, textContent } from "../types.js";
+import { z } from 'zod';
+import { execSync } from 'child_process';
+import tmp from 'tmp';
+import { randomUUID } from 'crypto';
+import { McpResponse, textContent } from '../types.js';
 import {
   DEFAULT_NODE_IMAGE,
   DOCKER_NOT_RUNNING_ERROR,
   generateSuggestedImages,
   isDockerRunning,
   preprocessDependencies,
-} from "../utils.js";
-import { prepareWorkspace, getFilesDir } from "../runUtils.js";
+} from '../utils.js';
+import { prepareWorkspace, getFilesDir } from '../runUtils.js';
 import {
   changesToMcpContent,
   detectChanges,
   getSnapshot,
   getMountPointDir,
-} from "../snapshotUtils.js";
+} from '../snapshotUtils.js';
 
 const NodeDependency = z.object({
-  name: z.string().describe("npm package name, e.g. lodash"),
-  version: z.string().describe("npm package version range, e.g. ^4.17.21"),
+  name: z.string().describe('npm package name, e.g. lodash'),
+  version: z.string().describe('npm package version range, e.g. ^4.17.21'),
 });
 
 export const argSchema = {
@@ -29,7 +29,7 @@ export const argSchema = {
     .optional()
     .default(DEFAULT_NODE_IMAGE)
     .describe(
-      "Docker image to use for ephemeral execution. e.g. " +
+      'Docker image to use for ephemeral execution. e.g. ' +
         generateSuggestedImages()
     ),
   // We use an array of { name, version } items instead of a record
@@ -41,13 +41,13 @@ export const argSchema = {
     .array(NodeDependency)
     .default([])
     .describe(
-      "A list of npm dependencies to install before running the code. " +
-        "Each item must have a `name` (package) and `version` (range). " +
-        "If none, returns an empty array."
+      'A list of npm dependencies to install before running the code. ' +
+        'Each item must have a `name` (package) and `version` (range). ' +
+        'If none, returns an empty array.'
     ),
   code: z
     .string()
-    .describe("JavaScript code to run inside the ephemeral container."),
+    .describe('JavaScript code to run inside the ephemeral container.'),
 };
 
 type NodeDependenciesArray = Array<{ name: string; version: string }>;
@@ -67,7 +67,7 @@ export default async function runJsEphemeral({
     };
   }
 
-  const telemetry: Record<string, any> = {};
+  const telemetry: Record<string, unknown> = {};
 
   const dependenciesRecord = preprocessDependencies({
     dependencies,
@@ -105,7 +105,7 @@ export default async function runJsEphemeral({
     const installStart = Date.now();
     const installOutput = execSync(
       `docker exec ${containerId} /bin/sh -c ${JSON.stringify(installCmd)}`,
-      { encoding: "utf8" }
+      { encoding: 'utf8' }
     );
     telemetry.installTimeMs = Date.now() - installStart;
     telemetry.installOutput = installOutput;
@@ -113,7 +113,7 @@ export default async function runJsEphemeral({
     const runStart = Date.now();
     const rawOutput = execSync(
       `docker exec ${containerId} /bin/sh -c ${JSON.stringify(runCmd)}`,
-      { encoding: "utf8" }
+      { encoding: 'utf8' }
     );
     telemetry.runTimeMs = Date.now() - runStart;
 

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import * as tmp from "tmp";
 import { execSync } from "node:child_process";
 import runJs from "../src/tools/runJs";

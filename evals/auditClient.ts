@@ -1,6 +1,6 @@
-import { OpenAI } from "openai";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { OpenAI } from 'openai';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
 /**
  * Settings for the OpenAIAuditClient
@@ -24,7 +24,7 @@ export class OpenAIAuditClient {
     const { apiKey, model } = settings;
     this.openai = new OpenAI({ apiKey });
     this.model = model;
-    this.client = new Client({ name: "node_js_sandbox", version: "1.0.0" });
+    this.client = new Client({ name: 'node_js_sandbox', version: '1.0.0' });
   }
 
   /**
@@ -34,25 +34,25 @@ export class OpenAIAuditClient {
     const userOutputDir = process.env.FILES_DIR;
     await this.client.connect(
       new StdioClientTransport({
-        command: "docker",
+        command: 'docker',
         args: [
-          "run",
-          "-i",
-          "--rm",
-          "-v",
-          "/var/run/docker.sock:/var/run/docker.sock",
-          "-v",
+          'run',
+          '-i',
+          '--rm',
+          '-v',
+          '/var/run/docker.sock:/var/run/docker.sock',
+          '-v',
           `${userOutputDir}:/root`,
-          "-e",
+          '-e',
           `FILES_DIR=${userOutputDir}`,
-          "alfonsograziano/node-code-sandbox-mcp",
+          'alfonsograziano/node-code-sandbox-mcp',
         ],
       })
     );
 
     const { tools } = await this.client.listTools();
     this.availableTools = tools.map((tool) => ({
-      type: "function",
+      type: 'function',
       function: {
         parameters: tool.inputSchema,
         ...tool,
@@ -66,14 +66,14 @@ export class OpenAIAuditClient {
    * @param requestOptions - Includes messages to send
    */
   public async chat(
-    requestOptions: Omit<OpenAI.Chat.ChatCompletionCreateParams, "model">
+    requestOptions: Omit<OpenAI.Chat.ChatCompletionCreateParams, 'model'>
   ): Promise<{
     responses: OpenAI.Chat.Completions.ChatCompletion[];
     messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[];
     toolRuns: Array<{
       toolName: string;
       toolCallId: string;
-      params: any;
+      params: unknown;
       durationMs: number;
     }>;
   }> {
@@ -82,7 +82,7 @@ export class OpenAIAuditClient {
     const toolRuns: Array<{
       toolName: string;
       toolCallId: string;
-      params: any;
+      params: unknown;
       durationMs: number;
     }> = [];
     let interactionCount = 0;
@@ -93,7 +93,7 @@ export class OpenAIAuditClient {
         model: this.model,
         messages,
         tools: this.availableTools,
-        tool_choice: "auto",
+        tool_choice: 'auto',
       });
       responses.push(response);
       const message = response.choices[0].message;
@@ -102,7 +102,7 @@ export class OpenAIAuditClient {
       if (message.tool_calls) {
         for (const toolCall of message.tool_calls) {
           const functionName = toolCall.function.name;
-          const params = JSON.parse(toolCall.function.arguments || "{}");
+          const params = JSON.parse(toolCall.function.arguments || '{}');
           const start = Date.now();
           const result = await this.client.callTool({
             name: functionName,
@@ -119,7 +119,7 @@ export class OpenAIAuditClient {
           });
 
           messages.push({
-            role: "tool",
+            role: 'tool',
             tool_call_id: toolCall.id,
             content: JSON.stringify(result),
           });

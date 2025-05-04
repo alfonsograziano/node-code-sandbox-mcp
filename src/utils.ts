@@ -12,6 +12,7 @@ export function isRunningInDocker() {
       return true;
     }
   } catch (err) {
+    console.log(err)
     // unreadable or missing → assume “not”
   }
 
@@ -90,6 +91,7 @@ export function isDockerRunning() {
   try {
     execSync("docker info");
     return true;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     return false;
   }
