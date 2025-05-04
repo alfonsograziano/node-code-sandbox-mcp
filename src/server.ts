@@ -38,7 +38,10 @@ server.tool(
 
 server.tool(
   'run_js',
-  'Install npm dependencies and run JavaScript code inside a running sandbox container. After running, you must manually stop the sandbox to free resources. The code must be valid ESModules (import/export syntax). Best for complex workflows where you want to reuse the environment across multiple executions.',
+  `Install npm dependencies and run JavaScript code inside a running sandbox container.
+  After running, you must manually stop the sandbox to free resources.
+  The code must be valid ESModules (import/export syntax). Best for complex workflows where you want to reuse the environment across multiple executions.
+  When reading and writing from the Node.js processes, you always need to read from and write to the "./files" directory to ensure persistence on the mounted volume.`,
   runJsSchema,
   runJs
 );
@@ -52,17 +55,18 @@ server.tool(
 
 server.tool(
   'run_js_ephemeral',
-  'Run a JavaScript snippet in a temporary disposable container with optional npm dependencies, then automatically clean up. ' +
-    'The code must be valid ESModules (import/export syntax). Ideal for simple one-shot executions without maintaining a sandbox or managing cleanup manually. ' +
-    'If your script saves files in the current directory, these files will be returned automatically as part of the result. ' +
-    'This includes images (e.g., PNG, JPEG) and other files (e.g., text, JSON, binaries).\n\n' +
-    'Example:\n\n' +
-    '```js\n' +
-    'import fs from "fs/promises";\n\n' +
-    'await fs.writeFile("hello.txt", "Hello world!");\n' +
-    'console.log("Saved hello.txt");\n' +
-    '```\n\n' +
-    'In this example, the tool will return the console output **and** the `hello.txt` file as resource.',
+  `Run a JavaScript snippet in a temporary disposable container with optional npm dependencies, then automatically clean up. 
+  The code must be valid ESModules (import/export syntax). Ideal for simple one-shot executions without maintaining a sandbox or managing cleanup manually.
+  When reading and writing from the Node.js processes, you always need to read from and write to the "./files" directory to ensure persistence on the mounted volume.
+  This includes images (e.g., PNG, JPEG) and other files (e.g., text, JSON, binaries).
+
+  Example:
+  \`\`\`js
+  import fs from "fs/promises";
+  await fs.writeFile("./files/hello.txt", "Hello world!");
+  console.log("Saved ./files/hello.txt");
+  \`\`\`
+`,
   ephemeralSchema,
   runJsEphemeral
 );
