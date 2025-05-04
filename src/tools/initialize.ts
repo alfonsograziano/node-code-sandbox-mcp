@@ -7,6 +7,7 @@ import {
   DOCKER_NOT_RUNNING_ERROR,
   isDockerRunning,
 } from "../utils.js";
+import { getFilesDir } from "../runUtils.js";
 
 export const argSchema = {
   image: z.string().optional(),
@@ -35,7 +36,8 @@ export default async function initializeSandbox({
 
   execSync(
     `docker run -d ${portOption} --memory 512m --cpus 1 ` +
-      `--workdir /workspace --name ${container} ${image} tail -f /dev/null`
+      `--workdir /workspace -v ${getFilesDir()}:/workspace/files ` +
+      `--name ${container} ${image} tail -f /dev/null`
   );
   return {
     content: [textContent(container)],
