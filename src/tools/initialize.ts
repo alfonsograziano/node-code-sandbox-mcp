@@ -8,7 +8,8 @@ import {
   isDockerRunning,
 } from '../utils.js';
 import { getFilesDir } from '../runUtils.js';
-import { serverRunId, activeSandboxContainers } from '../server.js';
+import { activeSandboxContainers } from '../containerUtils.js';
+import { serverRunId } from '../server.js';
 
 export const argSchema = {
   image: z.string().optional(),

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { McpResponse, textContent } from '../types.js';
 import { DOCKER_NOT_RUNNING_ERROR, isDockerRunning } from '../utils.js';
 import { forceStopContainer as dockerForceStopContainer } from '../dockerUtils.js';
-import { activeSandboxContainers } from '../server.js';
+import { activeSandboxContainers } from '../containerUtils.js';
 
 export const argSchema = { container_id: z.string() };
 

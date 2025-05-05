@@ -18,38 +18,21 @@ import fs from 'fs/promises';
 import { z } from 'zod';
 import { forceStopContainer as dockerForceStopContainer } from './dockerUtils.js';
 import { config } from './config.js';
+import { activeSandboxContainers, startScavenger } from './containerUtils.js';
 
 export const serverRunId = randomUUID();
-export const activeSandboxContainers = new Map<string, number>();
 
-const scavengerInterval = setInterval(() => {
-  const now = Date.now();
-  console.log(
-    `[Scavenger] Checking ${activeSandboxContainers.size} active containers for timeout (${config.containerTimeoutSeconds}s)...`
-  );
-  for (const [
-    containerId,
-    creationTimestamp,
-  ] of activeSandboxContainers.entries()) {
-    if (now - creationTimestamp > config.containerTimeoutMilliseconds) {
-      console.warn(
-        `[Scavenger] Container ${containerId} timed out. Forcing removal.`
-      );
-      dockerForceStopContainer(containerId).then(() => {
-        activeSandboxContainers.delete(containerId);
-        console.log(
-          `[Scavenger] Removed container ${containerId} from registry.`
-        );
-      });
-    }
-  }
-}, 60 * 1000);
+const scavengerIntervalHandle = startScavenger(
+  config.containerTimeoutMilliseconds,
+  config.containerTimeoutSeconds
+);
 
 async function gracefulShutdown(signal: string) {
   console.log(`
 Received ${signal}. Starting graceful shutdown...`);
 
-  clearInterval(scavengerInterval);
+  clearInterval(scavengerIntervalHandle);
+  console.log('Stopped container scavenger.');
 
   const containersToClean = Array.from(activeSandboxContainers.keys());
   if (containersToClean.length > 0) {
