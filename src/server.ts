@@ -4,8 +4,6 @@ import {
 } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { randomUUID } from 'crypto';
-import { exec } from 'child_process';
-import util from 'util';
 import initializeSandbox, {
   argSchema as initializeSchema,
 } from './tools/initialize.js';
@@ -18,8 +16,7 @@ import runJsEphemeral, {
 import mime from 'mime-types';
 import fs from 'fs/promises';
 import { z } from 'zod';
-
-const execPromise = util.promisify(exec);
+import { forceStopContainer as dockerForceStopContainer } from './dockerUtils.js';
 
 export const serverRunId = randomUUID();
 export const activeSandboxContainers = new Map<string, number>();
@@ -31,27 +28,6 @@ const containerTimeoutSeconds = parseInt(
 const containerTimeoutMilliseconds = isNaN(containerTimeoutSeconds)
   ? 3600 * 1000
   : containerTimeoutSeconds * 1000;
-
-export async function forceStopContainer(containerId: string): Promise<void> {
-  console.log(`Attempting to stop and remove container: ${containerId}`);
-  try {
-    await execPromise(`docker stop ${containerId} || true`);
-    await execPromise(`docker rm -f ${containerId} || true`);
-    console.log(`Successfully stopped and removed container: ${containerId}`);
-  } catch (error) {
-    console.error(
-      `Error during forced stop/remove of container ${containerId}:`,
-      typeof error === 'object' &&
-        error !== null &&
-        ('stderr' in error || 'message' in error)
-        ? (error as { stderr?: string; message?: string }).stderr ||
-            (error as { message: string }).message
-        : String(error)
-    );
-  } finally {
-    activeSandboxContainers.delete(containerId);
-  }
-}
 
 const scavengerInterval = setInterval(() => {
   const now = Date.now();
@@ -66,7 +42,12 @@ const scavengerInterval = setInterval(() => {
       console.warn(
         `[Scavenger] Container ${containerId} timed out. Forcing removal.`
       );
-      forceStopContainer(containerId);
+      dockerForceStopContainer(containerId).then(() => {
+        activeSandboxContainers.delete(containerId);
+        console.log(
+          `[Scavenger] Removed container ${containerId} from registry.`
+        );
+      });
     }
   }
 }, 60 * 1000);
@@ -80,9 +61,11 @@ Received ${signal}. Starting graceful shutdown...`);
   const containersToClean = Array.from(activeSandboxContainers.keys());
   if (containersToClean.length > 0) {
     console.log(`Cleaning up ${containersToClean.length} active containers...`);
-    const cleanupPromises = containersToClean.map((id) =>
-      forceStopContainer(id)
-    );
+    const cleanupPromises = containersToClean.map(async (id) => {
+      await dockerForceStopContainer(id);
+      activeSandboxContainers.delete(id);
+      console.log(`[Shutdown] Removed container ${id} from registry.`);
+    });
     await Promise.allSettled(cleanupPromises);
     console.log('Container cleanup finished.');
   } else {

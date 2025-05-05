@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { McpResponse, textContent } from '../types.js';
 import { DOCKER_NOT_RUNNING_ERROR, isDockerRunning } from '../utils.js';
-import { forceStopContainer } from '../server.js';
+import { forceStopContainer as dockerForceStopContainer } from '../dockerUtils.js';
+import { activeSandboxContainers } from '../server.js';
 
 export const argSchema = { container_id: z.string() };
 
@@ -16,7 +17,9 @@ export default async function stopSandbox({
     };
   }
 
-  await forceStopContainer(container_id);
+  await dockerForceStopContainer(container_id);
+  activeSandboxContainers.delete(container_id);
+  console.log(`[stopSandbox] Removed container ${container_id} from registry.`);
 
   return {
     content: [textContent(`Container ${container_id} stop requested.`)],
