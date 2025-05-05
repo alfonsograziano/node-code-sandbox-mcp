@@ -61,3 +61,48 @@ export function startScavenger(
 
   return scavengerInterval;
 }
+
+/**
+ * Attempts to stop and remove all containers currently listed in the
+ * activeSandboxContainers registry.
+ * Should be called during graceful shutdown.
+ */
+export async function cleanActiveContainers(): Promise<void> {
+  const containersToClean = Array.from(activeSandboxContainers.keys());
+
+  if (containersToClean.length === 0) {
+    console.log('[Shutdown Cleanup] No active containers to clean up.');
+    return;
+  }
+
+  console.log(
+    `[Shutdown Cleanup] Cleaning up ${containersToClean.length} active containers...`
+  );
+
+  const cleanupPromises = containersToClean.map(async (id) => {
+    try {
+      await dockerForceStopContainer(id); // Attempt to stop/remove via Docker
+    } catch (error) {
+      // Log error but continue, registry removal happens regardless
+      console.error(
+        `[Shutdown Cleanup] Error stopping container ${id}:`,
+        error
+      );
+    } finally {
+      activeSandboxContainers.delete(id); // Always remove from registry
+      console.log(`[Shutdown Cleanup] Removed container ${id} from registry.`);
+    }
+  });
+
+  const results = await Promise.allSettled(cleanupPromises);
+  console.log('[Shutdown Cleanup] Container cleanup finished.');
+
+  results.forEach((result, index) => {
+    if (result.status === 'rejected') {
+      console.error(
+        `[Shutdown Cleanup] Promise for container ${containersToClean[index]} rejected:`,
+        result.reason
+      );
+    }
+  });
+}

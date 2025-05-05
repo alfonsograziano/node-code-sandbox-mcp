@@ -16,9 +16,8 @@ import runJsEphemeral, {
 import mime from 'mime-types';
 import fs from 'fs/promises';
 import { z } from 'zod';
-import { forceStopContainer as dockerForceStopContainer } from './dockerUtils.js';
 import { config } from './config.js';
-import { activeSandboxContainers, startScavenger } from './containerUtils.js';
+import { startScavenger, cleanActiveContainers } from './containerUtils.js';
 
 export const serverRunId = randomUUID();
 
@@ -34,19 +33,7 @@ Received ${signal}. Starting graceful shutdown...`);
   clearInterval(scavengerIntervalHandle);
   console.log('Stopped container scavenger.');
 
-  const containersToClean = Array.from(activeSandboxContainers.keys());
-  if (containersToClean.length > 0) {
-    console.log(`Cleaning up ${containersToClean.length} active containers...`);
-    const cleanupPromises = containersToClean.map(async (id) => {
-      await dockerForceStopContainer(id);
-      activeSandboxContainers.delete(id);
-      console.log(`[Shutdown] Removed container ${id} from registry.`);
-    });
-    await Promise.allSettled(cleanupPromises);
-    console.log('Container cleanup finished.');
-  } else {
-    console.log('No active containers to clean up.');
-  }
+  await cleanActiveContainers();
 
   setTimeout(() => {
     console.log('Exiting.');
