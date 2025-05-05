@@ -1,7 +1,13 @@
 {
-  "name": "js-sandbox-mcp",
+  "name": "node-code-sandbox-mcp",
   "version": "0.1.0",
   "type": "module",
+  "bin": {
+    "node-code-sandbox-mcp": "dist/server.js"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "tsx src/server.ts",
     "dev:evals": "tsx evals/index.ts",
@@ -11,7 +17,8 @@
     "test:coverage": "vitest --coverage",
     "inspector": "npx @modelcontextprotocol/inspector npm run dev",
     "lint": "eslint . --ext .ts --report-unused-disable-directives --max-warnings 0",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.10.2",
