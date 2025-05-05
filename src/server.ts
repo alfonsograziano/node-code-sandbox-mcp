@@ -6,6 +6,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { randomUUID } from 'crypto';
 import initializeSandbox, {
   argSchema as initializeSchema,
+  setServerRunId,
 } from './tools/initialize.js';
 import execInSandbox, { argSchema as execSchema } from './tools/exec.js';
 import runJs, { argSchema as runJsSchema } from './tools/runJs.js';
@@ -20,6 +21,7 @@ import { config } from './config.js';
 import { startScavenger, cleanActiveContainers } from './containerUtils.js';
 
 export const serverRunId = randomUUID();
+setServerRunId(serverRunId);
 
 const scavengerIntervalHandle = startScavenger(
   config.containerTimeoutMilliseconds,

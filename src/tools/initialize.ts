@@ -9,7 +9,14 @@ import {
 } from '../utils.js';
 import { getFilesDir } from '../runUtils.js';
 import { activeSandboxContainers } from '../containerUtils.js';
-import { serverRunId } from '../server.js';
+
+// Instead of importing serverRunId directly, we'll have a variable that gets set
+let serverRunId = 'unknown';
+
+// Function to set the serverRunId from the server.ts file
+export function setServerRunId(id: string) {
+  serverRunId = id;
+}
 
 export const argSchema = {
   image: z.string().optional(),

@@ -2,20 +2,27 @@ import { existsSync, readFileSync } from 'fs';
 import { execSync } from 'node:child_process';
 
 export function isRunningInDocker() {
-  // 1. The “/.dockerenv” sentinel file
+  // 1. The "/.dockerenv" sentinel file
   if (existsSync('/.dockerenv')) return true;
 
-  // 2. cgroup data often embeds “docker” or “kubepods”
+  // 2. cgroup data often embeds "docker" or "kubepods"
   try {
-    const cgroup = readFileSync('/proc/1/cgroup', 'utf8');
-    if (cgroup.includes('docker') || cgroup.includes('kubepods')) {
-      return true;
+    if (existsSync('/proc/1/cgroup')) {
+      const cgroup = readFileSync('/proc/1/cgroup', 'utf8');
+      if (cgroup.includes('docker') || cgroup.includes('kubepods')) {
+        return true;
+      }
     }
-  } catch (err) {
-    console.log(err);
-    // unreadable or missing → assume “not”
+  } catch {
+    // unreadable or missing → assume "not"
   }
 
+  // 3. Check for environment variables commonly set in Docker
+  if (process.env.DOCKER_CONTAINER || process.env.DOCKER_ENV) {
+    return true;
+  }
+
+  // On macOS or Windows for tests, just return false
   return false;
 }
 
