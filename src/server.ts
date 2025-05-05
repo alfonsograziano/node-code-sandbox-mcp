@@ -128,7 +128,9 @@ server.prompt('run-node-js-script', { prompt: z.string() }, ({ prompt }) => ({
         text:
           `Here is my prompt:\n\n${prompt}\n\n` +
           `Follow modern Node.js best practices:\n` +
+          // I've noticed that gpt4o-mini tends to use CommonJS
           `- Use ECMAScript Modules (ESM) syntax (import/export), avoid CommonJS (require/module.exports)\n` +
+          // gpt4o-mini tends to try to install node-fetch
           `- Use native fetch, avoid node-fetch or axios unless absolutely necessary or requested\n` +
           `- Prefer top-level await in ES modules when appropriate\n` +
           `- Use async/await consistently for asynchronous code, avoid mixing with .then/.catch\n` +
