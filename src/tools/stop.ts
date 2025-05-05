@@ -17,12 +17,33 @@ export default async function stopSandbox({
     };
   }
 
-  // Directly use execSync for removing the container as expected by the test
-  execSync(`docker rm -f ${container_id}`);
-  activeSandboxContainers.delete(container_id);
-  console.log(`[stopSandbox] Removed container ${container_id} from registry.`);
+  try {
+    // Directly use execSync for removing the container as expected by the test
+    execSync(`docker rm -f ${container_id}`);
+    activeSandboxContainers.delete(container_id);
+    console.log(
+      `[stopSandbox] Removed container ${container_id} from registry.`
+    );
 
-  return {
-    content: [textContent(`Container ${container_id} removed.`)],
-  };
+    return {
+      content: [textContent(`Container ${container_id} removed.`)],
+    };
+  } catch (error) {
+    // Handle any errors that occur during container removal
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(
+      `[stopSandbox] Error removing container ${container_id}: ${errorMessage}`
+    );
+
+    // Still remove from our registry even if Docker command failed
+    activeSandboxContainers.delete(container_id);
+
+    return {
+      content: [
+        textContent(
+          `Error removing container ${container_id}: ${errorMessage}`
+        ),
+      ],
+    };
+  }
 }
