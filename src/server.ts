@@ -3,8 +3,10 @@ import {
   ResourceTemplate,
 } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { randomUUID } from 'crypto';
 import initializeSandbox, {
   argSchema as initializeSchema,
+  setServerRunId,
 } from './tools/initialize.js';
 import execInSandbox, { argSchema as execSchema } from './tools/exec.js';
 import runJs, { argSchema as runJsSchema } from './tools/runJs.js';
@@ -15,6 +17,35 @@ import runJsEphemeral, {
 import mime from 'mime-types';
 import fs from 'fs/promises';
 import { z } from 'zod';
+import { config } from './config.js';
+import { startScavenger, cleanActiveContainers } from './containerUtils.js';
+
+export const serverRunId = randomUUID();
+setServerRunId(serverRunId);
+
+const scavengerIntervalHandle = startScavenger(
+  config.containerTimeoutMilliseconds,
+  config.containerTimeoutSeconds
+);
+
+async function gracefulShutdown(signal: string) {
+  console.log(`
+Received ${signal}. Starting graceful shutdown...`);
+
+  clearInterval(scavengerIntervalHandle);
+  console.log('Stopped container scavenger.');
+
+  await cleanActiveContainers();
+
+  setTimeout(() => {
+    console.log('Exiting.');
+    process.exit(0);
+  }, 500);
+}
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGUSR2', () => gracefulShutdown('SIGUSR2'));
 
 const server = new McpServer({
   name: 'js-sandbox-mcp',
@@ -114,4 +145,9 @@ server.prompt('run-node-js-script', { prompt: z.string() }, ({ prompt }) => ({
 }));
 
 const transport = new StdioServerTransport();
+
+console.log(`Starting MCP server with run ID: ${serverRunId}`);
+console.log(
+  `Container timeout set to: ${config.containerTimeoutSeconds} seconds (${config.containerTimeoutMilliseconds}ms)`
+);
 await server.connect(transport);
