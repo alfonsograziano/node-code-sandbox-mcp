@@ -17,28 +17,21 @@ import mime from 'mime-types';
 import fs from 'fs/promises';
 import { z } from 'zod';
 import { forceStopContainer as dockerForceStopContainer } from './dockerUtils.js';
+import { config } from './config.js';
 
 export const serverRunId = randomUUID();
 export const activeSandboxContainers = new Map<string, number>();
 
-const containerTimeoutSeconds = parseInt(
-  process.env.NODE_CONTAINER_TIMEOUT || '3600',
-  10
-);
-const containerTimeoutMilliseconds = isNaN(containerTimeoutSeconds)
-  ? 3600 * 1000
-  : containerTimeoutSeconds * 1000;
-
 const scavengerInterval = setInterval(() => {
   const now = Date.now();
   console.log(
-    `[Scavenger] Checking ${activeSandboxContainers.size} active containers for timeout (${containerTimeoutSeconds}s)...`
+    `[Scavenger] Checking ${activeSandboxContainers.size} active containers for timeout (${config.containerTimeoutSeconds}s)...`
   );
   for (const [
     containerId,
     creationTimestamp,
   ] of activeSandboxContainers.entries()) {
-    if (now - creationTimestamp > containerTimeoutMilliseconds) {
+    if (now - creationTimestamp > config.containerTimeoutMilliseconds) {
       console.warn(
         `[Scavenger] Container ${containerId} timed out. Forcing removal.`
       );
@@ -180,5 +173,7 @@ server.prompt('run-node-js-script', { prompt: z.string() }, ({ prompt }) => ({
 const transport = new StdioServerTransport();
 
 console.log(`Starting MCP server with run ID: ${serverRunId}`);
-console.log(`Container timeout set to: ${containerTimeoutSeconds} seconds`);
+console.log(
+  `Container timeout set to: ${config.containerTimeoutSeconds} seconds (${config.containerTimeoutMilliseconds}ms)`
+);
 await server.connect(transport);
