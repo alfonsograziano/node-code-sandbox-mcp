@@ -31,16 +31,16 @@ const scavengerIntervalHandle = startScavenger(
 );
 
 async function gracefulShutdown(signal: string) {
-  console.log(`
-Received ${signal}. Starting graceful shutdown...`);
+  //   console.log(`
+  // Received ${signal}. Starting graceful shutdown...`);
 
   clearInterval(scavengerIntervalHandle);
-  console.log('Stopped container scavenger.');
+  // console.log('Stopped container scavenger.');
 
   await cleanActiveContainers();
 
   setTimeout(() => {
-    console.log('Exiting.');
+    // console.log('Exiting.');
     process.exit(0);
   }, 500);
 }
@@ -148,8 +148,8 @@ server.prompt('run-node-js-script', { prompt: z.string() }, ({ prompt }) => ({
 
 const transport = new StdioServerTransport();
 
-console.log(`Starting MCP server with run ID: ${serverRunId}`);
-console.log(
-  `Container timeout set to: ${config.containerTimeoutSeconds} seconds (${config.containerTimeoutMilliseconds}ms)`
-);
+// console.log(`Starting MCP server with run ID: ${serverRunId}`);
+// console.log(
+//   `Container timeout set to: ${config.containerTimeoutSeconds} seconds (${config.containerTimeoutMilliseconds}ms)`
+// );
 await server.connect(transport);
