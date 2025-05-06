@@ -9,9 +9,9 @@
     "dist"
   ],
   "scripts": {
-    "dev": "tsx src/server.ts",
-    "dev:evals": "tsx evals/index.ts",
-    "build": "tsc -p .",
+    "dev": "node src/server.ts",
+    "dev:evals": "node evals/index.ts",
+    "build": "rimraf dist && tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
@@ -40,7 +40,10 @@
     "eslint-config-prettier": "^10.1.2",
     "eslint-plugin-prettier": "^5.2.6",
     "prettier": "^3.5.3",
-    "tsx": "^4.7.0",
-    "typescript": "^5.4.4"
+    "rimraf": "^6.0.1",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=23.10.0"
   }
 }

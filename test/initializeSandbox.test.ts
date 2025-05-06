@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import initializeSandbox from '../src/tools/initialize';
+import initializeSandbox from '../src/tools/initialize.ts';
 import * as childProcess from 'node:child_process';
 import * as crypto from 'node:crypto';
-import * as utils from '../src/utils';
-import * as types from '../src/types';
+import * as utils from '../src/utils.ts';
+import * as types from '../src/types.ts';
 
 vi.mock('node:child_process');
 vi.mock('node:crypto');

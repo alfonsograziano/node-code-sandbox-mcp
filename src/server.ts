@@ -9,18 +9,18 @@ import { randomUUID } from 'crypto';
 import initializeSandbox, {
   argSchema as initializeSchema,
   setServerRunId,
-} from './tools/initialize.js';
-import execInSandbox, { argSchema as execSchema } from './tools/exec.js';
-import runJs, { argSchema as runJsSchema } from './tools/runJs.js';
-import stopSandbox, { argSchema as stopSchema } from './tools/stop.js';
+} from './tools/initialize.ts';
+import execInSandbox, { argSchema as execSchema } from './tools/exec.ts';
+import runJs, { argSchema as runJsSchema } from './tools/runJs.ts';
+import stopSandbox, { argSchema as stopSchema } from './tools/stop.ts';
 import runJsEphemeral, {
   argSchema as ephemeralSchema,
-} from './tools/runJsEphemeral.js';
+} from './tools/runJsEphemeral.ts';
 import mime from 'mime-types';
 import fs from 'fs/promises';
 import { z } from 'zod';
-import { config } from './config.js';
-import { startScavenger, cleanActiveContainers } from './containerUtils.js';
+import { config } from './config.ts';
+import { startScavenger, cleanActiveContainers } from './containerUtils.ts';
 
 export const serverRunId = randomUUID();
 setServerRunId(serverRunId);

@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as tmp from 'tmp';
 import { z } from 'zod';
-import runJs, { argSchema } from '../src/tools/runJs';
-import initializeSandbox from '../src/tools/initialize';
-import stopSandbox from '../src/tools/stop';
+import runJs, { argSchema } from '../src/tools/runJs.ts';
+import initializeSandbox from '../src/tools/initialize.ts';
+import stopSandbox from '../src/tools/stop.ts';
 
 describe('argSchema', () => {
   it('should accept code and container_id and set defaults', () => {

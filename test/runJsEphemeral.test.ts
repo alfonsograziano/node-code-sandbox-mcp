@@ -1,15 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as tmp from 'tmp';
 import { z } from 'zod';
-import runJsEphemeral, { argSchema } from '../src/tools/runJsEphemeral';
-import { DEFAULT_NODE_IMAGE } from '../src/utils';
-import { describeIfLocal } from './utils';
-import {
+import runJsEphemeral, { argSchema } from '../src/tools/runJsEphemeral.ts';
+import { DEFAULT_NODE_IMAGE } from '../src/utils.ts';
+import { describeIfLocal } from './utils.ts';
+import type {
   McpContentImage,
   McpContentResource,
   McpContentText,
   McpContentTextResource,
-} from '../src/types';
+} from '../src/types.ts';
 
 let tmpDir: tmp.DirResult;
 

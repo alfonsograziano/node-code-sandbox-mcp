@@ -1,4 +1,4 @@
-import { forceStopContainer as dockerForceStopContainer } from './dockerUtils.js';
+import { forceStopContainer as dockerForceStopContainer } from './dockerUtils.ts';
 
 // Registry for active sandbox containers: Map<containerId, creationTimestamp>
 export const activeSandboxContainers = new Map<string, number>();

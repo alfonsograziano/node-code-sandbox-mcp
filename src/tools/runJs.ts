@@ -1,18 +1,18 @@
 import { z } from 'zod';
 import { execSync } from 'node:child_process';
-import { McpResponse, textContent } from '../types.js';
-import { prepareWorkspace } from '../runUtils.js';
+import { type McpResponse, textContent } from '../types.ts';
+import { prepareWorkspace } from '../runUtils.ts';
 import {
   DOCKER_NOT_RUNNING_ERROR,
   isDockerRunning,
   waitForPortHttp,
-} from '../utils.js';
+} from '../utils.ts';
 import {
   changesToMcpContent,
   detectChanges,
   getMountPointDir,
   getSnapshot,
-} from '../snapshotUtils.js';
+} from '../snapshotUtils.ts';
 
 const NodeDependency = z.object({
   name: z.string().describe('npm package name, e.g. lodash'),

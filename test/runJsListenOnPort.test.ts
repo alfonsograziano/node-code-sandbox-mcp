@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as tmp from 'tmp';
 
-import runJs from '../src/tools/runJs';
-import initializeSandbox from '../src/tools/initialize';
-import stopSandbox from '../src/tools/stop';
+import runJs from '../src/tools/runJs.ts';
+import initializeSandbox from '../src/tools/initialize.ts';
+import stopSandbox from '../src/tools/stop.ts';
 
 let tmpDir: tmp.DirResult;
 

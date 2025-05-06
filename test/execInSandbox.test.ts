@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import initializeSandbox from '../src/tools/initialize';
-import execInSandbox from '../src/tools/exec';
-import stopSandbox from '../src/tools/stop';
-import * as utils from '../src/utils';
+import initializeSandbox from '../src/tools/initialize.ts';
+import execInSandbox from '../src/tools/exec.ts';
+import stopSandbox from '../src/tools/stop.ts';
+import * as utils from '../src/utils.ts';
 import { vi } from 'vitest';
 
 let containerId: string;
