@@ -21,6 +21,7 @@ import fs from 'fs/promises';
 import { z } from 'zod';
 import { config } from './config.js';
 import { startScavenger, cleanActiveContainers } from './containerUtils.js';
+import { setServerInstance, logger } from './logger.js';
 
 export const serverRunId = randomUUID();
 setServerRunId(serverRunId);
@@ -39,6 +40,9 @@ const server = new McpServer(
     },
   }
 );
+
+// Set the server instance for logging
+setServerInstance(server);
 
 // Configure server tools and resources
 server.tool(
@@ -138,17 +142,15 @@ const scavengerIntervalHandle = startScavenger(
 );
 
 async function gracefulShutdown(signal: string) {
-  // We'll log these with console.error since it goes to stderr, not stdout
-  // which would interfere with the MCP protocol
-  console.error(`Received ${signal}. Starting graceful shutdown...`);
+  logger.info(`Received ${signal}. Starting graceful shutdown...`);
 
   clearInterval(scavengerIntervalHandle);
-  console.error('Stopped container scavenger.');
+  logger.info('Stopped container scavenger.');
 
   await cleanActiveContainers();
 
   setTimeout(() => {
-    console.error('Exiting.');
+    logger.info('Exiting.');
     process.exit(0);
   }, 500);
 }
@@ -161,9 +163,9 @@ process.on('SIGUSR2', () => gracefulShutdown('SIGUSR2'));
 const transport = new StdioServerTransport();
 
 // Connect the server to start receiving and sending messages
-console.error('Initializing server...');
+logger.info('Initializing server...');
 await server.connect(transport);
-console.error('Server started and connected successfully');
-console.error(
+logger.info('Server started and connected successfully');
+logger.info(
   `Container timeout set to: ${config.containerTimeoutSeconds} seconds (${config.containerTimeoutMilliseconds}ms)`
 );
