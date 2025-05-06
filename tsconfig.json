@@ -21,5 +21,8 @@
   "include": ["src/**/*"],
 
   // Never compile these
-  "exclude": ["node_modules", "examples", "dist"]
+  "exclude": ["node_modules", "examples", "dist"],
+
+  "preserveShebang": true
+
 }
