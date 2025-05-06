@@ -62,21 +62,21 @@ export default async function initializeSandbox({
 
     // Register the container only after successful creation
     activeSandboxContainers.set(containerId, creationTimestamp);
-    // console.log(`Registered container ${containerId}`);
+    console.error(`Registered container ${containerId}`);
 
     return {
       content: [textContent(containerId)],
     };
   } catch (error) {
-    // console.error(`Failed to initialize container ${containerId}:`, error);
+    console.error(`Failed to initialize container ${containerId}:`, error);
     // Ensure partial cleanup if execSync fails after container might be created but before registration
     try {
       execSync(`docker rm -f ${containerId}`);
     } catch (cleanupError: unknown) {
       // Ignore cleanup errors - log it just in case
-      // console.warn(
-      //   `Ignoring error during cleanup attempt for ${containerId}: ${String(cleanupError)}`
-      // );
+      console.error(
+        `Ignoring error during cleanup attempt for ${containerId}: ${String(cleanupError)}`
+      );
     }
     return {
       content: [
