@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as tmp from 'tmp';
 import * as fs from 'fs';
 import * as path from 'path';
-import { getSnapshot, detectChanges } from '../src/snapshotUtils';
+import { getSnapshot, detectChanges } from '../src/snapshotUtils.ts';
 
 let tmpDir: tmp.DirResult;
 

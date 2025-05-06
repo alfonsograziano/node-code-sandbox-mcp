@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { setServerRunId } from '../src/tools/initialize';
+import { setServerRunId } from '../src/tools/initialize.ts';
 import * as childProcess from 'node:child_process';
-import * as utils from '../src/utils';
+import * as utils from '../src/utils.ts';
 
 vi.mock('node:child_process');
 vi.mock('../src/utils');
@@ -29,7 +29,7 @@ describe('initialize module', () => {
     it('should set the server run ID correctly', async () => {
       // Import the module that uses the serverRunId
       const { default: initializeSandbox } = await import(
-        '../src/tools/initialize'
+        '../src/tools/initialize.ts'
       );
 
       // Set a test server run ID
@@ -51,7 +51,7 @@ describe('initialize module', () => {
       // Force re-import of the module to reset the serverRunId
       vi.resetModules();
       const { default: initializeSandbox } = await import(
-        '../src/tools/initialize'
+        '../src/tools/initialize.ts'
       );
 
       // Call initialize without setting the server run ID

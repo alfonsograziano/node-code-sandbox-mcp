@@ -2,21 +2,21 @@ import { z } from 'zod';
 import { execSync } from 'child_process';
 import tmp from 'tmp';
 import { randomUUID } from 'crypto';
-import { McpResponse, textContent } from '../types.js';
+import { type McpResponse, textContent } from '../types.ts';
 import {
   DEFAULT_NODE_IMAGE,
   DOCKER_NOT_RUNNING_ERROR,
   generateSuggestedImages,
   isDockerRunning,
   preprocessDependencies,
-} from '../utils.js';
-import { prepareWorkspace, getFilesDir } from '../runUtils.js';
+} from '../utils.ts';
+import { prepareWorkspace, getFilesDir } from '../runUtils.ts';
 import {
   changesToMcpContent,
   detectChanges,
   getSnapshot,
   getMountPointDir,
-} from '../snapshotUtils.js';
+} from '../snapshotUtils.ts';
 
 const NodeDependency = z.object({
   name: z.string().describe('npm package name, e.g. lodash'),

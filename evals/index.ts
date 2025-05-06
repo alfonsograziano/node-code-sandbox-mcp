@@ -3,7 +3,7 @@
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
-import { OpenAIAuditClient } from './auditClient';
+import { OpenAIAuditClient } from './auditClient.ts';
 
 dotenv.config();
 
@@ -81,7 +81,9 @@ async function run() {
           },
         };
       } catch (err) {
-        return { id, prompt, error: err.message };
+        const errorMessage =
+          err instanceof Error ? err.message : `Unknown error: ${err}`;
+        return { id, prompt, error: errorMessage };
       }
     });
 

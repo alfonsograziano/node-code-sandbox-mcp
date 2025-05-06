@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import initializeSandbox from '../src/tools/initialize';
-import stopSandbox from '../src/tools/stop';
-import execInSandbox from '../src/tools/exec';
-import { containerExists, isContainerRunning } from './utils';
+import initializeSandbox from '../src/tools/initialize.ts';
+import stopSandbox from '../src/tools/stop.ts';
+import execInSandbox from '../src/tools/exec.ts';
+import { containerExists, isContainerRunning } from './utils.ts';
 
 describe('sandbox full lifecycle', () => {
   it('should create, exec in, and remove a Docker sandbox container', async () => {

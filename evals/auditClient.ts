@@ -18,7 +18,7 @@ export class OpenAIAuditClient {
   private openai: OpenAI;
   private model: string;
   private client: Client;
-  private availableTools: OpenAI.Chat.ChatCompletionTool[];
+  private availableTools: OpenAI.Chat.ChatCompletionTool[] = [];
 
   constructor(settings: AuditClientSettings) {
     const { apiKey, model } = settings;

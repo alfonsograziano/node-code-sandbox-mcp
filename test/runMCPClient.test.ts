@@ -5,10 +5,10 @@ import path from 'path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import dotenv from 'dotenv';
-import { McpResponse } from '../src/types';
+import { type McpResponse } from '../src/types.ts';
 import fs from 'fs';
 import { execSync } from 'child_process';
-import { normalizeMountPath } from './utils';
+import { normalizeMountPath } from './utils.ts';
 
 dotenv.config();
 

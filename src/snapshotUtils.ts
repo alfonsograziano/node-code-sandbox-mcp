@@ -1,10 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { McpContent, textContent } from './types.js';
+import { type McpContent, textContent } from './types.ts';
 import mime from 'mime-types';
 import { pathToFileURL } from 'url';
-import { getFilesDir } from './runUtils.js';
-import { isRunningInDocker } from './utils.js';
+import { getFilesDir } from './runUtils.ts';
+import { isRunningInDocker } from './utils.ts';
 
 type ChangeType = 'created' | 'updated' | 'deleted';
 type Change = {

@@ -1,15 +1,15 @@
 import { z } from 'zod';
 import { execSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { McpResponse, textContent } from '../types.js';
+import { type McpResponse, textContent } from '../types.ts';
 import {
   DEFAULT_NODE_IMAGE,
   DOCKER_NOT_RUNNING_ERROR,
   isDockerRunning,
-} from '../utils.js';
-import { getFilesDir } from '../runUtils.js';
-import { activeSandboxContainers } from '../containerUtils.js';
-import { logger } from '../logger.js';
+} from '../utils.ts';
+import { getFilesDir } from '../runUtils.ts';
+import { activeSandboxContainers } from '../containerUtils.ts';
+import { logger } from '../logger.ts';
 
 // Instead of importing serverRunId directly, we'll have a variable that gets set
 let serverRunId = 'unknown';

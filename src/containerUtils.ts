@@ -1,5 +1,5 @@
-import { forceStopContainer as dockerForceStopContainer } from './dockerUtils.js';
-import { logger } from './logger.js';
+import { forceStopContainer as dockerForceStopContainer } from './dockerUtils.ts';
+import { logger } from './logger.ts';
 
 // Registry for active sandbox containers: Map<containerId, creationTimestamp>
 export const activeSandboxContainers = new Map<string, number>();

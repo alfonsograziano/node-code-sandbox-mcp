@@ -3,8 +3,8 @@ import path from 'path';
 import tmp from 'tmp';
 import { pathToFileURL } from 'url';
 import mime from 'mime-types';
-import { textContent, McpContent } from './types.js';
-import { isRunningInDocker } from './utils.js';
+import { textContent, type McpContent } from './types.ts';
+import { isRunningInDocker } from './utils.ts';
 
 export async function prepareWorkspace({
   code,
