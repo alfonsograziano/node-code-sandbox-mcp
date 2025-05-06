@@ -21,40 +21,30 @@ import fs from 'fs/promises';
 import { z } from 'zod';
 import { config } from './config.ts';
 import { startScavenger, cleanActiveContainers } from './containerUtils.ts';
+import { setServerInstance, logger } from './logger.ts';
 
 export const serverRunId = randomUUID();
 setServerRunId(serverRunId);
 
-const scavengerIntervalHandle = startScavenger(
-  config.containerTimeoutMilliseconds,
-  config.containerTimeoutSeconds
+// Create the server with logging capability enabled
+const server = new McpServer(
+  {
+    name: 'js-sandbox-mcp',
+    version: '0.1.0',
+    description:
+      'Run arbitrary JavaScript inside disposable Docker containers and install npm dependencies on the fly.',
+  },
+  {
+    capabilities: {
+      logging: {},
+    },
+  }
 );
 
-async function gracefulShutdown(signal: string) {
-  console.log(`
-Received ${signal}. Starting graceful shutdown...`);
+// Set the server instance for logging
+setServerInstance(server);
 
-  clearInterval(scavengerIntervalHandle);
-  console.log('Stopped container scavenger.');
-
-  await cleanActiveContainers();
-
-  setTimeout(() => {
-    console.log('Exiting.');
-    process.exit(0);
-  }, 500);
-}
-
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGUSR2', () => gracefulShutdown('SIGUSR2'));
-
-const server = new McpServer({
-  name: 'js-sandbox-mcp',
-  version: '0.1.0',
-  description:
-    'Run arbitrary JavaScript inside disposable Docker containers and install npm dependencies on the fly.',
-});
+// Configure server tools and resources
 server.tool(
   'sandbox_initialize',
   'Start a new isolated Docker container running Node.js. Used to set up a sandbox session for multiple commands and scripts.',
@@ -146,10 +136,36 @@ server.prompt('run-node-js-script', { prompt: z.string() }, ({ prompt }) => ({
   ],
 }));
 
+const scavengerIntervalHandle = startScavenger(
+  config.containerTimeoutMilliseconds,
+  config.containerTimeoutSeconds
+);
+
+async function gracefulShutdown(signal: string) {
+  logger.info(`Received ${signal}. Starting graceful shutdown...`);
+
+  clearInterval(scavengerIntervalHandle);
+  logger.info('Stopped container scavenger.');
+
+  await cleanActiveContainers();
+
+  setTimeout(() => {
+    logger.info('Exiting.');
+    process.exit(0);
+  }, 500);
+}
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGUSR2', () => gracefulShutdown('SIGUSR2'));
+
+// Set up the transport
 const transport = new StdioServerTransport();
 
-console.log(`Starting MCP server with run ID: ${serverRunId}`);
-console.log(
+// Connect the server to start receiving and sending messages
+logger.info('Initializing server...');
+await server.connect(transport);
+logger.info('Server started and connected successfully');
+logger.info(
   `Container timeout set to: ${config.containerTimeoutSeconds} seconds (${config.containerTimeoutMilliseconds}ms)`
 );
-await server.connect(transport);

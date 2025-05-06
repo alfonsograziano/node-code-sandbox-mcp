@@ -1,5 +1,6 @@
 import { exec } from 'child_process';
 import util from 'util';
+import { logger } from './logger.js';
 
 const execPromise = util.promisify(exec);
 
@@ -10,7 +11,7 @@ const execPromise = util.promisify(exec);
  * @param containerId The ID of the container to stop and remove.
  */
 export async function forceStopContainer(containerId: string): Promise<void> {
-  console.log(
+  logger.info(
     `Attempting to stop and remove container via dockerUtils: ${containerId}`
   );
   try {
@@ -18,13 +19,13 @@ export async function forceStopContainer(containerId: string): Promise<void> {
     await execPromise(`docker stop ${containerId} || true`);
     // Force remove the container (ignores errors if already removed)
     await execPromise(`docker rm -f ${containerId} || true`);
-    console.log(
+    logger.info(
       `Successfully issued stop/remove commands for container: ${containerId}`
     );
   } catch (error) {
     // Log errors but don't throw
-    console.error(
-      `Error during docker stop/remove commands for container ${containerId}:`,
+    logger.error(
+      `Error during docker stop/remove commands for container ${containerId}`,
       typeof error === 'object' &&
         error !== null &&
         ('stderr' in error || 'message' in error)

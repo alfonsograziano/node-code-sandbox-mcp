@@ -216,3 +216,23 @@ Using this schema:
    `"Mock Book API is running on http://localhost:5007"`
 
 ---
+
+### Files manipulation on the fly
+
+**Prerequisites**: Create in your mounted folder a file called "books.json" with this content:
+
+```json
+[
+  { "id": 1, "title": "The Silent Code", "author": "Jane Doe" },
+  { "id": 2, "title": "Refactoring Legacy", "author": "John Smith" },
+  { "id": 3, "title": "Async in Action", "author": "Jane Doe" },
+  { "id": 4, "title": "The Pragmatic Stack", "author": "Emily Ray" },
+  { "id": 5, "title": "Systems Unboxed", "author": "Mark Lee" }
+]
+```
+
+Then run this prompt:
+
+Run a JS script to read the file "books.json", filter all the books of the author "Jane Doe" and save the result in "books_filtered.json"
+
+To read and write from files, you always need to use the "files" directory which is exposed on the host machine.

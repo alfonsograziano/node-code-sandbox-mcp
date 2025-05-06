@@ -21,9 +21,9 @@ export default async function stopSandbox({
     // Directly use execSync for removing the container as expected by the test
     execSync(`docker rm -f ${container_id}`);
     activeSandboxContainers.delete(container_id);
-    console.log(
-      `[stopSandbox] Removed container ${container_id} from registry.`
-    );
+    // console.log(
+    //   `[stopSandbox] Removed container ${container_id} from registry.`
+    // );
 
     return {
       content: [textContent(`Container ${container_id} removed.`)],

@@ -1,4 +1,5 @@
 import { forceStopContainer as dockerForceStopContainer } from './dockerUtils.ts';
+import { logger } from './logger.ts';
 
 // Registry for active sandbox containers: Map<containerId, creationTimestamp>
 export const activeSandboxContainers = new Map<string, number>();
@@ -15,15 +16,15 @@ export function startScavenger(
   containerTimeoutSeconds: number,
   checkIntervalMilliseconds = 60 * 1000
 ): NodeJS.Timeout {
-  console.log(
+  logger.info(
     `Starting container scavenger. Timeout: ${containerTimeoutSeconds}s, Check Interval: ${checkIntervalMilliseconds / 1000}s`
   );
 
   const scavengerInterval = setInterval(() => {
     const now = Date.now();
     if (activeSandboxContainers.size > 0) {
-      console.log(
-        `[Scavenger] Checking ${activeSandboxContainers.size} active containers for timeout (${containerTimeoutSeconds}s)...`
+      logger.debug(
+        `Checking ${activeSandboxContainers.size} active containers for timeout (${containerTimeoutSeconds}s)...`
       );
     }
     for (const [
@@ -31,28 +32,23 @@ export function startScavenger(
       creationTimestamp,
     ] of activeSandboxContainers.entries()) {
       if (now - creationTimestamp > containerTimeoutMilliseconds) {
-        console.warn(
-          `[Scavenger] Container ${containerId} timed out (created at ${new Date(creationTimestamp).toISOString()}). Forcing removal.`
+        logger.warning(
+          `Container ${containerId} timed out (created at ${new Date(creationTimestamp).toISOString()}). Forcing removal.`
         );
 
         dockerForceStopContainer(containerId)
           .then(() => {
             // Remove from registry AFTER docker command attempt
             activeSandboxContainers.delete(containerId);
-            console.log(
-              `[Scavenger] Removed container ${containerId} from registry.`
-            );
+            logger.info(`Removed container ${containerId} from registry.`);
           })
           .catch((error) => {
             // Log error from force stop attempt but continue scavenger
-            console.error(
-              `[Scavenger] Error during forced stop of ${containerId}:`,
-              error
-            );
+            logger.error(`Error during forced stop of ${containerId}`, error);
             // Still attempt to remove from registry if Docker failed
             activeSandboxContainers.delete(containerId);
-            console.log(
-              `[Scavenger] Removed container ${containerId} from registry after error.`
+            logger.info(
+              `Removed container ${containerId} from registry after error.`
             );
           });
       }
@@ -71,11 +67,11 @@ export async function cleanActiveContainers(): Promise<void> {
   const containersToClean = Array.from(activeSandboxContainers.keys());
 
   if (containersToClean.length === 0) {
-    console.log('[Shutdown Cleanup] No active containers to clean up.');
+    logger.info('[Shutdown Cleanup] No active containers to clean up.');
     return;
   }
 
-  console.log(
+  logger.info(
     `[Shutdown Cleanup] Cleaning up ${containersToClean.length} active containers...`
   );
 
@@ -84,23 +80,20 @@ export async function cleanActiveContainers(): Promise<void> {
       await dockerForceStopContainer(id); // Attempt to stop/remove via Docker
     } catch (error) {
       // Log error but continue, registry removal happens regardless
-      console.error(
-        `[Shutdown Cleanup] Error stopping container ${id}:`,
-        error
-      );
+      logger.error(`[Shutdown Cleanup] Error stopping container ${id}`, error);
     } finally {
       activeSandboxContainers.delete(id); // Always remove from registry
-      console.log(`[Shutdown Cleanup] Removed container ${id} from registry.`);
+      logger.info(`[Shutdown Cleanup] Removed container ${id} from registry.`);
     }
   });
 
   const results = await Promise.allSettled(cleanupPromises);
-  console.log('[Shutdown Cleanup] Container cleanup finished.');
+  logger.info('[Shutdown Cleanup] Container cleanup finished.');
 
   results.forEach((result, index) => {
     if (result.status === 'rejected') {
-      console.error(
-        `[Shutdown Cleanup] Promise for container ${containersToClean[index]} rejected:`,
+      logger.error(
+        `[Shutdown Cleanup] Promise for container ${containersToClean[index]} rejected`,
         result.reason
       );
     }

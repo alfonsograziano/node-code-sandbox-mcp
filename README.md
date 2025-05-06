@@ -77,6 +77,23 @@ You can follow the [Official Guide](https://modelcontextprotocol.io/quickstart/u
 }
 ```
 
+or with NPX: 
+
+```json
+{
+  "mcpServers": {
+    "node-code-sandbox-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "node-code-sandbox-mcp"],
+      "env": {
+        "FILES_DIR": "/Users/alfonsograziano/Desktop/node-sandbox"
+      }
+    }
+  }
+}
+```
+
 > Note: Ensure your working directory points to the built server, and Docker is installed/running.
 
 ### Docker
