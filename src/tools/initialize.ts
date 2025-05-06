@@ -9,6 +9,7 @@ import {
 } from '../utils.js';
 import { getFilesDir } from '../runUtils.js';
 import { activeSandboxContainers } from '../containerUtils.js';
+import { logger } from '../logger.js';
 
 // Instead of importing serverRunId directly, we'll have a variable that gets set
 let serverRunId = 'unknown';
@@ -62,21 +63,21 @@ export default async function initializeSandbox({
 
     // Register the container only after successful creation
     activeSandboxContainers.set(containerId, creationTimestamp);
-    // console.log(`Registered container ${containerId}`);
+    logger.info(`Registered container ${containerId}`);
 
     return {
       content: [textContent(containerId)],
     };
   } catch (error) {
-    // console.error(`Failed to initialize container ${containerId}:`, error);
+    logger.error(`Failed to initialize container ${containerId}`, error);
     // Ensure partial cleanup if execSync fails after container might be created but before registration
     try {
       execSync(`docker rm -f ${containerId}`);
     } catch (cleanupError: unknown) {
       // Ignore cleanup errors - log it just in case
-      // console.warn(
-      //   `Ignoring error during cleanup attempt for ${containerId}: ${String(cleanupError)}`
-      // );
+      logger.warning(
+        `Ignoring error during cleanup attempt for ${containerId}: ${String(cleanupError)}`
+      );
     }
     return {
       content: [
