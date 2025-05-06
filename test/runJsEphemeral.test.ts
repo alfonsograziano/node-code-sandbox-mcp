@@ -416,6 +416,79 @@ describe('runJsEphemeral', () => {
           '[ [ 1, 2 ], [ 3, 4 ], [ 5 ] ]'
         );
       });
+
+      it('should generate a Mermaid sequence diagram SVG file', async () => {
+        const result = await runJsEphemeral({
+          code: `
+            import fs from "fs";
+            import { run } from "@mermaid-js/mermaid-cli";
+      
+            const diagramDefinition = \`
+            sequenceDiagram
+                participant App as Application
+                participant KC as Keycloak
+                participant IDP as Identity Provider
+      
+                %% Initial Sign-In
+                App->>KC: "Go authenticate!"
+                KC->>App: Redirect to Keycloak login
+                KC->>IDP: "Which IDP? (MyGovID / EntraID)"
+                IDP-->>KC: ID Token + Refresh Token (1 day)
+                KC-->>App: KC Tokens (1 day)
+      
+                %% After 24 Hours
+                App->>KC: Request new tokens (expired refresh token)
+                alt KC session still active (<14 days)
+                    KC-->>App: New tokens (1 day)
+                else KC session expired (>14 days)
+                    KC->>IDP: Redirect to reauthenticate
+                    IDP-->>KC: Fresh ID + Refresh Tokens
+                    KC-->>App: New KC Tokens (1 day)
+                end
+            \`;
+      
+            fs.writeFileSync("./files/authDiagram.mmd", diagramDefinition, "utf8");
+            console.log("Mermaid definition saved to authDiagram.mmd");
+      
+            console.time("test");
+            await run("./files/authDiagram.mmd", "output.svg");
+            console.timeEnd("test");
+            console.log("Diagram generated as output.svg");
+          `,
+          dependencies: [
+            { name: '@mermaid-js/mermaid-cli', version: '^11.4.2' },
+          ],
+          image: 'alfonsograziano/node-chartjs-canvas:latest',
+        });
+
+        // Ensure result exists
+        expect(result).toBeDefined();
+        expect(result.content).toBeDefined();
+
+        // Validate Mermaid diagram creation log
+        const logOutput = result.content.find(
+          (item) =>
+            item.type === 'text' &&
+            item.text.includes('Diagram generated as output.svg')
+        );
+        expect(logOutput).toBeDefined();
+
+        // Validate .mmd file was created
+        const mmdFile = result.content.find(
+          (item) =>
+            item.type === 'resource' &&
+            item.resource?.uri?.endsWith('authDiagram.mmd')
+        );
+        expect(mmdFile).toBeDefined();
+
+        // Optional: Validate that the SVG file was generated
+        const svgLog = result.content.find(
+          (item) =>
+            item.type === 'text' &&
+            item.text.includes('Diagram generated as output.svg')
+        );
+        expect(svgLog).toBeDefined();
+      });
     },
     50_000
   );

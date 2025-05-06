@@ -55,7 +55,7 @@ export default async function initializeSandbox({
 
   try {
     execSync(
-      `docker run -d ${portOption} --memory 512m --cpus 1 ` +
+      `docker run -d ${portOption} --memory 2g --cpus 2 ` +
         `--workdir /workspace -v ${getFilesDir()}:/workspace/files ` +
         `${labelArgs} ` + // Add labels here
         `--name ${containerId} ${image} tail -f /dev/null`

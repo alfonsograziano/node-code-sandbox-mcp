@@ -80,7 +80,7 @@ export default async function runJsEphemeral({
   try {
     // Start an ephemeral container
     execSync(
-      `docker run -d --network host --memory 512m --cpus 1 ` +
+      `docker run -d --network host --memory 2g --cpus 2 ` +
         `--workdir /workspace -v ${getFilesDir()}:/workspace/files ` +
         `--name ${containerId} ${image} tail -f /dev/null`
     );
