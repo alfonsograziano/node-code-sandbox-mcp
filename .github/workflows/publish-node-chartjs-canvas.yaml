@@ -1,8 +1,9 @@
 name: Publish Node-Chartjs-Canvas Multi-Arch Image
 on:
   push:
-    branches:
-      - master
+    # only fire on tag pushes matching vMAJOR.MINOR.PATCH
+    tags:
+      - 'v*.*.*'
     paths:
       # Trigger only when Dockerfile changes
       - 'images/node-chartjs-canvas/Dockerfile'

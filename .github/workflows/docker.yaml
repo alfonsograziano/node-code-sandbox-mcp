@@ -1,7 +1,9 @@
 name: Publish Multi-Arch Image
 on:
   push:
-    branches: [master]
+    # only fire on tag pushes matching vMAJOR.MINOR.PATCH
+    tags:
+      - 'v*.*.*'
   workflow_dispatch: {}
 jobs:
   build:
