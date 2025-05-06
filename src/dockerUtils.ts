@@ -1,6 +1,6 @@
 import { exec } from 'child_process';
 import util from 'util';
-import { logger } from './logger.js';
+import { logger } from './logger.ts';
 
 const execPromise = util.promisify(exec);
 
