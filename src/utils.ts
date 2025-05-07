@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'fs';
 import { execSync } from 'node:child_process';
+import { config } from './config.ts';
 
 export function isRunningInDocker() {
   // 1. The "/.dockerenv" sentinel file
@@ -105,3 +106,31 @@ export function isDockerRunning() {
 }
 export const DOCKER_NOT_RUNNING_ERROR =
   'Error: Docker is not running. Please start Docker and try again.';
+
+
+export interface Limits { memory?: string; cpus?: string; }
+
+export const IMAGE_DEFAULTS: Record<string, Limits> = {
+  'node:lts-slim':                    { memory: '512m', cpus: '1' },
+  'alfonsograziano/node-chartjs':     { memory: '2g',   cpus: '2' },
+  'mcr.microsoft.com/playwright':     { memory: '2g',   cpus: '2' },
+};
+
+
+export function computeResourceLimits(image: string)  {
+  const base  = { memFlag: '', cpuFlag: '' };
+  if (!image) return base;
+
+  const def =
+    Object.entries(IMAGE_DEFAULTS).find(([key]) => image.includes(key))?.[1] ??
+    {};
+
+  const memory = config.rawMemoryLimit ?? def.memory;
+  const cpus = config.rawCpuLimit ?? def.cpus;
+
+  return {
+    ...base,
+    memFlag: memory ? `--memory ${memory}` : '',
+    cpuFlag: cpus ? `--cpus ${cpus}` : '',
+  };
+}

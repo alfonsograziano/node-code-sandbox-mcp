@@ -9,6 +9,7 @@ import {
   generateSuggestedImages,
   isDockerRunning,
   preprocessDependencies,
+  computeResourceLimits,
 } from '../utils.ts';
 import { prepareWorkspace, getFilesDir } from '../runUtils.ts';
 import {
@@ -73,11 +74,12 @@ export default async function runJsEphemeral({
   const dependenciesRecord = preprocessDependencies({ dependencies, image });
   const containerId = `js-ephemeral-${randomUUID()}`;
   const tmpDir = tmp.dirSync({ unsafeCleanup: true });
+  const { memFlag, cpuFlag } = computeResourceLimits(image);
 
   try {
     // Start an ephemeral container
     execSync(
-      `docker run -d --network host --memory 512m --cpus 1 ` +
+      `docker run -d --network host ${memFlag} ${cpuFlag} ` +
         `--workdir /workspace -v ${getFilesDir()}:/workspace/files ` +
         `--name ${containerId} ${image} tail -f /dev/null`
     );
