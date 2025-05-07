@@ -3,7 +3,7 @@ FROM node:23-slim AS builder
 WORKDIR /app
 
 # 1. Copy package files and tsconfig to install devDependencies (including tsc)
-COPY package*.json tsconfig.json ./
+COPY package*.json tsconfig.json tsconfig.build.json ./
 RUN npm ci
 
 # 2. Copy all source (including src/tools/initialize.ts) and compile

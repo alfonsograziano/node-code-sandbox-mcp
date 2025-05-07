@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import stopSandbox from '../src/tools/stop';
+import stopSandbox from '../src/tools/stop.ts';
 import * as childProcess from 'node:child_process';
-import * as types from '../src/types';
-import * as utils from '../src/utils';
+import * as types from '../src/types.ts';
+import * as utils from '../src/utils.ts';
 
 vi.mock('node:child_process');
 vi.mock('../src/types');

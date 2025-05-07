@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as tmp from 'tmp';
 import { execSync } from 'node:child_process';
-import runJs from '../src/tools/runJs';
-import { DEFAULT_NODE_IMAGE } from '../src/utils';
+import runJs from '../src/tools/runJs.ts';
+import { DEFAULT_NODE_IMAGE } from '../src/utils.ts';
 
 function startSandboxContainer(): string {
   return execSync(

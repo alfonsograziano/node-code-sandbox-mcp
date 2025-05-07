@@ -1,28 +1,32 @@
 {
   "compilerOptions": {
-    // The folder where TypeScript looks for your .ts/.tsx files:
-    "rootDir": "src",
-
-    // The folder into which all compiled files will go:
-    "outDir": "dist",
-
-    // Use ESM Next so you get proper .js extensions in imports:
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-
-    "target": "ES2022",
+    "allowImportingTsExtensions": true,
+    "baseUrl": ".",
+    "erasableSyntaxOnly": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "newLine": "lf",
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "outDir": "dist",
+    "removeComments": true,
+    "resolveJsonModule": true,
+    "rewriteRelativeImportExtensions": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
     "strict": true,
-    "skipLibCheck": true
+    "target": "ESNext",
+    "verbatimModuleSyntax": true
   },
-
-  // Only compile files under src/
-  "include": ["src/**/*"],
-
-  // Never compile these
-  "exclude": ["node_modules", "examples", "dist"],
-
-  "preserveShebang": true
-
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts",
+    "evals/**/*.ts",
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

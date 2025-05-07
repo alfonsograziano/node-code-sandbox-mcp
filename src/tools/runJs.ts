@@ -1,18 +1,22 @@
 import { z } from 'zod';
 import { execSync } from 'node:child_process';
-import { McpResponse, textContent } from '../types.js';
-import { prepareWorkspace } from '../runUtils.js';
+import { type McpResponse, textContent } from '../types.ts';
+import { prepareWorkspace } from '../runUtils.ts';
 import {
   DOCKER_NOT_RUNNING_ERROR,
   isDockerRunning,
   waitForPortHttp,
-} from '../utils.js';
+} from '../utils.ts';
 import {
   changesToMcpContent,
   detectChanges,
   getMountPointDir,
   getSnapshot,
-} from '../snapshotUtils.js';
+} from '../snapshotUtils.ts';
+import {
+  getContentFromError,
+  safeExecNodeInContainer,
+} from '../dockerUtils.ts';
 
 const NodeDependency = z.object({
   name: z.string().describe('npm package name, e.g. lodash'),
@@ -69,54 +73,70 @@ export default async function runJs({
   const localWorkspace = await prepareWorkspace({ code, dependenciesRecord });
   execSync(`docker cp ${localWorkspace.name}/. ${container_id}:/workspace`);
 
-  let rawOutput: string;
+  let rawOutput: string = '';
 
   // Generate snapshot of the workspace
   const snapshotStartTime = Date.now();
-  const snapshot = getSnapshot(getMountPointDir());
+  const snapshot = await getSnapshot(getMountPointDir());
 
   if (listenOnPort) {
-    const installStart = Date.now();
-    const installOutput = execSync(
-      `docker exec ${container_id} /bin/sh -c ${JSON.stringify(
-        `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`
-      )}`,
-      { encoding: 'utf8' }
-    );
-    telemetry.installTimeMs = Date.now() - installStart;
-    telemetry.installOutput = installOutput;
+    if (dependencies.length > 0) {
+      const installStart = Date.now();
+      const installOutput = execSync(
+        `docker exec ${container_id} /bin/sh -c ${JSON.stringify(
+          `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`
+        )}`,
+        { encoding: 'utf8' }
+      );
+      telemetry.installTimeMs = Date.now() - installStart;
+      telemetry.installOutput = installOutput;
+    } else {
+      telemetry.installTimeMs = 0;
+      telemetry.installOutput = 'Skipped npm install (no dependencies)';
+    }
 
-    const runScript = `nohup node index.js > output.log 2>&1 &`;
-    execSync(
-      `docker exec ${container_id} /bin/sh -c ${JSON.stringify(runScript)}`
-    );
+    const { error, duration } = safeExecNodeInContainer({
+      containerId: container_id,
+      command: `nohup node index.js > output.log 2>&1 &`,
+    });
+    telemetry.runTimeMs = duration;
+    if (error) return getContentFromError(error, telemetry);
 
     await waitForPortHttp(listenOnPort);
     rawOutput = `Server started in background; logs at /output.log`;
   } else {
-    const installStart = Date.now();
-    const fullCmd = `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`;
-    const installOutput = execSync(
-      `docker exec ${container_id} /bin/sh -c ${JSON.stringify(fullCmd)}`,
-      { encoding: 'utf8' }
-    );
-    telemetry.installTimeMs = Date.now() - installStart;
-    telemetry.installOutput = installOutput;
+    if (dependencies.length > 0) {
+      const installStart = Date.now();
+      const fullCmd = `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`;
+      const installOutput = execSync(
+        `docker exec ${container_id} /bin/sh -c ${JSON.stringify(fullCmd)}`,
+        { encoding: 'utf8' }
+      );
+      telemetry.installTimeMs = Date.now() - installStart;
+      telemetry.installOutput = installOutput;
+    } else {
+      telemetry.installTimeMs = 0;
+      telemetry.installOutput = 'Skipped npm install (no dependencies)';
+    }
 
-    const runStart = Date.now();
-    const runCmd = `node index.js`;
-    rawOutput = execSync(
-      `docker exec ${container_id} /bin/sh -c ${JSON.stringify(runCmd)}`,
-      { encoding: 'utf8' }
-    );
-    telemetry.runTimeMs = Date.now() - runStart;
+    const { output, error, duration } = safeExecNodeInContainer({
+      containerId: container_id,
+    });
+
+    if (output) rawOutput = output;
+    telemetry.runTimeMs = duration;
+    if (error) return getContentFromError(error, telemetry);
   }
 
   // Detect the file changed during the execution of the tool in the mounted workspace
   // and report the changes to the user
-  const extractedContents = await changesToMcpContent(
-    detectChanges(snapshot, getMountPointDir(), snapshotStartTime)
+  const changes = await detectChanges(
+    snapshot,
+    getMountPointDir(),
+    snapshotStartTime
   );
+
+  const extractedContents = await changesToMcpContent(changes);
   localWorkspace.removeCallback();
 
   return {

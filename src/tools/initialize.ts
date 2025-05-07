@@ -1,15 +1,16 @@
 import { z } from 'zod';
 import { execSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { McpResponse, textContent } from '../types.js';
+import { type McpResponse, textContent } from '../types.ts';
 import {
   DEFAULT_NODE_IMAGE,
   DOCKER_NOT_RUNNING_ERROR,
   isDockerRunning,
-} from '../utils.js';
-import { getFilesDir } from '../runUtils.js';
-import { activeSandboxContainers } from '../containerUtils.js';
-import { logger } from '../logger.js';
+  computeResourceLimits,
+} from '../utils.ts';
+import { getFilesDir } from '../runUtils.ts';
+import { activeSandboxContainers } from '../containerUtils.ts';
+import { logger } from '../logger.ts';
 
 // Instead of importing serverRunId directly, we'll have a variable that gets set
 let serverRunId = 'unknown';
@@ -52,10 +53,11 @@ export default async function initializeSandbox({
     `mcp-creation-timestamp=${creationTimestamp}`,
   ];
   const labelArgs = labels.map((label) => `--label "${label}"`).join(' ');
+  const { memFlag, cpuFlag } = computeResourceLimits(image);
 
   try {
     execSync(
-      `docker run -d ${portOption} --memory 2g --cpus 2 ` +
+      `docker run -d ${portOption} ${memFlag} ${cpuFlag} ` +
         `--workdir /workspace -v ${getFilesDir()}:/workspace/files ` +
         `${labelArgs} ` + // Add labels here
         `--name ${containerId} ${image} tail -f /dev/null`

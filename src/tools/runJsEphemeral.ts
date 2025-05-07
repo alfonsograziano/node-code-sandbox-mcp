@@ -2,21 +2,26 @@ import { z } from 'zod';
 import { execSync } from 'child_process';
 import tmp from 'tmp';
 import { randomUUID } from 'crypto';
-import { McpResponse, textContent } from '../types.js';
+import { type McpResponse, textContent } from '../types.ts';
 import {
   DEFAULT_NODE_IMAGE,
   DOCKER_NOT_RUNNING_ERROR,
   generateSuggestedImages,
   isDockerRunning,
   preprocessDependencies,
-} from '../utils.js';
-import { prepareWorkspace, getFilesDir } from '../runUtils.js';
+  computeResourceLimits,
+} from '../utils.ts';
+import { prepareWorkspace, getFilesDir } from '../runUtils.ts';
 import {
   changesToMcpContent,
   detectChanges,
   getSnapshot,
   getMountPointDir,
-} from '../snapshotUtils.js';
+} from '../snapshotUtils.ts';
+import {
+  getContentFromError,
+  safeExecNodeInContainer,
+} from '../dockerUtils.ts';
 
 const NodeDependency = z.object({
   name: z.string().describe('npm package name, e.g. lodash'),
@@ -62,70 +67,67 @@ export default async function runJsEphemeral({
   dependencies?: NodeDependenciesArray;
 }): Promise<McpResponse> {
   if (!isDockerRunning()) {
-    return {
-      content: [textContent(DOCKER_NOT_RUNNING_ERROR)],
-    };
+    return { content: [textContent(DOCKER_NOT_RUNNING_ERROR)] };
   }
 
   const telemetry: Record<string, unknown> = {};
-
-  const dependenciesRecord = preprocessDependencies({
-    dependencies,
-    image,
-  });
-
+  const dependenciesRecord = preprocessDependencies({ dependencies, image });
   const containerId = `js-ephemeral-${randomUUID()}`;
   const tmpDir = tmp.dirSync({ unsafeCleanup: true });
+  const { memFlag, cpuFlag } = computeResourceLimits(image);
 
   try {
     // Start an ephemeral container
     execSync(
-      `docker run -d --network host --memory 2g --cpus 2 ` +
+      `docker run -d --network host ${memFlag} ${cpuFlag} ` +
         `--workdir /workspace -v ${getFilesDir()}:/workspace/files ` +
         `--name ${containerId} ${image} tail -f /dev/null`
     );
 
     // Prepare workspace locally
-    const localWorkspace = await prepareWorkspace({
-      code,
-      dependenciesRecord,
-    });
-
-    // Copy files into container
+    const localWorkspace = await prepareWorkspace({ code, dependenciesRecord });
     execSync(`docker cp ${localWorkspace.name}/. ${containerId}:/workspace`);
 
     // Generate snapshot of the workspace
     const snapshotStartTime = Date.now();
-    const snapshot = getSnapshot(getMountPointDir());
+    const snapshot = await getSnapshot(getMountPointDir());
 
     // Run install and script inside container
-    const installCmd = `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`;
-    const runCmd = `node index.js`;
+    const installCmd =
+      'npm install --omit=dev --prefer-offline --no-audit --loglevel=error';
 
-    const installStart = Date.now();
-    const installOutput = execSync(
-      `docker exec ${containerId} /bin/sh -c ${JSON.stringify(installCmd)}`,
-      { encoding: 'utf8' }
-    );
-    telemetry.installTimeMs = Date.now() - installStart;
-    telemetry.installOutput = installOutput;
+    if (dependencies.length > 0) {
+      const installStart = Date.now();
+      const installOutput = execSync(
+        `docker exec ${containerId} /bin/sh -c ${JSON.stringify(installCmd)}`,
+        { encoding: 'utf8' }
+      );
+      telemetry.installTimeMs = Date.now() - installStart;
+      telemetry.installOutput = installOutput;
+    } else {
+      telemetry.installTimeMs = 0;
+      telemetry.installOutput = 'Skipped npm install (no dependencies)';
+    }
 
-    const runStart = Date.now();
-    const rawOutput = execSync(
-      `docker exec ${containerId} /bin/sh -c ${JSON.stringify(runCmd)}`,
-      { encoding: 'utf8' }
-    );
-    telemetry.runTimeMs = Date.now() - runStart;
+    const { output, error, duration } = safeExecNodeInContainer({
+      containerId,
+    });
+    telemetry.runTimeMs = duration;
+    if (error) return getContentFromError(error, telemetry);
 
     // Detect the file changed during the execution of the tool in the mounted workspace
     // and report the changes to the user
-    const extractedContents = await changesToMcpContent(
-      detectChanges(snapshot, getMountPointDir(), snapshotStartTime)
+    const changes = await detectChanges(
+      snapshot,
+      getMountPointDir(),
+      snapshotStartTime
     );
+
+    const extractedContents = await changesToMcpContent(changes);
 
     return {
       content: [
-        textContent(`Node.js process output:\n${rawOutput}`),
+        textContent(`Node.js process output:\n${output}`),
         ...extractedContents,
         textContent(`Telemetry:\n${JSON.stringify(telemetry, null, 2)}`),
       ],

@@ -4,7 +4,7 @@ import {
   isRunningInDocker,
   isDockerRunning,
   preprocessDependencies,
-} from '../src/utils';
+} from '../src/utils.ts';
 import * as childProcess from 'node:child_process';
 
 vi.mock('fs');
