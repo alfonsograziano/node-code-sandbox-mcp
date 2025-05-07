@@ -7,6 +7,7 @@ import mime from 'mime-types';
 import { getFilesDir } from './runUtils.ts';
 import { type McpContent, textContent } from './types.ts';
 import { isRunningInDocker } from './utils.ts';
+import type { Dirent } from 'node:fs';
 
 type ChangeType = 'created' | 'updated' | 'deleted';
 type Change = {
@@ -30,7 +31,10 @@ export async function getSnapshot(dir: string): Promise<FileSnapshot> {
   const executor = glob('**/*', {
     cwd: dir,
     withFileTypes: true,
-    exclude: ['.git', 'node_modules'],
+    exclude: (file: string | Dirent): boolean => {
+      const name = typeof file === 'string' ? file : file.name;
+      return ['.git', 'node_modules'].includes(name);
+    },
   });
 
   for await (const entry of executor) {

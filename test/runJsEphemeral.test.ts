@@ -94,6 +94,62 @@ describe('runJsEphemeral', () => {
       }
     });
 
+    it('should hang indefinitely until a timeout error gets triggered', async () => {
+      //Simulating a 10 seconds timeout
+      process.env.RUN_SCRIPT_TIMEOUT = '10000';
+      const result = await runJsEphemeral({
+        code: `
+          (async () => {
+            console.log("🕒 Hanging for 20 seconds…");
+            await new Promise((resolve) => setTimeout(resolve, 20_000));
+            console.log("✅ Done waiting 20 seconds, exiting now.");
+          })();
+           `,
+      });
+
+      //Cleanup
+      delete process.env.RUN_SCRIPT_TIMEOUT;
+
+      const execError = result.content.find(
+        (item) =>
+          item.type === 'text' &&
+          item.text.startsWith('Error during execution:')
+      );
+      expect(execError).toBeDefined();
+      expect((execError as McpContentText).text).toContain('ETIMEDOUT');
+
+      const telemetryText = result.content.find(
+        (item) => item.type === 'text' && item.text.startsWith('Telemetry:')
+      );
+      expect(telemetryText).toBeDefined();
+    }, 20_000);
+
+    it('should report execution error for runtime exceptions', async () => {
+      const result = await runJsEphemeral({
+        code: `throw new Error('boom');`,
+      });
+
+      expect(result).toBeDefined();
+      expect(result.content).toBeDefined();
+
+      // should hit our "other errors" branch
+      const execError = result.content.find(
+        (item) =>
+          item.type === 'text' &&
+          (item as McpContentText).text.startsWith('Error during execution:')
+      );
+      expect(execError).toBeDefined();
+      expect((execError as McpContentText).text).toContain('Error: boom');
+
+      // telemetry should still be returned
+      const telemetryText = result.content.find(
+        (item) =>
+          item.type === 'text' &&
+          (item as McpContentText).text.startsWith('Telemetry:')
+      );
+      expect(telemetryText).toBeDefined();
+    });
+
     it('should skip npm install if no dependencies are provided', async () => {
       const result = await runJsEphemeral({
         code: "console.log('No deps');",
@@ -226,10 +282,23 @@ describe('runJsEphemeral', () => {
   }, 10_000);
 
   describe('runJsEphemeral error handling', () => {
-    it('should reject when the code throws an exception', async () => {
-      await expect(
-        runJsEphemeral({ code: "throw new Error('Test error');" })
-      ).rejects.toThrow('Test error');
+    it('should return an execution error and telemetry when the code throws', async () => {
+      const result = await runJsEphemeral({
+        code: "throw new Error('Test error');",
+      });
+
+      const execError = result.content.find(
+        (item) =>
+          item.type === 'text' &&
+          item.text.startsWith('Error during execution:')
+      );
+      expect(execError).toBeDefined();
+      expect((execError as McpContentText).text).toContain('Test error');
+
+      const telemetryText = result.content.find(
+        (item) => item.type === 'text' && item.text.startsWith('Telemetry:')
+      );
+      expect(telemetryText).toBeDefined();
     });
   });
 

@@ -18,6 +18,10 @@ import {
   getSnapshot,
   getMountPointDir,
 } from '../snapshotUtils.ts';
+import {
+  getContentFromError,
+  safeExecNodeInContainer,
+} from '../dockerUtils.ts';
 
 const NodeDependency = z.object({
   name: z.string().describe('npm package name, e.g. lodash'),
@@ -63,18 +67,11 @@ export default async function runJsEphemeral({
   dependencies?: NodeDependenciesArray;
 }): Promise<McpResponse> {
   if (!isDockerRunning()) {
-    return {
-      content: [textContent(DOCKER_NOT_RUNNING_ERROR)],
-    };
+    return { content: [textContent(DOCKER_NOT_RUNNING_ERROR)] };
   }
 
   const telemetry: Record<string, unknown> = {};
-
-  const dependenciesRecord = preprocessDependencies({
-    dependencies,
-    image,
-  });
-
+  const dependenciesRecord = preprocessDependencies({ dependencies, image });
   const containerId = `js-ephemeral-${randomUUID()}`;
   const tmpDir = tmp.dirSync({ unsafeCleanup: true });
   const { memFlag, cpuFlag } = computeResourceLimits(image);
@@ -88,12 +85,7 @@ export default async function runJsEphemeral({
     );
 
     // Prepare workspace locally
-    const localWorkspace = await prepareWorkspace({
-      code,
-      dependenciesRecord,
-    });
-
-    // Copy files into container
+    const localWorkspace = await prepareWorkspace({ code, dependenciesRecord });
     execSync(`docker cp ${localWorkspace.name}/. ${containerId}:/workspace`);
 
     // Generate snapshot of the workspace
@@ -101,8 +93,8 @@ export default async function runJsEphemeral({
     const snapshot = await getSnapshot(getMountPointDir());
 
     // Run install and script inside container
-    const installCmd = `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`;
-    const runCmd = `node index.js`;
+    const installCmd =
+      'npm install --omit=dev --prefer-offline --no-audit --loglevel=error';
 
     if (dependencies.length > 0) {
       const installStart = Date.now();
@@ -117,12 +109,11 @@ export default async function runJsEphemeral({
       telemetry.installOutput = 'Skipped npm install (no dependencies)';
     }
 
-    const runStart = Date.now();
-    const rawOutput = execSync(
-      `docker exec ${containerId} /bin/sh -c ${JSON.stringify(runCmd)}`,
-      { encoding: 'utf8' }
-    );
-    telemetry.runTimeMs = Date.now() - runStart;
+    const { output, error, duration } = safeExecNodeInContainer({
+      containerId,
+    });
+    telemetry.runTimeMs = duration;
+    if (error) return getContentFromError(error, telemetry);
 
     // Detect the file changed during the execution of the tool in the mounted workspace
     // and report the changes to the user
@@ -136,7 +127,7 @@ export default async function runJsEphemeral({
 
     return {
       content: [
-        textContent(`Node.js process output:\n${rawOutput}`),
+        textContent(`Node.js process output:\n${output}`),
         ...extractedContents,
         textContent(`Telemetry:\n${JSON.stringify(telemetry, null, 2)}`),
       ],

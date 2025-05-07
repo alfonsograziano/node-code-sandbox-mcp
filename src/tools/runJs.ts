@@ -13,6 +13,10 @@ import {
   getMountPointDir,
   getSnapshot,
 } from '../snapshotUtils.ts';
+import {
+  getContentFromError,
+  safeExecNodeInContainer,
+} from '../dockerUtils.ts';
 
 const NodeDependency = z.object({
   name: z.string().describe('npm package name, e.g. lodash'),
@@ -69,7 +73,7 @@ export default async function runJs({
   const localWorkspace = await prepareWorkspace({ code, dependenciesRecord });
   execSync(`docker cp ${localWorkspace.name}/. ${container_id}:/workspace`);
 
-  let rawOutput: string;
+  let rawOutput: string = '';
 
   // Generate snapshot of the workspace
   const snapshotStartTime = Date.now();
@@ -91,10 +95,12 @@ export default async function runJs({
       telemetry.installOutput = 'Skipped npm install (no dependencies)';
     }
 
-    const runScript = `nohup node index.js > output.log 2>&1 &`;
-    execSync(
-      `docker exec ${container_id} /bin/sh -c ${JSON.stringify(runScript)}`
-    );
+    const { error, duration } = safeExecNodeInContainer({
+      containerId: container_id,
+      command: `nohup node index.js > output.log 2>&1 &`,
+    });
+    telemetry.runTimeMs = duration;
+    if (error) return getContentFromError(error, telemetry);
 
     await waitForPortHttp(listenOnPort);
     rawOutput = `Server started in background; logs at /output.log`;
@@ -113,13 +119,13 @@ export default async function runJs({
       telemetry.installOutput = 'Skipped npm install (no dependencies)';
     }
 
-    const runStart = Date.now();
-    const runCmd = `node index.js`;
-    rawOutput = execSync(
-      `docker exec ${container_id} /bin/sh -c ${JSON.stringify(runCmd)}`,
-      { encoding: 'utf8' }
-    );
-    telemetry.runTimeMs = Date.now() - runStart;
+    const { output, error, duration } = safeExecNodeInContainer({
+      containerId: container_id,
+    });
+
+    if (output) rawOutput = output;
+    telemetry.runTimeMs = duration;
+    if (error) return getContentFromError(error, telemetry);
   }
 
   // Detect the file changed during the execution of the tool in the mounted workspace
