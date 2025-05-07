@@ -9,6 +9,7 @@ import {
   generateSuggestedImages,
   isDockerRunning,
   preprocessDependencies,
+  computeResourceLimits,
 } from '../utils.ts';
 import { prepareWorkspace, getFilesDir } from '../runUtils.ts';
 import {
@@ -76,14 +77,7 @@ export default async function runJsEphemeral({
 
   const containerId = `js-ephemeral-${randomUUID()}`;
   const tmpDir = tmp.dirSync({ unsafeCleanup: true });
-
-  const memFlag = process.env.SANDBOX_MEMORY_LIMIT
-    ? `--memory ${process.env.SANDBOX_MEMORY_LIMIT}`
-    : '';
-
-  const cpuFlag = process.env.SANDBOX_CPU_LIMIT
-    ? `--cpus ${process.env.SANDBOX_CPU_LIMIT}`
-    : '';
+  const { memFlag, cpuFlag } = computeResourceLimits(image);
 
   try {
     // Start an ephemeral container
