@@ -70,6 +70,10 @@ You can follow the [Official Guide](https://modelcontextprotocol.io/quickstart/u
         "$HOME/Desktop/sandbox-output:/root",
         "-e",
         "FILES_DIR=$HOME/Desktop/sandbox-output",
+        "-e",
+        "SANDBOX_MEMORY_LIMIT=512m", // optional
+        "-e",
+        "SANDBOX_CPU_LIMIT=0.75", // optional
         "alfonsograziano/node-code-sandbox-mcp"
       ]
     }
@@ -77,7 +81,7 @@ You can follow the [Official Guide](https://modelcontextprotocol.io/quickstart/u
 }
 ```
 
-or with NPX: 
+or with NPX:
 
 ```json
 {
@@ -87,7 +91,9 @@ or with NPX:
       "command": "npx",
       "args": ["-y", "node-code-sandbox-mcp"],
       "env": {
-        "FILES_DIR": "/Users/alfonsograziano/Desktop/node-sandbox"
+        "FILES_DIR": "/Users/alfonsograziano/Desktop/node-sandbox",
+        "SANDBOX_MEMORY_LIMIT": "512m", // optional
+        "SANDBOX_CPU_LIMIT": "0.75" // optional
       }
     }
   }
@@ -108,6 +114,8 @@ docker run --rm -it \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v "$HOME/Desktop/sandbox-output":"/root" \
   -e FILES_DIR="$HOME/Desktop/sandbox-output" \
+  -e SANDBOX_MEMORY_LIMIT="512m" \
+  -e SANDBOX_CPU_LIMIT="0.5" \
   alfonsograziano/node-code-sandbox-mcp stdio
 ```
 
@@ -133,6 +141,8 @@ Install js-sandbox-mcp (NPX) Install js-sandbox-mcp (Docker)
                 "-v", "/var/run/docker.sock:/var/run/docker.sock",
                 "-v", "$HOME/Desktop/sandbox-output:/root",
                 "-e", "FILES_DIR=$HOME/Desktop/sandbox-output",
+                "-e", "SANDBOX_MEMORY_LIMIT=512m",
+                "-e", "SANDBOX_CPU_LIMIT=1",
                 "alfonsograziano/node-code-sandbox-mcp"
               ]
         }
