@@ -102,13 +102,18 @@ export default async function runJsEphemeral({
     const installCmd = `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`;
     const runCmd = `node index.js`;
 
-    const installStart = Date.now();
-    const installOutput = execSync(
-      `docker exec ${containerId} /bin/sh -c ${JSON.stringify(installCmd)}`,
-      { encoding: 'utf8' }
-    );
-    telemetry.installTimeMs = Date.now() - installStart;
-    telemetry.installOutput = installOutput;
+    if (dependencies.length > 0) {
+      const installStart = Date.now();
+      const installOutput = execSync(
+        `docker exec ${containerId} /bin/sh -c ${JSON.stringify(installCmd)}`,
+        { encoding: 'utf8' }
+      );
+      telemetry.installTimeMs = Date.now() - installStart;
+      telemetry.installOutput = installOutput;
+    } else {
+      telemetry.installTimeMs = 0;
+      telemetry.installOutput = 'Skipped npm install (no dependencies)';
+    }
 
     const runStart = Date.now();
     const rawOutput = execSync(

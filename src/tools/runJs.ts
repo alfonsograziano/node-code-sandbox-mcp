@@ -76,15 +76,20 @@ export default async function runJs({
   const snapshot = await getSnapshot(getMountPointDir());
 
   if (listenOnPort) {
-    const installStart = Date.now();
-    const installOutput = execSync(
-      `docker exec ${container_id} /bin/sh -c ${JSON.stringify(
-        `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`
-      )}`,
-      { encoding: 'utf8' }
-    );
-    telemetry.installTimeMs = Date.now() - installStart;
-    telemetry.installOutput = installOutput;
+    if (dependencies.length > 0) {
+      const installStart = Date.now();
+      const installOutput = execSync(
+        `docker exec ${container_id} /bin/sh -c ${JSON.stringify(
+          `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`
+        )}`,
+        { encoding: 'utf8' }
+      );
+      telemetry.installTimeMs = Date.now() - installStart;
+      telemetry.installOutput = installOutput;
+    } else {
+      telemetry.installTimeMs = 0;
+      telemetry.installOutput = 'Skipped npm install (no dependencies)';
+    }
 
     const runScript = `nohup node index.js > output.log 2>&1 &`;
     execSync(
@@ -94,14 +99,19 @@ export default async function runJs({
     await waitForPortHttp(listenOnPort);
     rawOutput = `Server started in background; logs at /output.log`;
   } else {
-    const installStart = Date.now();
-    const fullCmd = `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`;
-    const installOutput = execSync(
-      `docker exec ${container_id} /bin/sh -c ${JSON.stringify(fullCmd)}`,
-      { encoding: 'utf8' }
-    );
-    telemetry.installTimeMs = Date.now() - installStart;
-    telemetry.installOutput = installOutput;
+    if (dependencies.length > 0) {
+      const installStart = Date.now();
+      const fullCmd = `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`;
+      const installOutput = execSync(
+        `docker exec ${container_id} /bin/sh -c ${JSON.stringify(fullCmd)}`,
+        { encoding: 'utf8' }
+      );
+      telemetry.installTimeMs = Date.now() - installStart;
+      telemetry.installOutput = installOutput;
+    } else {
+      telemetry.installTimeMs = 0;
+      telemetry.installOutput = 'Skipped npm install (no dependencies)';
+    }
 
     const runStart = Date.now();
     const runCmd = `node index.js`;
