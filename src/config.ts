@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
 const DEFAULT_TIMEOUT_SECONDS = 3600;
-//TODO: add env var validation
 const DEFAULT_RUN_SCRIPT_TIMEOUT = 30_000;
 
 const envSchema = z.object({
@@ -33,13 +32,23 @@ function loadConfig() {
     }
   }
 
+  const runScriptTimeoutMillisecondsString = parsedEnv.data.RUN_SCRIPT_TIMEOUT;
+  let runScriptTimeoutMilliseconds = DEFAULT_RUN_SCRIPT_TIMEOUT;
+
+  if (runScriptTimeoutMillisecondsString) {
+    const parsedSeconds = parseInt(runScriptTimeoutMillisecondsString, 10);
+    if (!isNaN(parsedSeconds) && parsedSeconds > 0) {
+      runScriptTimeoutMilliseconds = parsedSeconds;
+    }
+  }
+
   const milliseconds = seconds * 1000;
 
   return configSchema.parse({
     containerTimeoutSeconds: seconds,
     containerTimeoutMilliseconds: milliseconds,
-    runScriptTimeoutMilliseconds: 5_000,
+    runScriptTimeoutMilliseconds: runScriptTimeoutMilliseconds,
   });
 }
 
-export const config = loadConfig();
+export const getConfig = loadConfig;

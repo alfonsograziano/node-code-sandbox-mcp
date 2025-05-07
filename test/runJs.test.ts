@@ -166,31 +166,34 @@ describe('runJs basic execution', () => {
   });
 
   it('should hang indefinitely until a timeout error gets triggered', async () => {
+    //Simulating a 10 seconds timeout
+    process.env.RUN_SCRIPT_TIMEOUT = '10000';
     const result = await runJs({
       container_id: containerId,
       code: `
         (async () => {
-          console.log("🕒 Hanging for 40 seconds…");
-          await new Promise((resolve) => setTimeout(resolve, 40_000));
-          console.log("✅ Done waiting 40 seconds, exiting now.");
+          console.log("🕒 Hanging for 20 seconds…");
+          await new Promise((resolve) => setTimeout(resolve, 20_000));
+          console.log("✅ Done waiting 20 seconds, exiting now.");
         })();
       `,
     });
 
-    expect(result).toBeDefined();
-    expect(result.content).toBeDefined();
+    //Cleanup
+    delete process.env.RUN_SCRIPT_TIMEOUT;
 
-    const timeoutError = result.content.find(
+    const execError = result.content.find(
       (item) =>
-        item.type === 'text' && item.text.includes('Error: execution timed out')
+        item.type === 'text' && item.text.startsWith('Error during execution:')
     );
-    expect(timeoutError).toBeDefined();
+    expect(execError).toBeDefined();
+    expect((execError as McpContentText).text).toContain('ETIMEDOUT');
 
     const telemetryText = result.content.find(
       (item) => item.type === 'text' && item.text.startsWith('Telemetry:')
     );
     expect(telemetryText).toBeDefined();
-  });
+  }, 20_000);
 
   it('should report execution error for runtime exceptions', async () => {
     const result = await runJs({

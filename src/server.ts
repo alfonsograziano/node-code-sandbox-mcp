@@ -19,7 +19,7 @@ import runJsEphemeral, {
 import mime from 'mime-types';
 import fs from 'fs/promises';
 import { z } from 'zod';
-import { config } from './config.ts';
+import { getConfig } from './config.ts';
 import { startScavenger, cleanActiveContainers } from './containerUtils.ts';
 import { setServerInstance, logger } from './logger.ts';
 
@@ -137,8 +137,8 @@ server.prompt('run-node-js-script', { prompt: z.string() }, ({ prompt }) => ({
 }));
 
 const scavengerIntervalHandle = startScavenger(
-  config.containerTimeoutMilliseconds,
-  config.containerTimeoutSeconds
+  getConfig().containerTimeoutMilliseconds,
+  getConfig().containerTimeoutSeconds
 );
 
 async function gracefulShutdown(signal: string) {
@@ -167,5 +167,5 @@ logger.info('Initializing server...');
 await server.connect(transport);
 logger.info('Server started and connected successfully');
 logger.info(
-  `Container timeout set to: ${config.containerTimeoutSeconds} seconds (${config.containerTimeoutMilliseconds}ms)`
+  `Container timeout set to: ${getConfig().containerTimeoutSeconds} seconds (${getConfig().containerTimeoutMilliseconds}ms)`
 );

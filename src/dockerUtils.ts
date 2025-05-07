@@ -1,7 +1,7 @@
 import { exec, execSync } from 'child_process';
 import util from 'util';
 import { logger } from './logger.ts';
-import { config } from './config.ts';
+import { getConfig } from './config.ts';
 import { textContent } from './types.ts';
 
 const execPromise = util.promisify(exec);
@@ -46,7 +46,7 @@ export type NodeExecResult = {
 
 export function safeExecNodeInContainer({
   containerId,
-  timeoutMs = config.runScriptTimeoutMilliseconds,
+  timeoutMs = getConfig().runScriptTimeoutMilliseconds,
   command = 'node index.js',
 }: {
   containerId: string;

@@ -93,40 +93,36 @@ describe('runJsEphemeral', () => {
         throw new Error("Expected telemetry item to be of type 'text'");
       }
     });
-    //TODO: Add env var here to make the test last way less than 40 seconds
+
     it('should hang indefinitely until a timeout error gets triggered', async () => {
+      //Simulating a 10 seconds timeout
+      process.env.RUN_SCRIPT_TIMEOUT = '10000';
       const result = await runJsEphemeral({
         code: `
           (async () => {
-            console.log("🕒 Hanging for 40 seconds…");
-            await new Promise((resolve) => setTimeout(resolve, 40_000));
-            console.log("✅ Done waiting 40 seconds, exiting now.");
+            console.log("🕒 Hanging for 20 seconds…");
+            await new Promise((resolve) => setTimeout(resolve, 20_000));
+            console.log("✅ Done waiting 20 seconds, exiting now.");
           })();
-        `,
+           `,
       });
 
-      expect(result).toBeDefined();
-      expect(result.content).toBeDefined();
+      //Cleanup
+      delete process.env.RUN_SCRIPT_TIMEOUT;
 
-      // Expect a timeout error
-      const timeoutError = result.content.find(
+      const execError = result.content.find(
         (item) =>
           item.type === 'text' &&
-          (item as McpContentText).text.includes('Error: execution timed out')
+          item.text.startsWith('Error during execution:')
       );
-      expect(timeoutError).toBeDefined();
-      expect((timeoutError as McpContentText).text).toContain(
-        'Error: execution timed out'
-      );
+      expect(execError).toBeDefined();
+      expect((execError as McpContentText).text).toContain('ETIMEDOUT');
 
-      // Expect telemetry to be present
       const telemetryText = result.content.find(
-        (item) =>
-          item.type === 'text' &&
-          (item as McpContentText).text.startsWith('Telemetry:')
+        (item) => item.type === 'text' && item.text.startsWith('Telemetry:')
       );
       expect(telemetryText).toBeDefined();
-    }, 50_000);
+    }, 20_000);
 
     it('should report execution error for runtime exceptions', async () => {
       const result = await runJsEphemeral({
