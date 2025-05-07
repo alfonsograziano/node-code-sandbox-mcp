@@ -1,9 +1,11 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import { type McpContent, textContent } from './types.ts';
+import path from 'node:path';
+import { glob, stat, readFile } from 'node:fs/promises';
+import { pathToFileURL } from 'node:url';
+
 import mime from 'mime-types';
-import { pathToFileURL } from 'url';
+
 import { getFilesDir } from './runUtils.ts';
+import { type McpContent, textContent } from './types.ts';
 import { isRunningInDocker } from './utils.ts';
 
 type ChangeType = 'created' | 'updated' | 'deleted';
@@ -22,38 +24,34 @@ export const getMountPointDir = () => {
   return getFilesDir();
 };
 
-export function getSnapshot(dir: string): FileSnapshot {
+export async function getSnapshot(dir: string): Promise<FileSnapshot> {
   const snapshot: FileSnapshot = {};
 
-  function walk(currentPath: string) {
-    const entries = fs.readdirSync(currentPath, { withFileTypes: true });
+  const executor = glob('**/*', {
+    cwd: dir,
+    withFileTypes: true,
+    exclude: ['.git', 'node_modules'],
+  });
 
-    for (const entry of entries) {
-      const fullPath = path.join(currentPath, entry.name);
-      const stats = fs.statSync(fullPath);
-
-      snapshot[fullPath] = {
-        mtimeMs: stats.mtimeMs,
-        isDirectory: entry.isDirectory(),
-      };
-
-      if (entry.isDirectory()) {
-        walk(fullPath);
-      }
-    }
+  for await (const entry of executor) {
+    const fullPath = path.join(entry.parentPath, entry.name);
+    const stats = await stat(fullPath);
+    snapshot[fullPath] = {
+      mtimeMs: stats.mtimeMs,
+      isDirectory: entry.isDirectory(),
+    };
   }
 
-  walk(dir);
   return snapshot;
 }
 
-export function detectChanges(
+export async function detectChanges(
   prevSnapshot: FileSnapshot,
   dir: string,
   sinceTimeMs: number
-): Change[] {
+): Promise<Change[]> {
   const changes: Change[] = [];
-  const currentSnapshot = getSnapshot(dir);
+  const currentSnapshot = await getSnapshot(dir);
 
   const allPaths = new Set([
     ...Object.keys(prevSnapshot),
@@ -118,7 +116,7 @@ export async function changesToMcpContent(
     const mimeType = mime.lookup(change.path) || 'application/octet-stream';
 
     if (imageTypes.has(mimeType)) {
-      const b64 = await fs.promises.readFile(change.path, {
+      const b64 = await readFile(change.path, {
         encoding: 'base64',
       });
       contents.push({
