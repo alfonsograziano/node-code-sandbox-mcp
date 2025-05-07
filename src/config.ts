@@ -20,10 +20,6 @@ function loadConfig() {
   const parsedEnv = envSchema.safeParse(process.env);
 
   if (!parsedEnv.success) {
-    // console.error(
-    //   '❌ Invalid environment variables:',
-    //   parsedEnv.error.flatten().fieldErrors
-    // );
     throw new Error('Invalid environment variables');
   }
 
@@ -34,30 +30,16 @@ function loadConfig() {
     const parsedSeconds = parseInt(timeoutString, 10);
     if (!isNaN(parsedSeconds) && parsedSeconds > 0) {
       seconds = parsedSeconds;
-    } else {
-      // console.warn(
-      //   `⚠️ Invalid NODE_CONTAINER_TIMEOUT value "${timeoutString}". Using default: ${DEFAULT_TIMEOUT_SECONDS}s`
-      // );
     }
   }
 
   const milliseconds = seconds * 1000;
 
-  try {
-    return configSchema.parse({
-      containerTimeoutSeconds: seconds,
-      containerTimeoutMilliseconds: milliseconds,
-      runScriptTimeoutMilliseconds: 5_000,
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      // console.error(
-      //   '❌ Invalid derived config values:',
-      //   error.flatten().fieldErrors
-      // );
-    }
-    throw new Error('Failed to create valid config');
-  }
+  return configSchema.parse({
+    containerTimeoutSeconds: seconds,
+    containerTimeoutMilliseconds: milliseconds,
+    runScriptTimeoutMilliseconds: 5_000,
+  });
 }
 
 export const config = loadConfig();
