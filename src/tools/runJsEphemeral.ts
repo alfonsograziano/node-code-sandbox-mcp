@@ -10,7 +10,11 @@ import {
   isDockerRunning,
   preprocessDependencies,
 } from '../utils.ts';
-import { prepareWorkspace, getFilesDir } from '../runUtils.ts';
+import {
+  prepareWorkspace,
+  getFilesDir,
+  getContainerResourceLimits,
+} from '../runUtils.ts';
 import {
   changesToMcpContent,
   detectChanges,
@@ -77,10 +81,12 @@ export default async function runJsEphemeral({
   const containerId = `js-ephemeral-${randomUUID()}`;
   const tmpDir = tmp.dirSync({ unsafeCleanup: true });
 
+  const { memory, cpus } = getContainerResourceLimits();
+
   try {
     // Start an ephemeral container
     execSync(
-      `docker run -d --network host --memory 512m --cpus 1 ` +
+      `docker run -d --network host --memory ${memory} --cpus ${cpus} ` +
         `--workdir /workspace -v ${getFilesDir()}:/workspace/files ` +
         `--name ${containerId} ${image} tail -f /dev/null`
     );

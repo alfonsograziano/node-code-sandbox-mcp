@@ -95,3 +95,13 @@ export function getHostOutputDir(): string {
 // JS_SANDBOX_OUTPUT_DIR is kept for retrocompatibility as this is the name of the old env var
 export const getFilesDir = () =>
   (process.env.FILES_DIR || process.env.JS_SANDBOX_OUTPUT_DIR) as string;
+
+export function getContainerResourceLimits() {
+  const memory = process.env.SANDBOX_MEMORY_LIMIT ?? '512m';
+  const cpus = process.env.SANDBOX_CPU_LIMIT ?? '1';
+
+  return {
+    memory,
+    cpus,
+  };
+}

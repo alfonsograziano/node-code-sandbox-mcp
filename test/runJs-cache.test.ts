@@ -3,10 +3,13 @@ import * as tmp from 'tmp';
 import { execSync } from 'node:child_process';
 import runJs from '../src/tools/runJs.ts';
 import { DEFAULT_NODE_IMAGE } from '../src/utils.ts';
+import { getContainerResourceLimits } from '../src/runUtils.ts';
 
 function startSandboxContainer(): string {
+  const { memory, cpus } = getContainerResourceLimits();
+
   return execSync(
-    `docker run -d --network host --memory 512m --cpus 1 --workdir /workspace ${DEFAULT_NODE_IMAGE} tail -f /dev/null`,
+    `docker run -d --network host --memory ${memory} --cpus ${cpus} --workdir /workspace ${DEFAULT_NODE_IMAGE} tail -f /dev/null`,
     { encoding: 'utf-8' }
   ).trim();
 }

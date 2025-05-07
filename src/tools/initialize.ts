@@ -7,7 +7,7 @@ import {
   DOCKER_NOT_RUNNING_ERROR,
   isDockerRunning,
 } from '../utils.ts';
-import { getFilesDir } from '../runUtils.ts';
+import { getFilesDir, getContainerResourceLimits } from '../runUtils.ts';
 import { activeSandboxContainers } from '../containerUtils.ts';
 import { logger } from '../logger.ts';
 
@@ -53,9 +53,11 @@ export default async function initializeSandbox({
   ];
   const labelArgs = labels.map((label) => `--label "${label}"`).join(' ');
 
+  const { memory, cpus } = getContainerResourceLimits();
+
   try {
     execSync(
-      `docker run -d ${portOption} --memory 512m --cpus 1 ` +
+      `docker run -d ${portOption} --memory ${memory} --cpus ${cpus} ` +
         `--workdir /workspace -v ${getFilesDir()}:/workspace/files ` +
         `${labelArgs} ` + // Add labels here
         `--name ${containerId} ${image} tail -f /dev/null`
