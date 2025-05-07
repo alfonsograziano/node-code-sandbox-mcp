@@ -123,6 +123,30 @@ describe('runJs basic execution', () => {
     }
   });
 
+  it('should skip npm install if no dependencies are provided', async () => {
+    const result = await runJs({
+      container_id: containerId,
+      code: "console.log('No deps');",
+      dependencies: [],
+    });
+
+    const telemetryItem = result.content.find(
+      (c) => c.type === 'text' && c.text.startsWith('Telemetry:')
+    );
+
+    expect(telemetryItem).toBeDefined();
+    if (telemetryItem?.type === 'text') {
+      const telemetry = JSON.parse(
+        telemetryItem.text.replace('Telemetry:\n', '')
+      );
+
+      expect(telemetry.installTimeMs).toBe(0);
+      expect(telemetry.installOutput).toBe(
+        'Skipped npm install (no dependencies)'
+      );
+    }
+  });
+
   it('should install lodash and use it', async () => {
     const result = await runJs({
       container_id: containerId,

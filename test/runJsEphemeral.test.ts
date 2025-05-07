@@ -94,6 +94,29 @@ describe('runJsEphemeral', () => {
       }
     });
 
+    it('should skip npm install if no dependencies are provided', async () => {
+      const result = await runJsEphemeral({
+        code: "console.log('No deps');",
+        dependencies: [],
+      });
+
+      const telemetryItem = result.content.find(
+        (c) => c.type === 'text' && c.text.startsWith('Telemetry:')
+      );
+
+      expect(telemetryItem).toBeDefined();
+      if (telemetryItem?.type === 'text') {
+        const telemetry = JSON.parse(
+          telemetryItem.text.replace('Telemetry:\n', '')
+        );
+
+        expect(telemetry.installTimeMs).toBe(0);
+        expect(telemetry.installOutput).toBe(
+          'Skipped npm install (no dependencies)'
+        );
+      }
+    });
+
     it('should generate a valid QR code resource', async () => {
       const result = await runJsEphemeral({
         code: `
