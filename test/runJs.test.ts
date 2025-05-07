@@ -4,6 +4,7 @@ import { z } from 'zod';
 import runJs, { argSchema } from '../src/tools/runJs.ts';
 import initializeSandbox from '../src/tools/initialize.ts';
 import stopSandbox from '../src/tools/stop.ts';
+import type { McpContentText } from '../src/types.ts';
 
 describe('argSchema', () => {
   it('should accept code and container_id and set defaults', () => {
@@ -138,5 +139,54 @@ describe('runJs basic execution', () => {
     if (stdout?.type === 'text') {
       expect(stdout.text).toContain('Hello lodash');
     }
+  });
+
+  it('should hang indefinitely until a timeout error gets triggered', async () => {
+    const result = await runJs({
+      container_id: containerId,
+      code: `
+        (async () => {
+          console.log("🕒 Hanging for 40 seconds…");
+          await new Promise((resolve) => setTimeout(resolve, 40_000));
+          console.log("✅ Done waiting 40 seconds, exiting now.");
+        })();
+      `,
+    });
+
+    expect(result).toBeDefined();
+    expect(result.content).toBeDefined();
+
+    const timeoutError = result.content.find(
+      (item) =>
+        item.type === 'text' && item.text.includes('Error: execution timed out')
+    );
+    expect(timeoutError).toBeDefined();
+
+    const telemetryText = result.content.find(
+      (item) => item.type === 'text' && item.text.startsWith('Telemetry:')
+    );
+    expect(telemetryText).toBeDefined();
+  });
+
+  it('should report execution error for runtime exceptions', async () => {
+    const result = await runJs({
+      container_id: containerId,
+      code: `throw new Error('boom');`,
+    });
+
+    expect(result).toBeDefined();
+    expect(result.content).toBeDefined();
+
+    const execError = result.content.find(
+      (item) =>
+        item.type === 'text' && item.text.startsWith('Error during execution:')
+    );
+    expect(execError).toBeDefined();
+    expect((execError as McpContentText).text).toContain('Error: boom');
+
+    const telemetryText = result.content.find(
+      (item) => item.type === 'text' && item.text.startsWith('Telemetry:')
+    );
+    expect(telemetryText).toBeDefined();
   });
 }, 10_000);

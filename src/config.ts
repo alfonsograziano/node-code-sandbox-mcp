@@ -1,15 +1,19 @@
 import { z } from 'zod';
 
 const DEFAULT_TIMEOUT_SECONDS = 3600;
+//TODO: add env var validation
+const DEFAULT_RUN_SCRIPT_TIMEOUT = 30_000;
 
 const envSchema = z.object({
   NODE_CONTAINER_TIMEOUT: z.string().optional(),
+  RUN_SCRIPT_TIMEOUT: z.string().optional(),
 });
 
 // Schema for the final config object with transformations and defaults
 const configSchema = z.object({
   containerTimeoutSeconds: z.number().positive(),
   containerTimeoutMilliseconds: z.number().positive(),
+  runScriptTimeoutMilliseconds: z.number().positive(),
 });
 
 function loadConfig() {
@@ -43,6 +47,7 @@ function loadConfig() {
     return configSchema.parse({
       containerTimeoutSeconds: seconds,
       containerTimeoutMilliseconds: milliseconds,
+      runScriptTimeoutMilliseconds: 5_000,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

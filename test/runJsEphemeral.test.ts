@@ -93,6 +93,66 @@ describe('runJsEphemeral', () => {
         throw new Error("Expected telemetry item to be of type 'text'");
       }
     });
+    //TODO: Add env var here to make the test last way less than 40 seconds
+    it('should hang indefinitely until a timeout error gets triggered', async () => {
+      const result = await runJsEphemeral({
+        code: `
+          (async () => {
+            console.log("🕒 Hanging for 40 seconds…");
+            await new Promise((resolve) => setTimeout(resolve, 40_000));
+            console.log("✅ Done waiting 40 seconds, exiting now.");
+          })();
+        `,
+      });
+
+      expect(result).toBeDefined();
+      expect(result.content).toBeDefined();
+
+      // Expect a timeout error
+      const timeoutError = result.content.find(
+        (item) =>
+          item.type === 'text' &&
+          (item as McpContentText).text.includes('Error: execution timed out')
+      );
+      expect(timeoutError).toBeDefined();
+      expect((timeoutError as McpContentText).text).toContain(
+        'Error: execution timed out'
+      );
+
+      // Expect telemetry to be present
+      const telemetryText = result.content.find(
+        (item) =>
+          item.type === 'text' &&
+          (item as McpContentText).text.startsWith('Telemetry:')
+      );
+      expect(telemetryText).toBeDefined();
+    }, 50_000);
+
+    it('should report execution error for runtime exceptions', async () => {
+      const result = await runJsEphemeral({
+        code: `throw new Error('boom');`,
+      });
+
+      expect(result).toBeDefined();
+      expect(result.content).toBeDefined();
+
+      // should hit our "other errors" branch
+      const execError = result.content.find(
+        (item) =>
+          item.type === 'text' &&
+          (item as McpContentText).text.startsWith('Error during execution:')
+      );
+      expect(execError).toBeDefined();
+      expect((execError as McpContentText).text).toContain('Error: boom');
+
+      // telemetry should still be returned
+      const telemetryText = result.content.find(
+        (item) =>
+          item.type === 'text' &&
+          (item as McpContentText).text.startsWith('Telemetry:')
+      );
+      expect(telemetryText).toBeDefined();
+    });
 
     it('should generate a valid QR code resource', async () => {
       const result = await runJsEphemeral({
