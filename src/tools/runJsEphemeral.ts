@@ -77,10 +77,18 @@ export default async function runJsEphemeral({
   const containerId = `js-ephemeral-${randomUUID()}`;
   const tmpDir = tmp.dirSync({ unsafeCleanup: true });
 
+  const memFlag = process.env.SANDBOX_MEMORY_LIMIT
+    ? `--memory ${process.env.SANDBOX_MEMORY_LIMIT}`
+    : '';
+
+  const cpuFlag = process.env.SANDBOX_CPU_LIMIT
+    ? `--cpus ${process.env.SANDBOX_CPU_LIMIT}`
+    : '';
+
   try {
     // Start an ephemeral container
     execSync(
-      `docker run -d --network host --memory 512m --cpus 1 ` +
+      `docker run -d --network host ${memFlag} ${cpuFlag} ` +
         `--workdir /workspace -v ${getFilesDir()}:/workspace/files ` +
         `--name ${containerId} ${image} tail -f /dev/null`
     );

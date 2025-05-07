@@ -52,10 +52,17 @@ export default async function initializeSandbox({
     `mcp-creation-timestamp=${creationTimestamp}`,
   ];
   const labelArgs = labels.map((label) => `--label "${label}"`).join(' ');
+  const memFlag = process.env.SANDBOX_MEMORY_LIMIT
+    ? `--memory ${process.env.SANDBOX_MEMORY_LIMIT}`
+    : '';
+
+  const cpuFlag = process.env.SANDBOX_CPU_LIMIT
+    ? `--cpus ${process.env.SANDBOX_CPU_LIMIT}`
+    : '';
 
   try {
     execSync(
-      `docker run -d ${portOption} --memory 512m --cpus 1 ` +
+      `docker run -d ${portOption} ${memFlag} ${cpuFlag} ` +
         `--workdir /workspace -v ${getFilesDir()}:/workspace/files ` +
         `${labelArgs} ` + // Add labels here
         `--name ${containerId} ${image} tail -f /dev/null`
