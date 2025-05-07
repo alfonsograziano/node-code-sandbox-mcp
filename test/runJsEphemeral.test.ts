@@ -282,10 +282,23 @@ describe('runJsEphemeral', () => {
   }, 10_000);
 
   describe('runJsEphemeral error handling', () => {
-    it('should reject when the code throws an exception', async () => {
-      await expect(
-        runJsEphemeral({ code: "throw new Error('Test error');" })
-      ).rejects.toThrow('Test error');
+    it('should return an execution error and telemetry when the code throws', async () => {
+      const result = await runJsEphemeral({
+        code: "throw new Error('Test error');",
+      });
+
+      const execError = result.content.find(
+        (item) =>
+          item.type === 'text' &&
+          item.text.startsWith('Error during execution:')
+      );
+      expect(execError).toBeDefined();
+      expect((execError as McpContentText).text).toContain('Test error');
+
+      const telemetryText = result.content.find(
+        (item) => item.type === 'text' && item.text.startsWith('Telemetry:')
+      );
+      expect(telemetryText).toBeDefined();
     });
   });
 
