@@ -88,19 +88,24 @@ export default async function runJsEphemeral({
 
     // Generate snapshot of the workspace
     const snapshotStartTime = Date.now();
-    const snapshot = getSnapshot(getMountPointDir());
+    const snapshot = await getSnapshot(getMountPointDir());
 
     // Run install and script inside container
     const installCmd =
       'npm install --omit=dev --prefer-offline --no-audit --loglevel=error';
 
-    const installStart = Date.now();
-    const installOutput = execSync(
-      `docker exec ${containerId} /bin/sh -c ${JSON.stringify(installCmd)}`,
-      { encoding: 'utf8' }
-    );
-    telemetry.installTimeMs = Date.now() - installStart;
-    telemetry.installOutput = installOutput;
+    if (dependencies.length > 0) {
+      const installStart = Date.now();
+      const installOutput = execSync(
+        `docker exec ${containerId} /bin/sh -c ${JSON.stringify(installCmd)}`,
+        { encoding: 'utf8' }
+      );
+      telemetry.installTimeMs = Date.now() - installStart;
+      telemetry.installOutput = installOutput;
+    } else {
+      telemetry.installTimeMs = 0;
+      telemetry.installOutput = 'Skipped npm install (no dependencies)';
+    }
 
     const { output, error, duration } = safeExecNodeInContainer({
       containerId,
@@ -110,9 +115,13 @@ export default async function runJsEphemeral({
 
     // Detect the file changed during the execution of the tool in the mounted workspace
     // and report the changes to the user
-    const extractedContents = await changesToMcpContent(
-      detectChanges(snapshot, getMountPointDir(), snapshotStartTime)
+    const changes = await detectChanges(
+      snapshot,
+      getMountPointDir(),
+      snapshotStartTime
     );
+
+    const extractedContents = await changesToMcpContent(changes);
 
     return {
       content: [

@@ -77,18 +77,23 @@ export default async function runJs({
 
   // Generate snapshot of the workspace
   const snapshotStartTime = Date.now();
-  const snapshot = getSnapshot(getMountPointDir());
+  const snapshot = await getSnapshot(getMountPointDir());
 
   if (listenOnPort) {
-    const installStart = Date.now();
-    const installOutput = execSync(
-      `docker exec ${container_id} /bin/sh -c ${JSON.stringify(
-        `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`
-      )}`,
-      { encoding: 'utf8' }
-    );
-    telemetry.installTimeMs = Date.now() - installStart;
-    telemetry.installOutput = installOutput;
+    if (dependencies.length > 0) {
+      const installStart = Date.now();
+      const installOutput = execSync(
+        `docker exec ${container_id} /bin/sh -c ${JSON.stringify(
+          `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`
+        )}`,
+        { encoding: 'utf8' }
+      );
+      telemetry.installTimeMs = Date.now() - installStart;
+      telemetry.installOutput = installOutput;
+    } else {
+      telemetry.installTimeMs = 0;
+      telemetry.installOutput = 'Skipped npm install (no dependencies)';
+    }
 
     const { error, duration } = safeExecNodeInContainer({
       containerId: container_id,
@@ -100,14 +105,19 @@ export default async function runJs({
     await waitForPortHttp(listenOnPort);
     rawOutput = `Server started in background; logs at /output.log`;
   } else {
-    const installStart = Date.now();
-    const fullCmd = `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`;
-    const installOutput = execSync(
-      `docker exec ${container_id} /bin/sh -c ${JSON.stringify(fullCmd)}`,
-      { encoding: 'utf8' }
-    );
-    telemetry.installTimeMs = Date.now() - installStart;
-    telemetry.installOutput = installOutput;
+    if (dependencies.length > 0) {
+      const installStart = Date.now();
+      const fullCmd = `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`;
+      const installOutput = execSync(
+        `docker exec ${container_id} /bin/sh -c ${JSON.stringify(fullCmd)}`,
+        { encoding: 'utf8' }
+      );
+      telemetry.installTimeMs = Date.now() - installStart;
+      telemetry.installOutput = installOutput;
+    } else {
+      telemetry.installTimeMs = 0;
+      telemetry.installOutput = 'Skipped npm install (no dependencies)';
+    }
 
     const { output, error, duration } = safeExecNodeInContainer({
       containerId: container_id,
@@ -120,9 +130,13 @@ export default async function runJs({
 
   // Detect the file changed during the execution of the tool in the mounted workspace
   // and report the changes to the user
-  const extractedContents = await changesToMcpContent(
-    detectChanges(snapshot, getMountPointDir(), snapshotStartTime)
+  const changes = await detectChanges(
+    snapshot,
+    getMountPointDir(),
+    snapshotStartTime
   );
+
+  const extractedContents = await changesToMcpContent(changes);
   localWorkspace.removeCallback();
 
   return {

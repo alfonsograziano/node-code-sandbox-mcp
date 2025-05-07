@@ -23,7 +23,7 @@ describe('Filesystem snapshot and change detection', () => {
     tmpDir.removeCallback();
   });
 
-  it('getSnapshot returns correct structure for files and directories', () => {
+  it('getSnapshot returns correct structure for files and directories', async () => {
     const file1 = path.join(tmpDir.name, 'file1.txt');
     const subDir = path.join(tmpDir.name, 'sub');
     const file2 = path.join(subDir, 'file2.txt');
@@ -32,7 +32,7 @@ describe('Filesystem snapshot and change detection', () => {
     createDir(subDir);
     createFile(file2, 'World');
 
-    const snapshot = getSnapshot(tmpDir.name);
+    const snapshot = await getSnapshot(tmpDir.name);
 
     expect(Object.keys(snapshot)).toContain(file1);
     expect(Object.keys(snapshot)).toContain(subDir);
@@ -43,13 +43,13 @@ describe('Filesystem snapshot and change detection', () => {
     expect(snapshot[file2].isDirectory).toBe(false);
   });
 
-  it('detectChanges detects created files', () => {
-    const initialSnapshot = getSnapshot(tmpDir.name);
+  it('detectChanges detects created files', async () => {
+    const initialSnapshot = await getSnapshot(tmpDir.name);
 
     const newFile = path.join(tmpDir.name, 'newFile.txt');
     createFile(newFile, 'New content');
 
-    const changes = detectChanges(
+    const changes = await detectChanges(
       initialSnapshot,
       tmpDir.name,
       Date.now() - 1000
@@ -64,14 +64,14 @@ describe('Filesystem snapshot and change detection', () => {
     ]);
   });
 
-  it('detectChanges detects deleted files', () => {
+  it('detectChanges detects deleted files', async () => {
     const fileToDelete = path.join(tmpDir.name, 'toDelete.txt');
     createFile(fileToDelete, 'To be deleted');
 
-    const snapshotBeforeDelete = getSnapshot(tmpDir.name);
+    const snapshotBeforeDelete = await getSnapshot(tmpDir.name);
     fs.unlinkSync(fileToDelete);
 
-    const changes = detectChanges(
+    const changes = await detectChanges(
       snapshotBeforeDelete,
       tmpDir.name,
       Date.now() - 1000
@@ -90,13 +90,17 @@ describe('Filesystem snapshot and change detection', () => {
     const fileToUpdate = path.join(tmpDir.name, 'update.txt');
     createFile(fileToUpdate, 'Original');
 
-    const snapshot = getSnapshot(tmpDir.name);
+    const snapshot = await getSnapshot(tmpDir.name);
 
     // Wait to ensure mtimeMs changes
     await new Promise((resolve) => setTimeout(resolve, 20));
     fs.writeFileSync(fileToUpdate, 'Updated');
 
-    const changes = detectChanges(snapshot, tmpDir.name, Date.now() - 1000);
+    const changes = await detectChanges(
+      snapshot,
+      tmpDir.name,
+      Date.now() - 1000
+    );
 
     expect(changes).toEqual([
       {
