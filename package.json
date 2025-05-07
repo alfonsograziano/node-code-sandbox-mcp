@@ -9,7 +9,7 @@
     "dist"
   ],
   "scripts": {
-    "dev": "node src/server.ts",
+    "dev": "node --env-file .env --watch src/server.ts",
     "dev:evals": "node evals/index.ts",
     "build": "rimraf dist && tsc -p tsconfig.build.json && shx chmod +x dist/*.js",
     "start": "node dist/server.js",
