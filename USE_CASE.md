@@ -236,3 +236,12 @@ Then run this prompt:
 Run a JS script to read the file "books.json", filter all the books of the author "Jane Doe" and save the result in "books_filtered.json"
 
 To read and write from files, you always need to use the "files" directory which is exposed on the host machine.
+
+### Generate a Changelog
+
+I need to create a Changelog for this application: https://github.com/alfonsograziano/node-code-sandbox-mcp/compare/v1.0.2...master
+I'll release v1.1 soon and I want you to create and run a JS script that gets the diff and then you create the changelog.
+
+### Generate a PR description given a diff
+
+Run a JS script that looks at the diff in this PR: https://github.com/alfonsograziano/node-code-sandbox-mcp/pull/71/files then, given the diff, create for me a PR description in Markdown
