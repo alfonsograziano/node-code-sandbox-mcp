@@ -139,6 +139,7 @@ describe('utils', () => {
       expect(result).toEqual({
         lodash: '4.17.21',
         'chartjs-node-canvas': '4.0.0',
+        '@mermaid-js/mermaid-cli': '^11.4.2',
       });
     });
 

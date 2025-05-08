@@ -42,6 +42,7 @@ export function preprocessDependencies({
   // but we still need to explicitly declare it in package.json
   if (image?.includes('alfonsograziano/node-chartjs-canvas')) {
     dependenciesRecord['chartjs-node-canvas'] = '4.0.0';
+    dependenciesRecord['@mermaid-js/mermaid-cli'] = '^11.4.2';
   }
 
   return dependenciesRecord;
@@ -59,8 +60,13 @@ export const suggestedImages = {
     reason: 'Preconfigured for running Playwright scripts.',
   },
   'alfonsograziano/node-chartjs-canvas:latest': {
-    description: 'Chart.js image for chart generation.',
-    reason: 'Preconfigured for generating charts with chartjs-node-canvas.',
+    description:
+      'Chart.js image for chart generation and mermaid charts generation.',
+    reason: `'Preconfigured for generating charts with chartjs-node-canvas and Mermaid. Minimal Mermaid example:
+    import fs from "fs";
+    import { run } from "@mermaid-js/mermaid-cli";
+    fs.writeFileSync("./files/diagram.mmd", "graph LR; A-->B;", "utf8");
+    await run("./files/diagram.mmd", "./files/diagram.svg");`,
   },
 };
 

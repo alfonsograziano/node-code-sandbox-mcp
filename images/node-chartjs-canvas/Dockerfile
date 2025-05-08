@@ -1,24 +1,41 @@
-FROM node:lts
+# Build dependencies
+FROM node:lts AS builder
 
-# 1. Install both build-time and runtime deps for node-canvas
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends debian-archive-keyring && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
     build-essential python3 pkg-config \
-    libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev \
+    libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+RUN npm install --omit=dev --prefer-offline --no-audit chartjs-node-canvas@4.0.0 @mermaid-js/mermaid-cli
+
+# Chromium stage
+FROM node:lts-slim
+
+# Runtime dependencies only
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends debian-archive-keyring && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
     libcairo2 libpango1.0-0 libjpeg62-turbo libgif7 librsvg2-2 \
-    && rm -rf /var/lib/apt/lists/*
+    chromium && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN groupadd -r chromium && \
+    useradd -r -g chromium -G audio,video chromium && \
+    mkdir -p /home/chromium /workspace && \
+    chown -R chromium:chromium /home/chromium /workspace
 
 WORKDIR /workspace
+COPY --from=builder --chown=chromium:chromium /build/node_modules ./node_modules
 
-# 2. Pre-cache chartjs-node-canvas v4.0.0 in node_modules
-RUN npm install --omit=dev --prefer-offline --no-audit chartjs-node-canvas@4.0.0
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1 \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
+    HOME=/home/chromium
 
-# 3. Leave /workspace untouched.
-#    At runtime, mount or docker-cp in your real package.json, package-lock.json (if any) and index.js,
-#    then simply run:
-#
-#      npm install --prefer-offline --no-audit
-#      node index.js
-#
-#    npm will see that chartjs-node-canvas@4.0.0 & canvas already exist in node_modules
-#    and only fetch any new dependencies.
+USER chromium
+
+RUN ./node_modules/.bin/mmdc -h
