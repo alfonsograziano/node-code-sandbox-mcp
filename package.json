@@ -18,7 +18,15 @@
     "inspector": "npx @modelcontextprotocol/inspector npm run dev",
     "lint": "eslint . --ext .ts --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write .",
-    "prepublishOnly": "npm run build"
+    "check": "npm run lint && npm run format",
+    "pre-commit": "lint-staged",
+    "prepublishOnly": "npm run build",
+    "prepare": "husky",
+    "release": "standard-version",
+    "major": "npm run release -- --release-as major",
+    "minor": "npm run release -- --release-as minor",
+    "patch": "npm run release -- --release-as patch",
+    "push-release": "git push --follow-tags origin master"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.10.2",
@@ -29,7 +37,9 @@
     "vitest": "^3.1.2"
   },
   "devDependencies": {
-    "@types/express": "^5.0.1",
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@types/lint-staged": "^13.3.0",
     "@types/mime-types": "^2.1.4",
     "@types/node": "^22.15.12",
     "@types/tmp": "^0.2.6",
@@ -39,9 +49,12 @@
     "eslint": "^9.26.0",
     "eslint-config-prettier": "^10.1.2",
     "eslint-plugin-prettier": "^5.2.6",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.2",
     "prettier": "^3.5.3",
     "rimraf": "^6.0.1",
     "shx": "^0.4.0",
+    "standard-version": "^9.5.0",
     "typescript": "^5.8.3"
   },
   "engines": {

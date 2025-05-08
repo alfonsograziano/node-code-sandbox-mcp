@@ -61,8 +61,9 @@ export function safeExecNodeInContainer({
       { encoding: 'utf8', timeout: timeoutMs }
     );
     return { output, error: null, duration: Date.now() - runStart };
-  } catch (err: any) {
-    return { output: null, error: err, duration: Date.now() - runStart };
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    return { output: null, error, duration: Date.now() - runStart };
   }
 }
 
