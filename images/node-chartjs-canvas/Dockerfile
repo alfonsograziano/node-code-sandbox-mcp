@@ -2,6 +2,8 @@
 FROM node:lts AS builder
 
 RUN apt-get update && \
+    apt-get install -y --no-install-recommends debian-archive-keyring && \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential python3 pkg-config \
     libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev && \
@@ -15,6 +17,8 @@ FROM node:lts-slim
 
 # Runtime dependencies only
 RUN apt-get update && \
+    apt-get install -y --no-install-recommends debian-archive-keyring && \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
     libcairo2 libpango1.0-0 libjpeg62-turbo libgif7 librsvg2-2 \
     chromium && \
