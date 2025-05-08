@@ -1,0 +1,3 @@
+{
+  "{src,test,evals}/**/*.{ts,js,json}": "npm run check"
+}
