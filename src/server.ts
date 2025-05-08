@@ -22,6 +22,9 @@ import { z } from 'zod';
 import { getConfig } from './config.ts';
 import { startScavenger, cleanActiveContainers } from './containerUtils.ts';
 import { setServerInstance, logger } from './logger.ts';
+import getDependencyTypes, {
+  argSchema as getDependencyTypesSchema,
+} from './tools/getDependencyTypes.ts';
 
 export const serverRunId = randomUUID();
 setServerRunId(serverRunId);
@@ -92,6 +95,20 @@ server.tool(
 `,
   ephemeralSchema,
   runJsEphemeral
+);
+
+server.tool(
+  'get_dependency_types',
+  `
+  Given an array of npm package names (and optional versions), 
+  fetch whether each package ships its own TypeScript definitions 
+  or has a corresponding @types/… package, and return the raw .d.ts text.
+  
+  Useful whenwhen you're about to run a Node.js script against an unfamiliar dependency 
+  and want to inspect what APIs and types it exposes.
+  `,
+  getDependencyTypesSchema,
+  getDependencyTypes
 );
 
 server.resource(
