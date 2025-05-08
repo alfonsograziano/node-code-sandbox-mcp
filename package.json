@@ -1,6 +1,6 @@
 {
   "name": "node-code-sandbox-mcp",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "type": "module",
   "bin": {
     "node-code-sandbox-mcp": "dist/server.js"
