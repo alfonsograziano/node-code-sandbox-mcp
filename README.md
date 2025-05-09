@@ -2,7 +2,7 @@
 
 Node.js server implementing the Model Context Protocol (MCP) for running arbitrary JavaScript in ephemeral Docker containers with on‑the‑fly npm dependency installation.
 
-![Website Preview](https://raw.githubusercontent.com/alfonsograziano/node-code-sandbox-mcp/master/assets/images/website.png)
+![Website Preview](https://raw.githubusercontent.com/alfonsograziano/node-code-sandbox-mcp/master/assets/images/website_homepage.png)
 
 👉 [Look at the official website](https://jsdevai.com/)
 
