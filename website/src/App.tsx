@@ -120,8 +120,8 @@ const App: React.FC = () => {
         {/* Compact MCP Info Banner */}
         <div className="max-w-3xl mx-auto mb-8 px-4 py-3 bg-green-50 border border-green-200 text-sm rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-center sm:text-left">
           <div className="text-gray-800">
-            🧠 <strong>New to MCP?</strong> It’s a protocol that lets agents
-            like LLMs safely execute code in containers.
+            🧠 MCP is a protocol that lets AI models access tools and data
+            through a standardized interface.
           </div>
           <a
             href="https://modelcontextprotocol.io/"
@@ -151,7 +151,8 @@ const App: React.FC = () => {
             rel="noopener noreferrer"
             className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-300 text-gray-800 rounded-lg hover:bg-gray-100 transition"
           >
-            <Star size={16} className="text-yellow-500" /> Star on GitHub
+            <Star size={16} className="text-yellow-500" fill="yellow" /> Star on
+            GitHub
           </a>
         </div>
       </header>
@@ -189,9 +190,9 @@ const App: React.FC = () => {
             collaborator. 🚀
           </p>
           <p className="text-gray-800 mb-4">
-            If you’re excited about bringing <strong>Node.js</strong> into the
-            world of <strong>AI applications</strong>, leave a comment or DM
-            me—I'd love to have a chat!
+            If you're excited about bringing <strong>Node.js</strong> into the
+            world of <strong>AI applications</strong>, leave a comment or DM me,
+            I'd love to have a chat!
           </p>
           <a
             href="https://github.com/alfonsograziano/node-code-sandbox-mcp/issues"
