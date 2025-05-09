@@ -106,7 +106,7 @@ const App: React.FC = () => {
 
   const gridBg: React.CSSProperties = {
     backgroundImage:
-      'linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px)',
+      'linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px)',
     backgroundSize: '20px 20px',
   };
 
