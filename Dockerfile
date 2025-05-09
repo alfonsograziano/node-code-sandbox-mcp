@@ -21,7 +21,7 @@ RUN apt-get update && \
 
 # 4. Copy only package files & install production deps
 COPY package*.json ./
-RUN npm ci --production
+RUN  npm pkg delete scripts.prepare && npm ci --production
 
 # 5. Pull in the compiled output from builder
 COPY --from=builder /app/dist ./dist

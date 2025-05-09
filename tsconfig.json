@@ -21,12 +21,6 @@
     "target": "ESNext",
     "verbatimModuleSyntax": true
   },
-  "include": [
-    "src/**/*.ts",
-    "test/**/*.ts",
-    "evals/**/*.ts",
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["src/**/*.ts", "test/**/*.ts", "evals/**/*.ts"],
+  "exclude": ["node_modules"]
 }

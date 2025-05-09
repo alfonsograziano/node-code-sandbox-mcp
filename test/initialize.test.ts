@@ -5,7 +5,9 @@ import * as utils from '../src/utils.ts';
 
 vi.mock('node:child_process');
 vi.mock('../src/utils');
-vi.mocked(utils).computeResourceLimits = vi.fn().mockReturnValue({ memFlag:'', cpuFlag:'' });
+vi.mocked(utils).computeResourceLimits = vi
+  .fn()
+  .mockReturnValue({ memFlag: '', cpuFlag: '' });
 vi.mock('../src/runUtils', () => ({
   getFilesDir: vi.fn().mockReturnValue('/mock/files/dir'),
 }));
@@ -17,7 +19,10 @@ describe('initialize module', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.spyOn(utils, 'isDockerRunning').mockReturnValue(true);
-    vi.spyOn(utils, 'computeResourceLimits').mockReturnValue({ memFlag: '', cpuFlag: '' });
+    vi.spyOn(utils, 'computeResourceLimits').mockReturnValue({
+      memFlag: '',
+      cpuFlag: '',
+    });
     vi.spyOn(childProcess, 'execSync').mockImplementation(() =>
       Buffer.from('')
     );
