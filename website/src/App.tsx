@@ -117,10 +117,27 @@ const App: React.FC = () => {
         <h1 className="text-5xl font-extrabold mb-4">
           🐢🚀 Node.js Sandbox MCP Server
         </h1>
+        {/* Compact MCP Info Banner */}
+        <div className="max-w-3xl mx-auto mb-8 px-4 py-3 bg-green-50 border border-green-200 text-sm rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-center sm:text-left">
+          <div className="text-gray-800">
+            🧠 <strong>New to MCP?</strong> It’s a protocol that lets agents
+            like LLMs safely execute code in containers.
+          </div>
+          <a
+            href="https://modelcontextprotocol.io/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-green-700 font-medium hover:underline"
+          >
+            Learn more →
+          </a>
+        </div>
+
         <p className="text-lg text-gray-700 mb-8">
           Run JavaScript in secure, disposable Docker containers via the Model
           Context Protocol (MCP). Automatic dependency installation included.
         </p>
+
         <div className="flex justify-center gap-4">
           <a
             href="#use-cases"
@@ -159,7 +176,33 @@ const App: React.FC = () => {
       {/* Getting Started Section */}
       <GettingStarted />
 
-      {/* Filter */}
+      {/* Contribute Section */}
+      <section id="contribute" className="max-w-4xl mx-auto my-10">
+        <div className="bg-green-50 border border-green-200 p-6 rounded-xl shadow-md">
+          <h2 className="text-2xl font-bold mb-2">
+            🤝 Want to contribute to Node.js + AI?
+          </h2>
+          <p className="text-gray-800 mb-4">
+            Brilliant! If you want to help, I’m opening a few issues on my new
+            MCP server project. Since the project is still in its early stages,
+            it’s the <strong>perfect time to jump in</strong> and become a core
+            collaborator. 🚀
+          </p>
+          <p className="text-gray-800 mb-4">
+            If you’re excited about bringing <strong>Node.js</strong> into the
+            world of <strong>AI applications</strong>, leave a comment or DM
+            me—I'd love to have a chat!
+          </p>
+          <a
+            href="https://github.com/alfonsograziano/node-code-sandbox-mcp/issues"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+          >
+            View Open Issues →
+          </a>
+        </div>
+      </section>
 
       {/* Use Cases Grid */}
       <section id="use-cases" className="max-w-6xl mx-auto py-8">
