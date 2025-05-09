@@ -253,4 +253,26 @@ Using this schema:
     result:
       'An interactive slide deck HTML file is saved and ready to present.',
   },
+  {
+    title: 'Generate a Changelog',
+    description:
+      'Fetch the Git diff between two tags or branches and automatically generate a Markdown changelog.',
+    category: [
+      categories.AUTOMATION,
+      categories.DEVELOPMENT,
+      categories.FILE_GENERATION,
+    ],
+    prompt: `Write a Node.js script that uses the GitHub API to get the commit diff between v1.0.2 and master of the repo "alfonsograziano/node-code-sandbox-mcp". Summarize the changes and generate a Markdown changelog for the upcoming v1.1 release.`,
+    result:
+      'A Markdown changelog with categorized features, fixes, and improvements based on commit history and diff.',
+  },
+  {
+    title: 'Generate a PR Description from a Diff',
+    description:
+      'Fetch and analyze the file changes in a GitHub PR and generate a structured PR description in Markdown.',
+    category: [categories.AUTOMATION, categories.DEVELOPMENT],
+    prompt: `Use the GitHub API to fetch the diff from PR #71 on the "alfonsograziano/node-code-sandbox-mcp" repository. Analyze what was changed, added, or removed, and create a well-formatted PR description with sections like "What’s Changed", "Why", and "Additional Context".`,
+    result:
+      'A ready-to-use Markdown PR description summarizing the intent and scope of the pull request.',
+  },
 ];
