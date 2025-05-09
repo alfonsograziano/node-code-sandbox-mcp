@@ -4,7 +4,7 @@ Node.js server implementing the Model Context Protocol (MCP) for running arbitra
 
 ![Website Preview](https://raw.githubusercontent.com/alfonsograziano/node-code-sandbox-mcp/master/assets/images/website.png)
 
-👉 [Look at the official website](https://mcp.alfonsograziano.it/)
+👉 [Look at the official website](https://jsdevai.com/)
 
 ## Features
 
@@ -19,7 +19,7 @@ Node.js server implementing the Model Context Protocol (MCP) for running arbitra
 
 ## Explore Cool Use Cases
 
-If you want ideas for cool and powerful ways to use this library, check out the [use cases section on the website](https://mcp.alfonsograziano.it/#use-cases)
+If you want ideas for cool and powerful ways to use this library, check out the [use cases section on the website](https://jsdevai.com/#use-cases)
 It contains a curated list of prompts, examples, and creative experiments you can try with the Node.js Sandbox MCP Server.
 
 ## ⚠️ Prerequisites
