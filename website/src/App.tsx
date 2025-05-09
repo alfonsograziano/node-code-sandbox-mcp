@@ -124,7 +124,7 @@ const App: React.FC = () => {
         <div className="flex justify-center gap-4">
           <a
             href="#use-cases"
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
           >
             Explore Use Cases
           </a>
@@ -148,7 +148,7 @@ const App: React.FC = () => {
               key={i}
               className="bg-white bg-opacity-80 p-6 rounded-xl shadow-md"
             >
-              <Icon width={32} height={32} className="text-blue-600 mb-4" />
+              <Icon width={32} height={32} className="text-green-600 mb-4" />
               <h3 className="text-xl font-semibold mb-2">{title}</h3>
               <p className="text-gray-700">{description}</p>
             </div>
@@ -179,7 +179,7 @@ const App: React.FC = () => {
                 onClick={() => toggleCategory(cat)}
                 className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium transition-all ${
                   selectedCategories.includes(cat)
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-green-600 text-white'
                     : 'bg-white border border-gray-300 text-gray-800 hover:bg-gray-100'
                 }`}
               >
@@ -190,9 +190,9 @@ const App: React.FC = () => {
         </section>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredCases.map((u) => (
+          {filteredCases.map((u, index) => (
             <div
-              key={u.id}
+              key={index}
               onClick={() => openModal(u)}
               className="bg-white bg-opacity-80 p-6 rounded-xl shadow hover:shadow-lg cursor-pointer transition"
             >
@@ -204,7 +204,7 @@ const App: React.FC = () => {
                 {u.category.map((cat) => (
                   <span
                     key={cat}
-                    className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs"
+                    className="flex items-center gap-1 bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs"
                   >
                     <span>{cat}</span>
                   </span>
@@ -240,7 +240,7 @@ const App: React.FC = () => {
                 {selectedCase.category.map((cat) => (
                   <span
                     key={cat}
-                    className="flex items-center gap-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+                    className="flex items-center gap-1 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
                   >
                     <span>{cat}</span>
                   </span>
@@ -276,7 +276,7 @@ const App: React.FC = () => {
             href="https://github.com/alfonsograziano/node-code-sandbox-mcp"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 hover:underline"
+            className="text-green-600 hover:underline"
           >
             View full README
           </a>

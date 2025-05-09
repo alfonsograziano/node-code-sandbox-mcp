@@ -106,7 +106,7 @@ const GettingStarted: React.FC = () => {
                 className={clsx(
                   'px-4 py-2 rounded-full text-sm font-medium border transition-all',
                   selectedClient === tab.key
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-green-600 text-white'
                     : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                 )}
               >
@@ -121,7 +121,7 @@ const GettingStarted: React.FC = () => {
               className={clsx(
                 'px-3 py-1 rounded-full border text-sm font-medium',
                 variant === 'docker'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-green-600 text-white'
                   : 'bg-white text-gray-800 hover:bg-gray-100'
               )}
             >
@@ -132,7 +132,7 @@ const GettingStarted: React.FC = () => {
               className={clsx(
                 'px-3 py-1 rounded-full border text-sm font-medium',
                 variant === 'npx'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-green-600 text-white'
                   : 'bg-white text-gray-800 hover:bg-gray-100'
               )}
             >

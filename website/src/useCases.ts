@@ -13,11 +13,15 @@ export const categories = {
   AI: '🤖 AI',
   MATH: '➗ Math',
   FILE_PROCESSING: '📄 File Processing',
+  AUTOMATION: '⚙️ Automation',
+  SIMULATION: '🧪 Simulation',
+  FUN: '🎉 Fun & Games',
+  SECURITY: '🔐 Security',
+  AUDIO: '🔊 Audio',
 } as const;
 
 export type CategoryKey = keyof typeof categories;
 export interface UseCase {
-  id: number;
   title: string;
   description: string;
   category: string[];
@@ -28,7 +32,6 @@ export interface UseCase {
 
 export const useCases: UseCase[] = [
   {
-    id: 1,
     title: 'Generate a QR Code',
     description: 'Create a QR code from a URL and save it as an image file.',
     category: [categories.FILE_GENERATION, categories.IMAGES],
@@ -37,7 +40,6 @@ export const useCases: UseCase[] = [
       'An image file "qrcode.png" will be generated in the output folder, containing the QR code.',
   },
   {
-    id: 2,
     title: 'Test Regular Expressions',
     description:
       'Create and test a complex regular expression with unit tests.',
@@ -47,7 +49,6 @@ export const useCases: UseCase[] = [
       'Console output confirming all regex test cases passed and regex logic validated.',
   },
   {
-    id: 3,
     title: 'Create CSV with Random Data',
     description: 'Generate a CSV file with random names, numbers, and emails.',
     category: [categories.FILE_GENERATION, categories.DATA],
@@ -57,7 +58,6 @@ export const useCases: UseCase[] = [
       'A CSV file "fake_data.csv" with 200 rows of randomized data will appear in the output.',
   },
   {
-    id: 4,
     title: 'Scrape a Webpage Title',
     description: 'Fetch a webpage, save HTML, and extract the title.',
     category: [categories.WEB, categories.SCRAPING],
@@ -66,7 +66,6 @@ export const useCases: UseCase[] = [
       'A file "example.html" will be saved and the page title will be printed to the console.',
   },
   {
-    id: 5,
     title: 'Create a PDF Report',
     description: 'Generate a playful JavaScript tutorial for kids as a PDF.',
     category: [categories.FILE_GENERATION, categories.EDUCATION],
@@ -76,7 +75,6 @@ export const useCases: UseCase[] = [
       'A child-friendly PDF tutorial named "getting-started-javascript.pdf" will be created.',
   },
   {
-    id: 6,
     title: 'Fetch an API and Save to JSON',
     description: 'Fetch GitHub API data and save it locally.',
     category: [categories.WEB, categories.API, categories.FILE_GENERATION],
@@ -85,7 +83,6 @@ export const useCases: UseCase[] = [
       'A JSON file "nodejs_info.json" will be saved with details from the Node.js GitHub repository.',
   },
   {
-    id: 7,
     title: 'Markdown to HTML Converter',
     description: 'Convert Markdown content to HTML using a library.',
     category: [categories.FILE_GENERATION, categories.CONVERSION],
@@ -94,7 +91,6 @@ export const useCases: UseCase[] = [
       'The HTML version of the Markdown content will be saved in "content_converted.html".',
   },
   {
-    id: 8,
     title: 'Generate Random Data',
     description: 'Generate fake user data and save to JSON.',
     category: [categories.FILE_GENERATION, categories.DATA],
@@ -103,7 +99,6 @@ export const useCases: UseCase[] = [
       'A JSON file "fake_users.json" containing 100 fake users will be saved.',
   },
   {
-    id: 9,
     title: 'Evaluate Complex Math Expression',
     description: 'Use math.js to evaluate a very complex expression.',
     category: [categories.DEVELOPMENT, categories.MATH],
@@ -111,7 +106,6 @@ export const useCases: UseCase[] = [
     result: 'The result of the full expression will be logged to the console.',
   },
   {
-    id: 10,
     title: 'Take a Screenshot with Playwright',
     description: 'Launch Chromium and save a screenshot.',
     category: [categories.WEB, categories.IMAGES],
@@ -120,7 +114,6 @@ export const useCases: UseCase[] = [
       'A PNG screenshot named "screenshot_test.png" will be saved to the output.',
   },
   {
-    id: 11,
     title: 'Generate a Chart',
     description: 'Create a revenue chart using Chart.js.',
     category: [categories.DATA_VISUALIZATION, categories.IMAGES],
@@ -130,7 +123,6 @@ export const useCases: UseCase[] = [
       'An image file "chart.png" with the rendered revenue chart will be generated.',
   },
   {
-    id: 12,
     title: 'Summarize a Long Article',
     description: 'Extract Wikipedia article text and summarize it.',
     category: [categories.WEB, categories.AI, categories.SCRAPING],
@@ -139,7 +131,6 @@ export const useCases: UseCase[] = [
       'A bullet-point summary of the Node.js Wikipedia page will be returned via AI.',
   },
   {
-    id: 13,
     title: 'Refactor and Optimize JS Code',
     description: 'Refactor a loop-based function using modern JS.',
     category: [categories.DEVELOPMENT, categories.TESTING],
@@ -149,7 +140,6 @@ export const useCases: UseCase[] = [
       'A clean, optimized function using modern JS and tests will be logged.',
   },
   {
-    id: 14,
     title: 'Create a Mock Book API',
     description: 'Build an API from a schema with mock data.',
     category: [categories.WEB, categories.API, categories.DEVELOPMENT],
@@ -205,7 +195,6 @@ Using this schema:
       'A local API will be running with endpoints to fetch all or individual mock books.',
   },
   {
-    id: 15,
     title: 'File Manipulation',
     description: 'Read, filter, and write a JSON file.',
     category: [categories.FILE_PROCESSING, categories.DATA],
@@ -214,5 +203,54 @@ Using this schema:
     prompt: `Create a Node.js script to read "books.json", filter books by author "Jane Doe", and save them to "books_filtered.json".`,
     result:
       'A new file "books_filtered.json" will contain only books written by Jane Doe.',
+  },
+  {
+    title: 'Simulate Dice Rolls for a Game',
+    description: 'Run thousands of dice rolls and calculate probabilities.',
+    category: [categories.SIMULATION, categories.FUN],
+    prompt: `Write a Node.js script that simulates 100,000 rolls of two six-sided dice. Count and print the probability of each possible sum (2 to 12), rounded to 4 decimals.`,
+    result: 'Console output showing empirical probabilities for each dice sum.',
+  },
+  {
+    title: 'Create a Password Strength Checker',
+    description:
+      'Use zxcvbn to analyze password strength and suggest improvements.',
+    category: [categories.SECURITY, categories.DEVELOPMENT],
+    prompt: `Install and use the "zxcvbn" package to check the strength of this password "?p{4t5#z+oJh", and provide suggestions for improvement. Print the feedback to the console.`,
+    result: 'Console logs show password strength score and actionable tips.',
+  },
+  {
+    title: 'Explore NPM Package API Surface',
+    description:
+      'Analyze and extract the top-level functions, types, and exports of any npm package.',
+    category: [categories.DEVELOPMENT, categories.AI],
+    prompt: `Explore and explain the surface API and exported types of the npm package "lodash".`,
+    result:
+      'Console output summarizing the functions, classes, and type exports of lodash, including usage hints.',
+  },
+  {
+    title: 'Create Dependency Tree Diagram',
+    description:
+      'Visualize a local Node.js project’s internal dependency tree.',
+    category: [categories.DATA, categories.DEVELOPMENT],
+    prompt: `Run madge on the local ./src directory and output the dependency graph as a JSON or SVG.`,
+    result:
+      'An image or JSON structure representing the project’s internal module dependencies.',
+  },
+  {
+    title: 'Convert CSV to JSON',
+    description: 'Read a CSV file and output a clean, structured JSON version.',
+    category: [categories.FILE_PROCESSING, categories.CONVERSION],
+    prompt: `Read the file "data.csv", convert it to JSON format, and save it as "data.json".`,
+    result:
+      'File "data.json" created with structured data matching the CSV rows.',
+  },
+  {
+    title: 'Markdown Slide Deck Generator',
+    description: 'Convert a markdown document into HTML slides.',
+    category: [categories.FILE_GENERATION, categories.EDUCATION],
+    prompt: `Take "slides.md" and use "reveal.js" to generate an HTML slide deck in "slides.html".`,
+    result:
+      'An interactive slide deck HTML file is saved and ready to present.',
   },
 ];
