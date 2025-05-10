@@ -10,6 +10,9 @@ vi.mocked(utils).computeResourceLimits = vi
   .mockReturnValue({ memFlag: '', cpuFlag: '' });
 vi.mock('../src/runUtils', () => ({
   getFilesDir: vi.fn().mockReturnValue('/mock/files/dir'),
+  getMountFlag: vi
+    .fn()
+    .mockReturnValue('-v /mock/files/dir:/workspace/files'),
 }));
 vi.mock('../src/containerUtils', () => ({
   activeSandboxContainers: new Map(),

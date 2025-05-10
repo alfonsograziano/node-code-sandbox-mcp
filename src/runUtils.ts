@@ -5,6 +5,8 @@ import { pathToFileURL } from 'url';
 import mime from 'mime-types';
 import { textContent, type McpContent } from './types.ts';
 import { isRunningInDocker } from './utils.ts';
+import * as fsSync from 'fs';
+import { getConfig } from './config.ts';
 
 export async function prepareWorkspace({
   code,
@@ -91,7 +93,33 @@ export function getHostOutputDir(): string {
     : getFilesDir();
 }
 
+const DEFAULT_FILES_DIR = '/files';
 // This FILES_DIR is an env var coming from the user
 // JS_SANDBOX_OUTPUT_DIR is kept for retrocompatibility as this is the name of the old env var
-export const getFilesDir = () =>
-  (process.env.FILES_DIR || process.env.JS_SANDBOX_OUTPUT_DIR) as string;
+export const getFilesDir = (): string => {
+  const { filesDir } = getConfig();
+
+  const dir = filesDir && filesDir.trim() !== ''
+    ? filesDir
+    : DEFAULT_FILES_DIR;
+
+  try {
+    if (!fsSync.existsSync(dir)) {
+      fsSync.mkdirSync(dir, { recursive: true, mode: 0o777 });
+    } else {
+      fsSync.chmodSync(dir, 0o777);
+    }
+  } catch (err) {
+    throw new Error(
+      `Error creating or modifying permissions for directory ${dir}: ${err}`)
+  }
+
+  return dir;
+};
+
+export const getMountFlag = (): string => {
+  const { filesDir } = getConfig();
+  return filesDir && filesDir.trim() !== ''
+    ? `-v ${getFilesDir()}:/workspace/files`
+    : '';
+};
