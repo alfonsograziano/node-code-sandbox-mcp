@@ -30,7 +30,7 @@ const configSchema = z.object({
   runScriptTimeoutMilliseconds: z.number().positive(),
   rawMemoryLimit: z.string().optional(),
   rawCpuLimit: z.string().optional(),
-  filesDir: z.string(),
+  filesDir: z.string().optional(),
 });
 
 function loadConfig() {
