@@ -125,6 +125,13 @@ docker run --rm -it \
 
 This bind-mounts your host folder into the container at the **same absolute path** and makes `FILES_DIR` available inside the MCP server.
 
+#### Ephemeral usage – **no persistent storage**
+```bash
+docker run --rm -it \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  alfonsograziano/node-code-sandbox-mcp stdio 
+  ```
+
 ### Usage with VS Code
 
 **Quick install** buttons (VS Code & Insiders):
@@ -143,9 +150,9 @@ Install js-sandbox-mcp (NPX) Install js-sandbox-mcp (Docker)
                 "-i",
                 "--rm",
                 "-v", "/var/run/docker.sock:/var/run/docker.sock",
-                "-v", "$HOME/Desktop/sandbox-output:/root",
-                "-e", "FILES_DIR=$HOME/Desktop/sandbox-output",
-                "-e", "SANDBOX_MEMORY_LIMIT=512m",
+                "-v", "$HOME/Desktop/sandbox-output:/root", // optional
+                "-e", "FILES_DIR=$HOME/Desktop/sandbox-output",  // optional
+                "-e", "SANDBOX_MEMORY_LIMIT=512m", 
                 "-e", "SANDBOX_CPU_LIMIT=1",
                 "alfonsograziano/node-code-sandbox-mcp"
               ]
