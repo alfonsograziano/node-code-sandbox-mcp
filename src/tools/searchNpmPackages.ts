@@ -4,6 +4,9 @@ import { z } from 'zod';
 import { logger } from '../logger.ts';
 import { type McpResponse, textContent } from '../types.ts';
 
+/**
+ * Zod schema for validating npm package search parameters
+ */
 export const SearchNpmPackagesToolSchema = z.object({
   searchTerm: z
     .string()
@@ -33,8 +36,11 @@ type SearchNpmPackagesToolSchemaType = z.infer<
 >;
 
 type PackageDetails = {
+  /** The name of the package */
   name: string;
+  /** A brief description of the package */
   description: string;
+  /** A snippet from the package's README file */
   readmeSnippet: string;
 };
 
@@ -47,6 +53,11 @@ class SearchNpmPackagesTool {
     this.registry = new NpmRegistry();
   }
 
+  /**
+   * Searches for npm packages based on the provided search term and qualifiers
+   * @param {SearchNpmPackagesToolSchemaType} params - Search parameters including search term and optional qualifiers
+   * @returns {Promise<McpResponse>} A response containing the search results or an error message
+   */
   public async searchPackages({
     searchTerm,
     qualifiers,
@@ -73,6 +84,12 @@ class SearchNpmPackagesTool {
     };
   }
 
+  /**
+   * Retrieves detailed information for multiple packages
+   * @param {string[]} packages - Array of package names to get details for
+   * @returns {Promise<PackageDetails[]>} Array of package details
+   * @private
+   */
   private async getPackagesDetails(
     packages: string[]
   ): Promise<PackageDetails[]> {
@@ -93,6 +110,12 @@ class SearchNpmPackagesTool {
     return packagesDetails;
   }
 
+  /**
+   * Extracts a snippet from a package's README file
+   * @param {string | undefined} readme - The full README content
+   * @returns {string} A truncated snippet of the README or a default message if README is not available
+   * @private
+   */
   private extractReadmeSnippet(readme: string | undefined): string {
     if (!readme) {
       return 'README not available.';
@@ -103,6 +126,11 @@ class SearchNpmPackagesTool {
   }
 }
 
+/**
+ * Main function to search npm packages
+ * @param {SearchNpmPackagesToolSchemaType} params - Search parameters including search term and optional qualifiers
+ * @returns {Promise<McpResponse>} A response containing the search results or an error message
+ */
 export default async function searchNpmPackages(
   params: SearchNpmPackagesToolSchemaType
 ): Promise<McpResponse> {
