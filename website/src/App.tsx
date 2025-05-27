@@ -154,6 +154,14 @@ const App: React.FC = () => {
             <Star size={16} className="text-yellow-500" fill="yellow" /> Star on
             GitHub
           </a>
+          <a
+            href="https://hub.docker.com/r/mcp/node-code-sandbox"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-300 text-gray-800 rounded-lg hover:bg-gray-100 transition"
+          >
+            <Package size={16} className="text-blue-500" /> Docker Hub
+          </a>
         </div>
       </header>
 

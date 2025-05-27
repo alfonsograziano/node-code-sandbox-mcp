@@ -6,6 +6,8 @@ Node.js server implementing the Model Context Protocol (MCP) for running arbitra
 
 👉 [Look at the official website](https://jsdevai.com/)
 
+📦 [Available on Docker Hub](https://hub.docker.com/r/mcp/node-code-sandbox)
+
 ## Features
 
 - Start and manage isolated Node.js sandbox containers
@@ -78,7 +80,7 @@ You can follow the [Official Guide](https://modelcontextprotocol.io/quickstart/u
         "SANDBOX_MEMORY_LIMIT=512m", // optional
         "-e",
         "SANDBOX_CPU_LIMIT=0.75", // optional
-        "alfonsograziano/node-code-sandbox-mcp"
+        "mcp/node-code-sandbox"
       ]
     }
   }
@@ -112,7 +114,7 @@ Run the server in a container (mount Docker socket if needed), and pass through 
 
 ```shell
 # Build locally if necessary
-# docker build -t alfonsograziano/node-code-sandbox-mcp .
+# docker build -t mcp/node-code-sandbox .
 
 docker run --rm -it \
   -v /var/run/docker.sock:/var/run/docker.sock \
@@ -120,7 +122,7 @@ docker run --rm -it \
   -e FILES_DIR="$HOME/Desktop/sandbox-output" \
   -e SANDBOX_MEMORY_LIMIT="512m" \
   -e SANDBOX_CPU_LIMIT="0.5" \
-  alfonsograziano/node-code-sandbox-mcp stdio
+  mcp/node-code-sandbox stdio
 ```
 
 This bind-mounts your host folder into the container at the **same absolute path** and makes `FILES_DIR` available inside the MCP server.
@@ -147,7 +149,7 @@ Install js-sandbox-mcp (NPX) Install js-sandbox-mcp (Docker)
                 "-e", "FILES_DIR=$HOME/Desktop/sandbox-output",
                 "-e", "SANDBOX_MEMORY_LIMIT=512m",
                 "-e", "SANDBOX_CPU_LIMIT=1",
-                "alfonsograziano/node-code-sandbox-mcp"
+                "mcp/node-code-sandbox"
               ]
         }
     }
@@ -262,7 +264,7 @@ Terminate and remove the sandbox container.
   - Incrementally install and reuse dependencies.
 - **One-shot execution** with `run_js_ephemeral` is perfect for:
   - Quick experiments or simple scripts.
-  - Cases where you don’t need to maintain state or cache dependencies.
+  - Cases where you don't need to maintain state or cache dependencies.
   - Clean, atomic runs without worrying about manual teardown.
 - **Detached mode** is useful when you want to:
   - Spin up servers or long-lived services on-the-fly
