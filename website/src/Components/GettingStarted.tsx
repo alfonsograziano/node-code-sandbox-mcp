@@ -23,7 +23,7 @@ const GettingStarted: React.FC = () => {
               '$HOME/Desktop/sandbox-output:/root',
               '-e',
               'FILES_DIR=$HOME/Desktop/sandbox-output',
-              'alfonsograziano/node-code-sandbox-mcp',
+              'mcp/node-code-sandbox',
             ],
           },
         },
@@ -57,7 +57,7 @@ const GettingStarted: React.FC = () => {
                 '$HOME/Desktop/sandbox-output:/root',
                 '-e',
                 'FILES_DIR=$HOME/Desktop/sandbox-output',
-                'alfonsograziano/node-code-sandbox-mcp',
+                'mcp/node-code-sandbox',
               ],
             },
           },
@@ -94,6 +94,28 @@ const GettingStarted: React.FC = () => {
       </p>
 
       <div className="bg-white rounded-xl shadow p-6 space-y-6">
+        {/* Docker Hub Info */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+          <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+            <span className="text-blue-700">📦</span> Docker Hub Available
+          </h3>
+          <p className="text-sm text-gray-700">
+            The MCP server is now available on Docker Hub. You can pull it
+            directly using:
+            <code className="block bg-gray-100 p-2 rounded mt-2 text-xs">
+              docker pull mcp/node-code-sandbox
+            </code>
+            <a
+              href="https://hub.docker.com/r/mcp/node-code-sandbox"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline text-sm inline-block mt-2"
+            >
+              View on Docker Hub →
+            </a>
+          </p>
+        </div>
+
         {/* Tabs + Switch */}
         <div className="flex flex-wrap justify-between items-center gap-4">
           <div className="flex gap-2">
