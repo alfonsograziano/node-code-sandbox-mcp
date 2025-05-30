@@ -63,7 +63,7 @@ function loadConfig() {
   const milliseconds = seconds * 1000;
   const memRaw = parsedEnv.data.SANDBOX_MEMORY_LIMIT;
   const cpuRaw = parsedEnv.data.SANDBOX_CPU_LIMIT;
-  const filesDir = parsedEnv.data.FILES_DIR ?? '';
+  const filesDir = parsedEnv.data.FILES_DIR;
 
   return configSchema.parse({
     containerTimeoutSeconds: seconds,

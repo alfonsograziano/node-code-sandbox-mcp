@@ -93,7 +93,6 @@ export function getHostOutputDir(): string {
 }
 
 // This FILES_DIR is an env var coming from the user
-// JS_SANDBOX_OUTPUT_DIR is kept for retrocompatibility as this is the name of the old env var
 export const getFilesDir = (): string   => {
   return getConfig().filesDir!;             
 };
