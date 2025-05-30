@@ -20,6 +20,7 @@ const envSchema = z.object({
     })
     .optional()
     .nullable(),
+  FILES_DIR: z.string().optional().nullable(),
 });
 
 // Schema for the final config object with transformations and defaults
@@ -29,6 +30,7 @@ const configSchema = z.object({
   runScriptTimeoutMilliseconds: z.number().positive(),
   rawMemoryLimit: z.string().optional(),
   rawCpuLimit: z.string().optional(),
+  filesDir: z.string().optional(),
 });
 
 function loadConfig() {
@@ -61,6 +63,7 @@ function loadConfig() {
   const milliseconds = seconds * 1000;
   const memRaw = parsedEnv.data.SANDBOX_MEMORY_LIMIT;
   const cpuRaw = parsedEnv.data.SANDBOX_CPU_LIMIT;
+  const filesDir = parsedEnv.data.FILES_DIR;
 
   return configSchema.parse({
     containerTimeoutSeconds: seconds,
@@ -68,6 +71,7 @@ function loadConfig() {
     runScriptTimeoutMilliseconds: runScriptTimeoutMilliseconds,
     rawMemoryLimit: memRaw,
     rawCpuLimit: cpuRaw,
+    filesDir: filesDir,
   });
 }
 

@@ -11,7 +11,7 @@ import {
   preprocessDependencies,
   computeResourceLimits,
 } from '../utils.ts';
-import { prepareWorkspace, getFilesDir } from '../runUtils.ts';
+import { prepareWorkspace, getMountFlag } from '../runUtils.ts';
 import {
   changesToMcpContent,
   detectChanges,
@@ -35,7 +35,7 @@ export const argSchema = {
     .default(DEFAULT_NODE_IMAGE)
     .describe(
       'Docker image to use for ephemeral execution. e.g. ' +
-        generateSuggestedImages()
+      generateSuggestedImages()
     ),
   // We use an array of { name, version } items instead of a record
   // because the OpenAI function-calling schema doesn’t reliably support arbitrary
@@ -47,8 +47,8 @@ export const argSchema = {
     .default([])
     .describe(
       'A list of npm dependencies to install before running the code. ' +
-        'Each item must have a `name` (package) and `version` (range). ' +
-        'If none, returns an empty array.'
+      'Each item must have a `name` (package) and `version` (range). ' +
+      'If none, returns an empty array.'
     ),
   code: z
     .string()
@@ -75,13 +75,14 @@ export default async function runJsEphemeral({
   const containerId = `js-ephemeral-${randomUUID()}`;
   const tmpDir = tmp.dirSync({ unsafeCleanup: true });
   const { memFlag, cpuFlag } = computeResourceLimits(image);
+  const mountFlag = getMountFlag();
 
   try {
     // Start an ephemeral container
     execSync(
       `docker run -d --network host ${memFlag} ${cpuFlag} ` +
-        `--workdir /workspace -v ${getFilesDir()}:/workspace/files ` +
-        `--name ${containerId} ${image} tail -f /dev/null`
+      `--workdir /workspace ${mountFlag} ` +
+      `--name ${containerId} ${image} tail -f /dev/null`
     );
 
     // Prepare workspace locally

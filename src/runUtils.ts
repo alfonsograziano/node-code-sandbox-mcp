@@ -5,6 +5,7 @@ import { pathToFileURL } from 'url';
 import mime from 'mime-types';
 import { textContent, type McpContent } from './types.ts';
 import { isRunningInDocker } from './utils.ts';
+import { getConfig } from './config.ts';
 
 export async function prepareWorkspace({
   code,
@@ -92,6 +93,11 @@ export function getHostOutputDir(): string {
 }
 
 // This FILES_DIR is an env var coming from the user
-// JS_SANDBOX_OUTPUT_DIR is kept for retrocompatibility as this is the name of the old env var
-export const getFilesDir = () =>
-  (process.env.FILES_DIR || process.env.JS_SANDBOX_OUTPUT_DIR) as string;
+export const getFilesDir = (): string   => {
+  return getConfig().filesDir!;             
+};
+
+export const getMountFlag = (): string  => {
+  const dir = getFilesDir();
+  return dir ? `-v ${dir}:/workspace/files` : '';
+};

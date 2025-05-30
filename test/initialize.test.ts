@@ -9,8 +9,9 @@ vi.mocked(utils).computeResourceLimits = vi
   .fn()
   .mockReturnValue({ memFlag: '', cpuFlag: '' });
 vi.mock('../src/runUtils', () => ({
-  getFilesDir: vi.fn().mockReturnValue('/mock/files/dir'),
-}));
+    getFilesDir: vi.fn().mockReturnValue(undefined),
+    getMountFlag: vi.fn().mockReturnValue(''),
+  }));
 vi.mock('../src/containerUtils', () => ({
   activeSandboxContainers: new Map(),
 }));
@@ -72,4 +73,39 @@ describe('initialize module', () => {
       expect(execSyncCall).toContain('--label "mcp-server-run-id=unknown"');
     });
   });
+  
+  describe('volume mount behaviour', () => {
+    it('does NOT include a -v flag when FILES_DIR is unset', async () => {
+
+      const { default: initializeSandbox } = await import(
+        '../src/tools/initialize.ts'
+      );
+
+      await initializeSandbox({});
+
+      const cmd = vi.mocked(childProcess.execSync).mock.calls[0][0] as string;
+      expect(cmd).not.toContain('-v ');
+    });
+
+    it('includes the -v flag when getMountFlag returns one', async () => {
+
+      vi.doMock('../src/runUtils', () => ({
+        getFilesDir: vi.fn().mockReturnValue('/host/dir'),
+        getMountFlag: vi
+          .fn()
+          .mockReturnValue('-v /host/dir:/workspace/files'),
+      }));
+      vi.resetModules(); 
+
+      const { default: initializeSandbox } = await import(
+        '../src/tools/initialize.ts'
+      );
+
+      await initializeSandbox({});
+
+      const cmd = vi.mocked(childProcess.execSync).mock.calls[0][0] as string;
+      expect(cmd).toContain('-v /host/dir:/workspace/files');
+    });
+  });
 });
+

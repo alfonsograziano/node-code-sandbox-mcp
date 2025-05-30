@@ -8,7 +8,7 @@ import {
   isDockerRunning,
   computeResourceLimits,
 } from '../utils.ts';
-import { getFilesDir } from '../runUtils.ts';
+import { getMountFlag } from '../runUtils.ts';
 import { activeSandboxContainers } from '../containerUtils.ts';
 import { logger } from '../logger.ts';
 
@@ -54,13 +54,14 @@ export default async function initializeSandbox({
   ];
   const labelArgs = labels.map((label) => `--label "${label}"`).join(' ');
   const { memFlag, cpuFlag } = computeResourceLimits(image);
+  const mountFlag = getMountFlag();
 
   try {
     execSync(
       `docker run -d ${portOption} ${memFlag} ${cpuFlag} ` +
-        `--workdir /workspace -v ${getFilesDir()}:/workspace/files ` +
-        `${labelArgs} ` + // Add labels here
-        `--name ${containerId} ${image} tail -f /dev/null`
+      `--workdir /workspace ${mountFlag} ` +
+      `${labelArgs} ` + // Add labels here
+      `--name ${containerId} ${image} tail -f /dev/null`
     );
 
     // Register the container only after successful creation
