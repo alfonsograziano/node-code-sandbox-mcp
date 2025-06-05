@@ -25,6 +25,11 @@ import { setServerInstance, logger } from './logger.ts';
 import getDependencyTypes, {
   argSchema as getDependencyTypesSchema,
 } from './tools/getDependencyTypes.ts';
+import searchNpmPackages, {
+  SearchNpmPackagesToolSchema,
+} from './tools/searchNpmPackages.ts';
+
+import packageJson from '../package.json' with { type: 'json' };
 
 export const serverRunId = randomUUID();
 setServerRunId(serverRunId);
@@ -32,14 +37,14 @@ setServerRunId(serverRunId);
 // Create the server with logging capability enabled
 const server = new McpServer(
   {
-    name: 'js-sandbox-mcp',
-    version: '0.1.0',
-    description:
-      'Run arbitrary JavaScript inside disposable Docker containers and install npm dependencies on the fly.',
+    name: packageJson.name,
+    version: packageJson.version,
+    description: packageJson.description,
   },
   {
     capabilities: {
       logging: {},
+      tools: {},
     },
   }
 );
@@ -109,6 +114,13 @@ server.tool(
   `,
   getDependencyTypesSchema,
   getDependencyTypes
+);
+
+server.tool(
+  'search_npm_packages',
+  'Search for npm packages by a search term and get their name, description, and a README snippet.',
+  SearchNpmPackagesToolSchema.shape,
+  searchNpmPackages
 );
 
 server.resource(

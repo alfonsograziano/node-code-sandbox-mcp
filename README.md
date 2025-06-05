@@ -51,9 +51,11 @@ Once it's running, you can test that it's fully working with a couple of test pr
   This should run a console.log and in the tool response you should be able to see Hello World.
 
 - Validate that you can install dependencies and save files
+
   ```markdown
   Create and run a JS script that generates a QR code for the URL `https://nodejs.org/en`, and save it as `qrcode.png` **Tip:** Use the `qrcode` package.
   ```
+
   This should create a file in your mounted directory (for example the Desktop) called "qrcode.png"
 
 ### Usage with Claude Desktop
@@ -262,6 +264,30 @@ Terminate and remove the sandbox container.
 - **Input**:
   - `container_id` (_string_): ID from `sandbox_initialize`
 - **Output**: Confirmation message
+
+### search_npm_packages
+
+Search for npm packages by a search term and get their name, description, and a README snippet.
+
+- **Input**:
+
+  - `searchTerm` (_string_, required): The term to search for in npm packages. Should contain all relevant context. Use plus signs (+) to combine related terms (e.g., "react+components" for React component libraries).
+  - `qualifiers` (_object_, optional): Optional qualifiers to filter the search results:
+    - `author` (_string_, optional): Filter by package author name
+    - `maintainer` (_string_, optional): Filter by package maintainer name
+    - `scope` (_string_, optional): Filter by npm scope (e.g., "@vue" for Vue.js packages)
+    - `keywords` (_string_, optional): Filter by package keywords
+    - `not` (_string_, optional): Exclude packages matching this criteria (e.g., "insecure")
+    - `is` (_string_, optional): Include only packages matching this criteria (e.g., "unstable")
+    - `boostExact` (_string_, optional): Boost exact matches for this term in search results
+
+- **Behavior:**
+
+  1. Searches the npm registry using the provided search term and qualifiers
+  2. Returns up to 5 packages sorted by popularity
+  3. For each package, provides name, description, and README snippet (first 500 characters)
+
+- **Output**: JSON array containing package details with name, description, and README snippet
 
 ## Usage Tips
 
