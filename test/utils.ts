@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { describe, it } from 'vitest';
 import path from 'path';
 /**
@@ -6,9 +6,9 @@ import path from 'path';
  */
 export function isContainerRunning(containerId: string): boolean {
   try {
-    const output = execSync(
-      // use double‑quotes so Windows cmd strips them correctly
-      `docker inspect -f "{{.State.Running}}" ${containerId}`,
+    const output = execFileSync(
+      'docker',
+      ['inspect', '-f', '{{.State.Running}}', containerId],
       { encoding: 'utf8' }
     ).trim();
     return output === 'true';
@@ -22,7 +22,7 @@ export function isContainerRunning(containerId: string): boolean {
  */
 export function containerExists(containerId: string): boolean {
   try {
-    execSync(`docker inspect ${containerId}`);
+    execFileSync('docker', ['inspect', containerId]);
     return true;
   } catch {
     return false;
