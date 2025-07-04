@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { type McpResponse, textContent } from '../types.ts';
 import { prepareWorkspace } from '../runUtils.ts';
 import {
@@ -71,7 +71,11 @@ export default async function runJs({
 
   // Create workspace in container
   const localWorkspace = await prepareWorkspace({ code, dependenciesRecord });
-  execSync(`docker cp ${localWorkspace.name}/. ${container_id}:/workspace`);
+  execFileSync('docker', [
+    'cp',
+    `${localWorkspace.name}/.`,
+    `${container_id}:/workspace`,
+  ]);
 
   let rawOutput: string = '';
 
@@ -82,10 +86,15 @@ export default async function runJs({
   if (listenOnPort) {
     if (dependencies.length > 0) {
       const installStart = Date.now();
-      const installOutput = execSync(
-        `docker exec ${container_id} /bin/sh -c ${JSON.stringify(
-          `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`
-        )}`,
+      const installOutput = execFileSync(
+        'docker',
+        [
+          'exec',
+          container_id,
+          '/bin/sh',
+          '-c',
+          'npm install --omit=dev --prefer-offline --no-audit --loglevel=error',
+        ],
         { encoding: 'utf8' }
       );
       telemetry.installTimeMs = Date.now() - installStart;
@@ -107,9 +116,11 @@ export default async function runJs({
   } else {
     if (dependencies.length > 0) {
       const installStart = Date.now();
-      const fullCmd = `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`;
-      const installOutput = execSync(
-        `docker exec ${container_id} /bin/sh -c ${JSON.stringify(fullCmd)}`,
+      const fullCmd =
+        'npm install --omit=dev --prefer-offline --no-audit --loglevel=error';
+      const installOutput = execFileSync(
+        'docker',
+        ['exec', container_id, '/bin/sh', '-c', fullCmd],
         { encoding: 'utf8' }
       );
       telemetry.installTimeMs = Date.now() - installStart;
