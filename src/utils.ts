@@ -55,7 +55,7 @@ export const suggestedImages = {
     description: 'Node.js LTS version, slim variant.',
     reason: 'Lightweight and fast for JavaScript execution tasks.',
   },
-  'mcr.microsoft.com/playwright:v1.52.0-noble': {
+  'mcr.microsoft.com/playwright:v1.53.2-noble': {
     description: 'Playwright image for browser automation.',
     reason: 'Preconfigured for running Playwright scripts.',
   },

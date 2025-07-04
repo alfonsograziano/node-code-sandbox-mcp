@@ -30,7 +30,7 @@ async function main() {
     name: 'run_js_ephemeral',
     arguments: {
       // Use the ofcicial MS playwright image
-      image: 'mcr.microsoft.com/playwright:v1.52.0-noble',
+      image: 'mcr.microsoft.com/playwright:v1.53.2-noble',
       code: `
         import { chromium } from 'playwright';
   
