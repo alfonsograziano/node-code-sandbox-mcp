@@ -141,3 +141,44 @@ export function computeResourceLimits(image: string) {
     cpuFlag: cpus ? `--cpus ${cpus}` : '',
   };
 }
+
+/**
+ * Sanitizes and validates a Docker container ID or name.
+ * Docker container names/IDs must match [a-zA-Z0-9][a-zA-Z0-9_.-]*
+ * @param id The container ID or name to validate
+ * @returns The sanitized ID if valid, otherwise null
+ */
+export function sanitizeContainerId(id: string): string | null {
+  // Docker container names/IDs: https://docs.docker.com/engine/reference/commandline/run/#container-name
+  // Allow alphanumerics, underscores, periods, dashes. Must start with alphanumeric.
+  if (typeof id !== 'string') return null;
+  if (/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/.test(id)) return id;
+  return null;
+}
+
+/**
+ * Sanitizes and validates a Docker image name (optionally with tag).
+ * @param image The image name to validate
+ * @returns The sanitized image name if valid, otherwise null
+ */
+export function sanitizeImageName(image: string): string | null {
+  // Docker image names: [registry/][user/]repo[:tag]
+  // Allow alphanumerics, underscores, periods, dashes, slashes, colons
+  if (typeof image !== 'string') return null;
+  if (/^[a-zA-Z0-9_.:/-]+$/.test(image)) return image;
+  return null;
+}
+
+/**
+ * Sanitizes a shell command to be run inside a container. This is a basic check;
+ * for more advanced needs, consider whitelisting allowed commands.
+ * @param cmd The command string
+ * @returns The sanitized command if valid, otherwise null
+ */
+export function sanitizeShellCommand(cmd: string): string | null {
+  // For now, just check it's a non-empty string and doesn't contain dangerous metacharacters
+  if (typeof cmd !== 'string' || !cmd.trim()) return null;
+  // Disallow shell metacharacters that could break out of intended command
+  if (/[;&|`$><\\]/.test(cmd)) return null;
+  return cmd;
+}
