@@ -51,10 +51,6 @@ export default [
         ecmaVersion: 12,
         sourceType: 'module',
       },
-      env: {
-        node: true,
-        es2021: true,
-      },
     },
     plugins: {
       '@typescript-eslint': tsPlugin,
