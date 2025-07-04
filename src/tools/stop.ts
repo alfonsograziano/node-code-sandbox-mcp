@@ -1,10 +1,16 @@
 import { z } from 'zod';
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { type McpResponse, textContent } from '../types.ts';
-import { DOCKER_NOT_RUNNING_ERROR, isDockerRunning } from '../utils.ts';
+import {
+  DOCKER_NOT_RUNNING_ERROR,
+  isDockerRunning,
+  sanitizeContainerId,
+} from '../utils.ts';
 import { activeSandboxContainers } from '../containerUtils.ts';
 
-export const argSchema = { container_id: z.string() };
+export const argSchema = {
+  container_id: z.string().regex(/^[a-zA-Z0-9_.-]+$/, 'Invalid container ID'),
+};
 
 export default async function stopSandbox({
   container_id,
@@ -17,13 +23,17 @@ export default async function stopSandbox({
     };
   }
 
+  const validId = sanitizeContainerId(container_id);
+  if (!validId) {
+    return {
+      content: [textContent('Invalid container ID')],
+    };
+  }
+
   try {
-    // Directly use execSync for removing the container as expected by the test
-    execSync(`docker rm -f ${container_id}`);
-    activeSandboxContainers.delete(container_id);
-    // console.log(
-    //   `[stopSandbox] Removed container ${container_id} from registry.`
-    // );
+    // Use execFileSync with validated container_id
+    execFileSync('docker', ['rm', '-f', validId]);
+    activeSandboxContainers.delete(validId);
 
     return {
       content: [textContent(`Container ${container_id} removed.`)],
@@ -36,7 +46,7 @@ export default async function stopSandbox({
     );
 
     // Still remove from our registry even if Docker command failed
-    activeSandboxContainers.delete(container_id);
+    activeSandboxContainers.delete(validId);
 
     return {
       content: [

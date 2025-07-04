@@ -1,79 +1,71 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import stopSandbox from '../src/tools/stop.ts';
 import * as childProcess from 'node:child_process';
-import * as types from '../src/types.ts';
 import * as utils from '../src/utils.ts';
 
 vi.mock('node:child_process');
-vi.mock('../src/types');
-vi.mock('../src/utils');
+vi.mock('../src/types', () => ({
+  textContent: (text: string) => ({ type: 'text', text }),
+}));
+vi.mock('../src/utils.ts', async () => {
+  const actual =
+    await vi.importActual<typeof import('../src/utils.ts')>('../src/utils.ts');
+  return {
+    ...actual,
+    DOCKER_NOT_RUNNING_ERROR: actual.DOCKER_NOT_RUNNING_ERROR,
+    isDockerRunning: vi.fn(() => true),
+    sanitizeContainerId: actual.sanitizeContainerId,
+  };
+});
 
 describe('stopSandbox', () => {
-  const fakeContainerId = 'js-sbx-abc123';
+  const fakeContainerId = 'js-sbx-test123'; // valid container ID
 
   beforeEach(() => {
     vi.resetAllMocks();
-    vi.spyOn(childProcess, 'execSync').mockImplementation(() =>
+    vi.spyOn(childProcess, 'execFileSync').mockImplementation(() =>
       Buffer.from('')
     );
-    vi.spyOn(types, 'textContent').mockImplementation((msg) => ({
-      type: 'text',
-      text: msg,
-    }));
-    vi.spyOn(utils, 'isDockerRunning').mockReturnValue(true);
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('should remove the container with the given ID', async () => {
     const result = await stopSandbox({ container_id: fakeContainerId });
-
-    expect(childProcess.execSync).toHaveBeenCalledWith(
-      `docker rm -f ${fakeContainerId}`
-    );
-
+    expect(childProcess.execFileSync).toHaveBeenCalledWith('docker', [
+      'rm',
+      '-f',
+      fakeContainerId,
+    ]);
     expect(result).toEqual({
       content: [
-        {
-          type: 'text',
-          text: `Container ${fakeContainerId} removed.`,
-        },
+        { type: 'text', text: `Container ${fakeContainerId} removed.` },
       ],
     });
   });
 
   it('should return an error message when Docker is not running', async () => {
     vi.mocked(utils.isDockerRunning).mockReturnValue(false);
-
     const result = await stopSandbox({ container_id: fakeContainerId });
-
-    // Docker command should not be called
-    expect(childProcess.execSync).not.toHaveBeenCalled();
-
+    expect(childProcess.execFileSync).not.toHaveBeenCalled();
     expect(result).toEqual({
-      content: [
-        {
-          type: 'text',
-          text: utils.DOCKER_NOT_RUNNING_ERROR,
-        },
-      ],
+      content: [{ type: 'text', text: utils.DOCKER_NOT_RUNNING_ERROR }],
     });
   });
 
   it('should handle errors when removing the container', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
-
     const errorMessage = 'Container not found';
-    vi.mocked(childProcess.execSync).mockImplementation(() => {
+    vi.mocked(childProcess.execFileSync).mockImplementation(() => {
       throw new Error(errorMessage);
     });
-
-    // Even with errors, the function should complete and return a response
     const result = await stopSandbox({ container_id: fakeContainerId });
-
-    expect(childProcess.execSync).toHaveBeenCalledWith(
-      `docker rm -f ${fakeContainerId}`
-    );
-
-    // Function should return an error message in the response
+    expect(childProcess.execFileSync).toHaveBeenCalledWith('docker', [
+      'rm',
+      '-f',
+      fakeContainerId,
+    ]);
     expect(result).toEqual({
       content: [
         {
@@ -82,5 +74,18 @@ describe('stopSandbox', () => {
         },
       ],
     });
+  });
+
+  it('should reject invalid container_id', async () => {
+    const result = await stopSandbox({ container_id: 'bad;id$(rm -rf /)' });
+    expect(result).toEqual({
+      content: [
+        {
+          type: 'text',
+          text: 'Invalid container ID',
+        },
+      ],
+    });
+    expect(childProcess.execFileSync).not.toHaveBeenCalled();
   });
 });
