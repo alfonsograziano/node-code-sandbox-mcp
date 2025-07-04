@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import tmp from 'tmp';
 import { randomUUID } from 'crypto';
 import { type McpResponse, textContent } from '../types.ts';
@@ -35,7 +35,7 @@ export const argSchema = {
     .default(DEFAULT_NODE_IMAGE)
     .describe(
       'Docker image to use for ephemeral execution. e.g. ' +
-      generateSuggestedImages()
+        generateSuggestedImages()
     ),
   // We use an array of { name, version } items instead of a record
   // because the OpenAI function-calling schema doesn’t reliably support arbitrary
@@ -47,8 +47,8 @@ export const argSchema = {
     .default([])
     .describe(
       'A list of npm dependencies to install before running the code. ' +
-      'Each item must have a `name` (package) and `version` (range). ' +
-      'If none, returns an empty array.'
+        'Each item must have a `name` (package) and `version` (range). ' +
+        'If none, returns an empty array.'
     ),
   code: z
     .string()
@@ -79,15 +79,31 @@ export default async function runJsEphemeral({
 
   try {
     // Start an ephemeral container
-    execSync(
-      `docker run -d --network host ${memFlag} ${cpuFlag} ` +
-      `--workdir /workspace ${mountFlag} ` +
-      `--name ${containerId} ${image} tail -f /dev/null`
-    );
+    execFileSync('docker', [
+      'run',
+      '-d',
+      '--network',
+      'host',
+      ...memFlag.split(' ').filter(Boolean),
+      ...cpuFlag.split(' ').filter(Boolean),
+      '--workdir',
+      '/workspace',
+      ...mountFlag.split(' ').filter(Boolean),
+      '--name',
+      containerId,
+      image,
+      'tail',
+      '-f',
+      '/dev/null',
+    ]);
 
     // Prepare workspace locally
     const localWorkspace = await prepareWorkspace({ code, dependenciesRecord });
-    execSync(`docker cp ${localWorkspace.name}/. ${containerId}:/workspace`);
+    execFileSync('docker', [
+      'cp',
+      `${localWorkspace.name}/.`,
+      `${containerId}:/workspace`,
+    ]);
 
     // Generate snapshot of the workspace
     const snapshotStartTime = Date.now();
@@ -99,8 +115,9 @@ export default async function runJsEphemeral({
 
     if (dependencies.length > 0) {
       const installStart = Date.now();
-      const installOutput = execSync(
-        `docker exec ${containerId} /bin/sh -c ${JSON.stringify(installCmd)}`,
+      const installOutput = execFileSync(
+        'docker',
+        ['exec', containerId, '/bin/sh', '-c', installCmd],
         { encoding: 'utf8' }
       );
       telemetry.installTimeMs = Date.now() - installStart;
@@ -134,7 +151,7 @@ export default async function runJsEphemeral({
       ],
     };
   } finally {
-    execSync(`docker rm -f ${containerId}`);
+    execFileSync('docker', ['rm', '-f', containerId]);
     tmpDir.removeCallback();
   }
 }
