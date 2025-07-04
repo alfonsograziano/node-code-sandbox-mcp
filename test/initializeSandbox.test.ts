@@ -16,7 +16,7 @@ describe('initializeSandbox', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.spyOn(crypto, 'randomUUID').mockReturnValue(fakeUUID);
-    vi.spyOn(childProcess, 'execSync').mockImplementation(() =>
+    vi.spyOn(childProcess, 'execFileSync').mockImplementation(() =>
       Buffer.from('')
     );
     vi.spyOn(types, 'textContent').mockImplementation((name) => ({
@@ -40,10 +40,14 @@ describe('initializeSandbox', () => {
 
   it('should use the default image when none is provided', async () => {
     const result = await initializeSandbox({});
-    expect(childProcess.execSync).toHaveBeenCalledWith(
-      expect.stringContaining(
-        `--name ${fakeContainerName} ${utils.DEFAULT_NODE_IMAGE}`
-      )
+    expect(childProcess.execFileSync).toHaveBeenCalledWith(
+      'docker',
+      expect.arrayContaining([
+        '--name',
+        fakeContainerName,
+        utils.DEFAULT_NODE_IMAGE,
+      ]),
+      expect.any(Object)
     );
     expect(result).toEqual({
       content: [{ type: 'text', text: fakeContainerName }],
@@ -53,8 +57,10 @@ describe('initializeSandbox', () => {
   it('should use the provided image', async () => {
     const customImage = 'node:20-alpine';
     const result = await initializeSandbox({ image: customImage });
-    expect(childProcess.execSync).toHaveBeenCalledWith(
-      expect.stringContaining(`--name ${fakeContainerName} ${customImage}`)
+    expect(childProcess.execFileSync).toHaveBeenCalledWith(
+      'docker',
+      expect.arrayContaining(['--name', fakeContainerName, customImage]),
+      expect.any(Object)
     );
     if (result.content[0].type === 'text') {
       expect(result.content[0].text).toBe(fakeContainerName);
