@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { type McpResponse, textContent } from '../types.ts';
 import { DOCKER_NOT_RUNNING_ERROR, isDockerRunning } from '../utils.ts';
 
@@ -24,12 +24,9 @@ export default async function execInSandbox({
   const output: string[] = [];
   for (const cmd of commands) {
     output.push(
-      execSync(
-        `docker exec ${container_id} /bin/sh -c ${JSON.stringify(cmd)}`,
-        {
-          encoding: 'utf8',
-        }
-      )
+      execFileSync('docker', ['exec', container_id, '/bin/sh', '-c', cmd], {
+        encoding: 'utf8',
+      })
     );
   }
   return { content: [textContent(output.join('\n'))] };

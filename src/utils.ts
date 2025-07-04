@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from 'fs';
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { getConfig } from './config.ts';
 
 export function isRunningInDocker() {
@@ -103,7 +103,7 @@ export async function waitForPortHttp(
 
 export function isDockerRunning() {
   try {
-    execSync('docker info');
+    execFileSync('docker', ['info']);
     return true;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {

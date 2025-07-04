@@ -95,21 +95,25 @@ describe('utils', () => {
 
   describe('isDockerRunning', () => {
     it('should return true when docker info command succeeds', () => {
-      vi.spyOn(childProcess, 'execSync').mockImplementation(() =>
+      vi.spyOn(childProcess, 'execFileSync').mockImplementation(() =>
         Buffer.from('')
       );
 
       expect(isDockerRunning()).toBe(true);
-      expect(childProcess.execSync).toHaveBeenCalledWith('docker info');
+      expect(childProcess.execFileSync).toHaveBeenCalledWith('docker', [
+        'info',
+      ]);
     });
 
     it('should return false when docker info command fails', () => {
-      vi.spyOn(childProcess, 'execSync').mockImplementation(() => {
+      vi.spyOn(childProcess, 'execFileSync').mockImplementation(() => {
         throw new Error('docker daemon not running');
       });
 
       expect(isDockerRunning()).toBe(false);
-      expect(childProcess.execSync).toHaveBeenCalledWith('docker info');
+      expect(childProcess.execFileSync).toHaveBeenCalledWith('docker', [
+        'info',
+      ]);
     });
   });
 
