@@ -89,3 +89,38 @@ describe('stopSandbox', () => {
     expect(childProcess.execFileSync).not.toHaveBeenCalled();
   });
 });
+
+describe('Command injection prevention', () => {
+  const dangerousIds = [
+    '$(touch /tmp/pwned)',
+    '`touch /tmp/pwned`',
+    'bad;id',
+    'js-sbx-123 && rm -rf /',
+    'js-sbx-123 | echo hacked',
+    'js-sbx-123 > /tmp/pwned',
+    'js-sbx-123 $(id)',
+    'js-sbx-123; echo pwned',
+    'js-sbx-123`echo pwned`',
+    'js-sbx-123/../../etc/passwd',
+    'js-sbx-123\nrm -rf /',
+    '',
+    ' ',
+    'js-sbx-123$',
+    'js-sbx-123#',
+  ];
+
+  dangerousIds.forEach((payload) => {
+    it(`should reject dangerous container_id: "${payload}"`, async () => {
+      const result = await stopSandbox({ container_id: payload });
+      expect(result).toEqual({
+        content: [
+          {
+            type: 'text',
+            text: 'Invalid container ID',
+          },
+        ],
+      });
+      expect(childProcess.execFileSync).not.toHaveBeenCalled();
+    });
+  });
+});

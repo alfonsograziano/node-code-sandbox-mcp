@@ -5,6 +5,14 @@ import runJs, { argSchema } from '../src/tools/runJs.ts';
 import initializeSandbox from '../src/tools/initialize.ts';
 import stopSandbox from '../src/tools/stop.ts';
 import type { McpContentText } from '../src/types.ts';
+import { vi } from 'vitest';
+// import * as childProcess from 'node:child_process'; // REMOVE THIS LINE
+
+// REMOVE THIS GLOBAL MOCK:
+// vi.mock('node:child_process', () => ({
+//   execFileSync: vi.fn(() => Buffer.from('')),
+//   execFile: vi.fn(() => Buffer.from('')),
+// }));
 
 describe('argSchema', () => {
   it('should accept code and container_id and set defaults', () => {
@@ -217,3 +225,57 @@ describe('runJs basic execution', () => {
     expect(telemetryText).toBeDefined();
   });
 }, 10_000);
+
+describe('Command injection prevention', () => {
+  beforeEach(() => {
+    vi.doMock('node:child_process', () => ({
+      execFileSync: vi.fn(() => Buffer.from('')),
+      execFile: vi.fn(() => Buffer.from('')),
+    }));
+  });
+
+  afterEach(() => {
+    vi.resetModules();
+    vi.resetAllMocks();
+    vi.restoreAllMocks();
+  });
+
+  const dangerousIds = [
+    '$(touch /tmp/pwned)',
+    '`touch /tmp/pwned`',
+    'bad;id',
+    'js-sbx-123 && rm -rf /',
+    'js-sbx-123 | echo hacked',
+    'js-sbx-123 > /tmp/pwned',
+    'js-sbx-123 $(id)',
+    'js-sbx-123; echo pwned',
+    'js-sbx-123`echo pwned`',
+    'js-sbx-123/../../etc/passwd',
+    'js-sbx-123\nrm -rf /',
+    '',
+    ' ',
+    'js-sbx-123$',
+    'js-sbx-123#',
+  ];
+
+  dangerousIds.forEach((payload) => {
+    it(`should reject dangerous container_id: "${payload}"`, async () => {
+      const { default: runJs } = await import('../src/tools/runJs.ts');
+      const childProcess = await import('node:child_process');
+      const result = await runJs({
+        container_id: payload,
+        code: 'console.log("test")',
+      });
+      expect(result).toEqual({
+        content: [
+          {
+            type: 'text',
+            text: 'Invalid container ID',
+          },
+        ],
+      });
+      const execFileSyncCall = vi.mocked(childProcess.execFileSync).mock.calls;
+      expect(execFileSyncCall.length).toBe(0);
+    });
+  });
+});
