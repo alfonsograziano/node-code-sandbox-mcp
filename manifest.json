@@ -1,0 +1,61 @@
+{
+  "dxt_version": "0.1",
+  "id": "node-code-sandbox",
+  "name": "node-code-sandbox",
+  "display_name": "Node.js Code Sandbox",
+  "version": "1.2.0",
+  "description": "Run arbitrary JavaScript inside disposable Docker containers and install npm dependencies on the fly.",
+  "long_description": "Run arbitrary JavaScript inside disposable Docker containers and install npm dependencies on the fly.",
+  "author": {
+    "name": "Alfonso Graziano",
+    "email": "info@alfonsograziano.it",
+    "url": "https://alfonsograziano.it"
+  },
+  "homepage": "https://jsdevai.com/",
+  "documentation": "https://jsdevai.com/",
+  "support": "https://jsdevai.com/",
+  "icon": "assets/images/icon.png",
+  "screenshots": ["assets/images/website_homepage.png"],
+  "server": {
+    "type": "node",
+    "entry_point": "dist/server.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/dist/server.js"],
+      "env": {
+        "FILES_DIR": "${user_config.FILES_DIR}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "run_js",
+      "description": "Install npm dependencies and run JavaScript code inside a running sandbox container."
+    },
+    {
+      "name": "sandbox_stop",
+      "description": "Terminate and remove a running sandbox container. Should be called after finishing work in a sandbox initialized with sandbox_initialize."
+    },
+    {
+      "name": "run_js_ephemeral",
+      "description": "Run a JavaScript snippet in a temporary disposable container with optional npm dependencies, then automatically clean up."
+    }
+  ],
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "node": ">=22.0.0"
+    }
+  },
+  "user_config": {
+    "FILES_DIR": {
+      "type": "string",
+      "title": "Files directory",
+      "description": "A directory to mount in the Docker sandbox to read and write files",
+      "required": false,
+      "sensitive": false
+    }
+  },
+  "keywords": ["node.js", "javascript", "docker", "code_execution", "sandbox"],
+  "license": "MIT"
+}
