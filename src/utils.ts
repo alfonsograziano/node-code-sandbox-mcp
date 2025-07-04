@@ -178,7 +178,9 @@ export function sanitizeImageName(image: string): string | null {
 export function sanitizeShellCommand(cmd: string): string | null {
   // For now, just check it's a non-empty string and doesn't contain dangerous metacharacters
   if (typeof cmd !== 'string' || !cmd.trim()) return null;
-  // Disallow shell metacharacters that could break out of intended command
-  if (/[;&|`$><\\]/.test(cmd)) return null;
+  // Disallow command substitution (backticks and $()) which are most dangerous
+  if (/[`]|\$\([^)]+\)/.test(cmd)) return null;
+  // Allow >, <, &, | for redirection and backgrounding, as needed for listenOnPort
+  // Still block backticks and $() for command substitution
   return cmd;
 }
