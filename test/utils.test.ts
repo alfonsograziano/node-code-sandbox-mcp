@@ -5,6 +5,7 @@ import {
   isDockerRunning,
   preprocessDependencies,
 } from '../src/utils.ts';
+import { containerExists, isContainerRunning } from './utils.ts';
 import * as childProcess from 'node:child_process';
 
 vi.mock('fs');
@@ -95,21 +96,25 @@ describe('utils', () => {
 
   describe('isDockerRunning', () => {
     it('should return true when docker info command succeeds', () => {
-      vi.spyOn(childProcess, 'execSync').mockImplementation(() =>
+      vi.spyOn(childProcess, 'execFileSync').mockImplementation(() =>
         Buffer.from('')
       );
 
       expect(isDockerRunning()).toBe(true);
-      expect(childProcess.execSync).toHaveBeenCalledWith('docker info');
+      expect(childProcess.execFileSync).toHaveBeenCalledWith('docker', [
+        'info',
+      ]);
     });
 
     it('should return false when docker info command fails', () => {
-      vi.spyOn(childProcess, 'execSync').mockImplementation(() => {
+      vi.spyOn(childProcess, 'execFileSync').mockImplementation(() => {
         throw new Error('docker daemon not running');
       });
 
       expect(isDockerRunning()).toBe(false);
-      expect(childProcess.execSync).toHaveBeenCalledWith('docker info');
+      expect(childProcess.execFileSync).toHaveBeenCalledWith('docker', [
+        'info',
+      ]);
     });
   });
 
@@ -155,5 +160,63 @@ describe('utils', () => {
         lodash: '4.17.21',
       });
     });
+  });
+});
+
+describe('containerExists', () => {
+  it('should return true for a valid container ID', () => {
+    vi.spyOn(childProcess, 'execFileSync').mockImplementation(() =>
+      Buffer.from('')
+    );
+    expect(containerExists('js-sbx-valid')).toBe(true);
+    expect(childProcess.execFileSync).toHaveBeenCalledWith('docker', [
+      'inspect',
+      'js-sbx-valid',
+    ]);
+  });
+
+  it('should return false for a non-existent container ID', () => {
+    vi.spyOn(childProcess, 'execFileSync').mockImplementation(() => {
+      throw new Error('No such container');
+    });
+    expect(containerExists('not-a-real-container')).toBe(false);
+  });
+
+  it('should return false for a malicious container ID', () => {
+    vi.spyOn(childProcess, 'execFileSync').mockImplementation(() => {
+      throw new Error('Invalid container ID');
+    });
+    expect(containerExists('bad;id$(rm -rf /)')).toBe(false);
+  });
+});
+
+describe('isContainerRunning', () => {
+  it('should return true if docker inspect returns "true"', () => {
+    vi.spyOn(childProcess, 'execFileSync').mockImplementation(() => 'true');
+    expect(isContainerRunning('js-sbx-valid')).toBe(true);
+    expect(childProcess.execFileSync).toHaveBeenCalledWith(
+      'docker',
+      ['inspect', '-f', '{{.State.Running}}', 'js-sbx-valid'],
+      { encoding: 'utf8' }
+    );
+  });
+
+  it('should return false if docker inspect returns "false"', () => {
+    vi.spyOn(childProcess, 'execFileSync').mockImplementation(() => 'false');
+    expect(isContainerRunning('js-sbx-valid')).toBe(false);
+  });
+
+  it('should return false for a non-existent container ID', () => {
+    vi.spyOn(childProcess, 'execFileSync').mockImplementation(() => {
+      throw new Error('No such container');
+    });
+    expect(isContainerRunning('not-a-real-container')).toBe(false);
+  });
+
+  it('should return false for a malicious container ID', () => {
+    vi.spyOn(childProcess, 'execFileSync').mockImplementation(() => {
+      throw new Error('Invalid container ID');
+    });
+    expect(isContainerRunning('bad;id$(rm -rf /)')).toBe(false);
   });
 });

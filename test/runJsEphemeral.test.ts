@@ -369,7 +369,7 @@ describe('runJsEphemeral', () => {
             version: '^1.52.0',
           },
         ],
-        image: 'mcr.microsoft.com/playwright:v1.52.0-noble',
+        image: 'mcr.microsoft.com/playwright:v1.53.2-noble',
       });
 
       expect(result).toBeDefined();

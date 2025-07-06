@@ -1,4 +1,12 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+  afterEach,
+} from 'vitest';
 import initializeSandbox from '../src/tools/initialize.ts';
 import execInSandbox from '../src/tools/exec.ts';
 import stopSandbox from '../src/tools/stop.ts';
@@ -74,5 +82,59 @@ describe('execInSandbox', () => {
     } else {
       throw new Error('Unexpected content type');
     }
+  });
+});
+
+describe('Command injection prevention', () => {
+  beforeEach(() => {
+    vi.doMock('node:child_process', () => ({
+      execFileSync: vi.fn(() => Buffer.from('')),
+      execFile: vi.fn(() => Buffer.from('')),
+    }));
+  });
+
+  afterEach(() => {
+    vi.resetModules();
+    vi.resetAllMocks();
+    vi.restoreAllMocks();
+  });
+
+  const dangerousIds = [
+    '$(touch /tmp/pwned)',
+    '`touch /tmp/pwned`',
+    'bad;id',
+    'js-sbx-123 && rm -rf /',
+    'js-sbx-123 | echo hacked',
+    'js-sbx-123 > /tmp/pwned',
+    'js-sbx-123 $(id)',
+    'js-sbx-123; echo pwned',
+    'js-sbx-123`echo pwned`',
+    'js-sbx-123/../../etc/passwd',
+    'js-sbx-123\nrm -rf /',
+    '',
+    ' ',
+    'js-sbx-123$',
+    'js-sbx-123#',
+  ];
+
+  dangerousIds.forEach((payload) => {
+    it(`should reject dangerous container_id: "${payload}"`, async () => {
+      const { default: execInSandbox } = await import('../src/tools/exec.ts');
+      const childProcess = await import('node:child_process');
+      const result = await execInSandbox({
+        container_id: payload,
+        commands: ['echo test'],
+      });
+      expect(result).toEqual({
+        content: [
+          {
+            type: 'text',
+            text: 'Invalid container ID',
+          },
+        ],
+      });
+      const execFileSyncCall = vi.mocked(childProcess.execFileSync).mock.calls;
+      expect(execFileSyncCall.length).toBe(0);
+    });
   });
 });

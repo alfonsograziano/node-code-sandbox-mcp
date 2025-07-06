@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from 'fs';
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { getConfig } from './config.ts';
 
 export function isRunningInDocker() {
@@ -55,7 +55,7 @@ export const suggestedImages = {
     description: 'Node.js LTS version, slim variant.',
     reason: 'Lightweight and fast for JavaScript execution tasks.',
   },
-  'mcr.microsoft.com/playwright:v1.52.0-noble': {
+  'mcr.microsoft.com/playwright:v1.53.2-noble': {
     description: 'Playwright image for browser automation.',
     reason: 'Preconfigured for running Playwright scripts.',
   },
@@ -103,7 +103,7 @@ export async function waitForPortHttp(
 
 export function isDockerRunning() {
   try {
-    execSync('docker info');
+    execFileSync('docker', ['info']);
     return true;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
@@ -140,4 +140,47 @@ export function computeResourceLimits(image: string) {
     memFlag: memory ? `--memory ${memory}` : '',
     cpuFlag: cpus ? `--cpus ${cpus}` : '',
   };
+}
+
+/**
+ * Sanitizes and validates a Docker container ID or name.
+ * Docker container names/IDs must match [a-zA-Z0-9][a-zA-Z0-9_.-]*
+ * @param id The container ID or name to validate
+ * @returns The sanitized ID if valid, otherwise null
+ */
+export function sanitizeContainerId(id: string): string | null {
+  // Docker container names/IDs: https://docs.docker.com/engine/reference/commandline/run/#container-name
+  // Allow alphanumerics, underscores, periods, dashes. Must start with alphanumeric.
+  if (typeof id !== 'string') return null;
+  if (/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/.test(id)) return id;
+  return null;
+}
+
+/**
+ * Sanitizes and validates a Docker image name (optionally with tag).
+ * @param image The image name to validate
+ * @returns The sanitized image name if valid, otherwise null
+ */
+export function sanitizeImageName(image: string): string | null {
+  // Docker image names: [registry/][user/]repo[:tag]
+  // Allow alphanumerics, underscores, periods, dashes, slashes, colons
+  if (typeof image !== 'string') return null;
+  if (/^[a-zA-Z0-9_.:/-]+$/.test(image)) return image;
+  return null;
+}
+
+/**
+ * Sanitizes a shell command to be run inside a container. This is a basic check;
+ * for more advanced needs, consider whitelisting allowed commands.
+ * @param cmd The command string
+ * @returns The sanitized command if valid, otherwise null
+ */
+export function sanitizeShellCommand(cmd: string): string | null {
+  // For now, just check it's a non-empty string and doesn't contain dangerous metacharacters
+  if (typeof cmd !== 'string' || !cmd.trim()) return null;
+  // Disallow command substitution (backticks and $()) which are most dangerous
+  if (/[`]|\$\([^)]+\)/.test(cmd)) return null;
+  // Allow >, <, &, | for redirection and backgrounding, as needed for listenOnPort
+  // Still block backticks and $() for command substitution
+  return cmd;
 }

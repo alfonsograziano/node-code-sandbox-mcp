@@ -1,17 +1,15 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { setServerRunId } from '../src/tools/initialize.ts';
 import * as childProcess from 'node:child_process';
 import * as utils from '../src/utils.ts';
 
-vi.mock('node:child_process');
+vi.mock('node:child_process', () => ({
+  execFileSync: vi.fn(() => Buffer.from('')),
+}));
 vi.mock('../src/utils');
 vi.mocked(utils).computeResourceLimits = vi
   .fn()
   .mockReturnValue({ memFlag: '', cpuFlag: '' });
-vi.mock('../src/runUtils', () => ({
-    getFilesDir: vi.fn().mockReturnValue(undefined),
-    getMountFlag: vi.fn().mockReturnValue(''),
-  }));
+
 vi.mock('../src/containerUtils', () => ({
   activeSandboxContainers: new Map(),
 }));
@@ -24,9 +22,6 @@ describe('initialize module', () => {
       memFlag: '',
       cpuFlag: '',
     });
-    vi.spyOn(childProcess, 'execSync').mockImplementation(() =>
-      Buffer.from('')
-    );
   });
 
   afterEach(() => {
@@ -35,10 +30,14 @@ describe('initialize module', () => {
 
   describe('setServerRunId', () => {
     it('should set the server run ID correctly', async () => {
-      // Import the module that uses the serverRunId
-      const { default: initializeSandbox } = await import(
-        '../src/tools/initialize.ts'
-      );
+      vi.doMock('../src/runUtils', () => ({
+        getFilesDir: vi.fn().mockReturnValue(''),
+        getMountFlag: vi.fn().mockReturnValue(''),
+      }));
+      vi.resetModules();
+      const mod = await import('../src/tools/initialize.ts');
+      const initializeSandbox = mod.default;
+      const setServerRunId = mod.setServerRunId;
 
       // Set a test server run ID
       const testId = 'test-server-run-id';
@@ -47,16 +46,21 @@ describe('initialize module', () => {
       // Call initialize function to create a container
       await initializeSandbox({});
 
-      // Verify that execSync was called with the correct label containing our test ID
-      expect(childProcess.execSync).toHaveBeenCalled();
-      const execSyncCall = vi.mocked(childProcess.execSync).mock
-        .calls[0][0] as string;
-
-      expect(execSyncCall).toContain(`--label "mcp-server-run-id=${testId}"`);
+      // Verify that execFileSync was called with the correct label containing our test ID
+      expect(childProcess.execFileSync).toHaveBeenCalled();
+      const execFileSyncCall = vi.mocked(childProcess.execFileSync).mock
+        .calls[0][1] as string[];
+      // Join the args array to a string for easier matching
+      expect(execFileSyncCall.join(' ')).toContain(
+        `--label mcp-server-run-id=${testId}`
+      );
     });
 
     it('should use unknown as the default server run ID if not set', async () => {
-      // Force re-import of the module to reset the serverRunId
+      vi.doMock('../src/runUtils', () => ({
+        getFilesDir: vi.fn().mockReturnValue(''),
+        getMountFlag: vi.fn().mockReturnValue(''),
+      }));
       vi.resetModules();
       const { default: initializeSandbox } = await import(
         '../src/tools/initialize.ts'
@@ -65,47 +69,49 @@ describe('initialize module', () => {
       // Call initialize without setting the server run ID
       await initializeSandbox({});
 
-      // Verify that execSync was called with the default "unknown" ID
-      expect(childProcess.execSync).toHaveBeenCalled();
-      const execSyncCall = vi.mocked(childProcess.execSync).mock
-        .calls[0][0] as string;
-
-      expect(execSyncCall).toContain('--label "mcp-server-run-id=unknown"');
+      // Verify that execFileSync was called with the default "unknown" ID
+      expect(childProcess.execFileSync).toHaveBeenCalled();
+      const execFileSyncCall = vi.mocked(childProcess.execFileSync).mock
+        .calls[0][1] as string[];
+      expect(execFileSyncCall.join(' ')).toContain(
+        '--label mcp-server-run-id=unknown'
+      );
     });
   });
-  
+
   describe('volume mount behaviour', () => {
     it('does NOT include a -v flag when FILES_DIR is unset', async () => {
-
+      vi.doMock('../src/runUtils', () => ({
+        getFilesDir: vi.fn().mockReturnValue(''),
+        getMountFlag: vi.fn().mockReturnValue(''),
+      }));
+      vi.resetModules();
       const { default: initializeSandbox } = await import(
         '../src/tools/initialize.ts'
       );
 
       await initializeSandbox({});
 
-      const cmd = vi.mocked(childProcess.execSync).mock.calls[0][0] as string;
-      expect(cmd).not.toContain('-v ');
+      const args = vi.mocked(childProcess.execFileSync).mock
+        .calls[0][1] as string[];
+      expect(args.join(' ')).not.toContain('-v ');
     });
 
     it('includes the -v flag when getMountFlag returns one', async () => {
-
       vi.doMock('../src/runUtils', () => ({
         getFilesDir: vi.fn().mockReturnValue('/host/dir'),
-        getMountFlag: vi
-          .fn()
-          .mockReturnValue('-v /host/dir:/workspace/files'),
+        getMountFlag: vi.fn().mockReturnValue('-v /host/dir:/workspace/files'),
       }));
-      vi.resetModules(); 
-
+      vi.resetModules();
       const { default: initializeSandbox } = await import(
         '../src/tools/initialize.ts'
       );
 
       await initializeSandbox({});
 
-      const cmd = vi.mocked(childProcess.execSync).mock.calls[0][0] as string;
-      expect(cmd).toContain('-v /host/dir:/workspace/files');
+      const args = vi.mocked(childProcess.execFileSync).mock
+        .calls[0][1] as string[];
+      expect(args.join(' ')).toContain('-v /host/dir:/workspace/files');
     });
   });
 });
-

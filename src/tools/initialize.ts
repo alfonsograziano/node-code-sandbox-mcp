@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { type McpResponse, textContent } from '../types.ts';
 import {
@@ -11,6 +11,7 @@ import {
 import { getMountFlag } from '../runUtils.ts';
 import { activeSandboxContainers } from '../containerUtils.ts';
 import { logger } from '../logger.ts';
+import stopSandbox from './stop.ts';
 
 // Instead of importing serverRunId directly, we'll have a variable that gets set
 let serverRunId = 'unknown';
@@ -52,17 +53,29 @@ export default async function initializeSandbox({
     `mcp-server-run-id=${serverRunId}`,
     `mcp-creation-timestamp=${creationTimestamp}`,
   ];
-  const labelArgs = labels.map((label) => `--label "${label}"`).join(' ');
   const { memFlag, cpuFlag } = computeResourceLimits(image);
   const mountFlag = getMountFlag();
 
   try {
-    execSync(
-      `docker run -d ${portOption} ${memFlag} ${cpuFlag} ` +
-      `--workdir /workspace ${mountFlag} ` +
-      `${labelArgs} ` + // Add labels here
-      `--name ${containerId} ${image} tail -f /dev/null`
-    );
+    const args = [
+      'run',
+      '-d',
+      ...portOption.split(' '),
+      ...memFlag.split(' '),
+      ...cpuFlag.split(' '),
+      '--workdir',
+      '/workspace',
+      ...mountFlag.split(' '),
+      ...labels.flatMap((label) => ['--label', label]),
+      '--name',
+      containerId,
+      image,
+      'tail',
+      '-f',
+      '/dev/null',
+    ].filter(Boolean);
+
+    execFileSync('docker', args, { stdio: 'ignore' });
 
     // Register the container only after successful creation
     activeSandboxContainers.set(containerId, creationTimestamp);
@@ -73,9 +86,9 @@ export default async function initializeSandbox({
     };
   } catch (error) {
     logger.error(`Failed to initialize container ${containerId}`, error);
-    // Ensure partial cleanup if execSync fails after container might be created but before registration
+    // Ensure partial cleanup if execFileSync fails after container might be created but before registration
     try {
-      execSync(`docker rm -f ${containerId}`);
+      stopSandbox({ container_id: containerId });
     } catch (cleanupError: unknown) {
       // Ignore cleanup errors - log it just in case
       logger.warning(

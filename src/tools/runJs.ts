@@ -1,11 +1,12 @@
 import { z } from 'zod';
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { type McpResponse, textContent } from '../types.ts';
 import { prepareWorkspace } from '../runUtils.ts';
 import {
   DOCKER_NOT_RUNNING_ERROR,
   isDockerRunning,
   waitForPortHttp,
+  sanitizeContainerId,
 } from '../utils.ts';
 import {
   changesToMcpContent,
@@ -60,6 +61,11 @@ export default async function runJs({
   dependencies?: DependenciesArray;
   listenOnPort?: number;
 }): Promise<McpResponse> {
+  const validId = sanitizeContainerId(container_id);
+  if (!validId) {
+    return { content: [textContent('Invalid container ID')] };
+  }
+
   if (!isDockerRunning()) {
     return { content: [textContent(DOCKER_NOT_RUNNING_ERROR)] };
   }
@@ -71,7 +77,11 @@ export default async function runJs({
 
   // Create workspace in container
   const localWorkspace = await prepareWorkspace({ code, dependenciesRecord });
-  execSync(`docker cp ${localWorkspace.name}/. ${container_id}:/workspace`);
+  execFileSync('docker', [
+    'cp',
+    `${localWorkspace.name}/.`,
+    `${validId}:/workspace`,
+  ]);
 
   let rawOutput: string = '';
 
@@ -82,10 +92,15 @@ export default async function runJs({
   if (listenOnPort) {
     if (dependencies.length > 0) {
       const installStart = Date.now();
-      const installOutput = execSync(
-        `docker exec ${container_id} /bin/sh -c ${JSON.stringify(
-          `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`
-        )}`,
+      const installOutput = execFileSync(
+        'docker',
+        [
+          'exec',
+          validId,
+          '/bin/sh',
+          '-c',
+          'npm install --omit=dev --prefer-offline --no-audit --loglevel=error',
+        ],
         { encoding: 'utf8' }
       );
       telemetry.installTimeMs = Date.now() - installStart;
@@ -96,7 +111,7 @@ export default async function runJs({
     }
 
     const { error, duration } = safeExecNodeInContainer({
-      containerId: container_id,
+      containerId: validId,
       command: `nohup node index.js > output.log 2>&1 &`,
     });
     telemetry.runTimeMs = duration;
@@ -107,9 +122,11 @@ export default async function runJs({
   } else {
     if (dependencies.length > 0) {
       const installStart = Date.now();
-      const fullCmd = `npm install --omit=dev --prefer-offline --no-audit --loglevel=error`;
-      const installOutput = execSync(
-        `docker exec ${container_id} /bin/sh -c ${JSON.stringify(fullCmd)}`,
+      const fullCmd =
+        'npm install --omit=dev --prefer-offline --no-audit --loglevel=error';
+      const installOutput = execFileSync(
+        'docker',
+        ['exec', validId, '/bin/sh', '-c', fullCmd],
         { encoding: 'utf8' }
       );
       telemetry.installTimeMs = Date.now() - installStart;
@@ -120,7 +137,7 @@ export default async function runJs({
     }
 
     const { output, error, duration } = safeExecNodeInContainer({
-      containerId: container_id,
+      containerId: validId,
     });
 
     if (output) rawOutput = output;

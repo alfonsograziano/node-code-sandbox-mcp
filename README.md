@@ -33,7 +33,7 @@ To use this MCP server, Docker must be installed and running on your machine.
 Example recommended images:
 
 - node:lts-slim
-- mcr.microsoft.com/playwright:v1.52.0-noble
+- mcr.microsoft.com/playwright:v1.53.2-noble
 - alfonsograziano/node-chartjs-canvas:latest
 
 ## Getting started
@@ -130,11 +130,12 @@ docker run --rm -it \
 This bind-mounts your host folder into the container at the **same absolute path** and makes `FILES_DIR` available inside the MCP server.
 
 #### Ephemeral usage – **no persistent storage**
+
 ```bash
 docker run --rm -it \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  alfonsograziano/node-code-sandbox-mcp stdio 
-  ```
+  alfonsograziano/node-code-sandbox-mcp stdio
+```
 
 ### Usage with VS Code
 
@@ -156,7 +157,7 @@ Install js-sandbox-mcp (NPX) Install js-sandbox-mcp (Docker)
                 "-v", "/var/run/docker.sock:/var/run/docker.sock",
                 "-v", "$HOME/Desktop/sandbox-output:/root", // optional
                 "-e", "FILES_DIR=$HOME/Desktop/sandbox-output",  // optional
-                "-e", "SANDBOX_MEMORY_LIMIT=512m", 
+                "-e", "SANDBOX_MEMORY_LIMIT=512m",
                 "-e", "SANDBOX_CPU_LIMIT=1",
                 "mcp/node-code-sandbox"
               ]

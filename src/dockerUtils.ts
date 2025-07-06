@@ -1,10 +1,11 @@
-import { exec, execSync } from 'child_process';
+import { execFile, execFileSync } from 'child_process';
 import util from 'util';
 import { logger } from './logger.ts';
 import { getConfig } from './config.ts';
 import { textContent } from './types.ts';
+import { sanitizeContainerId, sanitizeShellCommand } from './utils.ts';
 
-const execPromise = util.promisify(exec);
+const execFilePromise = util.promisify(execFile);
 
 /**
  * Attempts to forcefully stop and remove a Docker container by its ID.
@@ -17,10 +18,13 @@ export async function forceStopContainer(containerId: string): Promise<void> {
     `Attempting to stop and remove container via dockerUtils: ${containerId}`
   );
   try {
+    // Sanitize containerId
+    const safeId = sanitizeContainerId(containerId);
+    if (!safeId) throw new Error('Invalid containerId');
     // Force stop the container (ignores errors if already stopped)
-    await execPromise(`docker stop ${containerId} || true`);
+    await execFilePromise('docker', ['stop', safeId]);
     // Force remove the container (ignores errors if already removed)
-    await execPromise(`docker rm -f ${containerId} || true`);
+    await execFilePromise('docker', ['rm', '-f', safeId]);
     logger.info(
       `Successfully issued stop/remove commands for container: ${containerId}`
     );
@@ -54,10 +58,15 @@ export function safeExecNodeInContainer({
   command?: string;
 }): NodeExecResult {
   const runStart = Date.now();
-
+  // Sanitize command
+  const safeCmd = sanitizeShellCommand(command);
+  if (!safeCmd) {
+    return { output: null, error: new Error('Invalid command'), duration: 0 };
+  }
   try {
-    const output = execSync(
-      `docker exec ${containerId} /bin/sh -c  ${JSON.stringify(command)}`,
+    const output = execFileSync(
+      'docker',
+      ['exec', containerId, '/bin/sh', '-c', safeCmd],
       { encoding: 'utf8', timeout: timeoutMs }
     );
     return { output, error: null, duration: Date.now() - runStart };

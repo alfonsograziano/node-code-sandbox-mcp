@@ -3,6 +3,7 @@ import * as tmp from 'tmp';
 import { execSync } from 'node:child_process';
 import runJs from '../src/tools/runJs.ts';
 import { DEFAULT_NODE_IMAGE } from '../src/utils.ts';
+import { forceStopContainer } from '../src/dockerUtils.ts';
 
 function startSandboxContainer(): string {
   return execSync(
@@ -11,10 +12,6 @@ function startSandboxContainer(): string {
   ).trim();
 }
 let tmpDir: tmp.DirResult;
-
-function stopSandboxContainer(containerId: string) {
-  execSync(`docker rm -f ${containerId}`);
-}
 
 describe('runJs npm install benchmarking', () => {
   beforeEach(() => {
@@ -80,7 +77,7 @@ describe('runJs npm install benchmarking', () => {
         throw error; // Re-throw the error to fail the test
       }
     } finally {
-      stopSandboxContainer(containerId);
+      forceStopContainer(containerId);
     }
   }, 20_000);
 });
