@@ -5,6 +5,7 @@ import {
   DOCKER_NOT_RUNNING_ERROR,
   isDockerRunning,
   sanitizeContainerId,
+  sanitizeShellCommand,
 } from '../utils.ts';
 
 export const argSchema = {
@@ -19,7 +20,6 @@ export default async function execInSandbox({
   container_id: string;
   commands: string[];
 }): Promise<McpResponse> {
-  console.log('execInSandbox', container_id);
   const validId = sanitizeContainerId(container_id);
   if (!validId) {
     return {
@@ -35,8 +35,13 @@ export default async function execInSandbox({
 
   const output: string[] = [];
   for (const cmd of commands) {
+    const sanitizedCmd = sanitizeShellCommand(cmd);
+    if (!sanitizedCmd)
+      throw new Error(
+        'Cannot run command as it contains dangerous metacharacters'
+      );
     output.push(
-      execFileSync('docker', ['exec', validId, '/bin/sh', '-c', cmd], {
+      execFileSync('docker', ['exec', validId, '/bin/sh', '-c', sanitizedCmd], {
         encoding: 'utf8',
       })
     );

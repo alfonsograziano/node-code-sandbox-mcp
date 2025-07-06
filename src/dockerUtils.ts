@@ -3,7 +3,7 @@ import util from 'util';
 import { logger } from './logger.ts';
 import { getConfig } from './config.ts';
 import { textContent } from './types.ts';
-import { sanitizeShellCommand } from './utils.ts';
+import { sanitizeContainerId, sanitizeShellCommand } from './utils.ts';
 
 const execFilePromise = util.promisify(execFile);
 
@@ -19,7 +19,7 @@ export async function forceStopContainer(containerId: string): Promise<void> {
   );
   try {
     // Sanitize containerId
-    const safeId = sanitizeShellCommand(containerId);
+    const safeId = sanitizeContainerId(containerId);
     if (!safeId) throw new Error('Invalid containerId');
     // Force stop the container (ignores errors if already stopped)
     await execFilePromise('docker', ['stop', safeId]);
