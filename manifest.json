@@ -29,8 +29,16 @@
   },
   "tools": [
     {
+      "name": "sandbox_initialize",
+      "description": "Start a new isolated Docker container running Node.js. Used to set up a sandbox session for multiple commands and scripts."
+    },
+    {
+      "name": "sandbox_exec",
+      "description": "Execute one or more shell commands inside a running sandbox container. Requires a sandbox initialized beforehand."
+    },
+    {
       "name": "run_js",
-      "description": "Install npm dependencies and run JavaScript code inside a running sandbox container."
+      "description": "Install npm dependencies and run JavaScript code inside a running sandbox container. After running, you must manually stop the sandbox to free resources. The code must be valid ESModules (import/export syntax). Best for complex workflows where you want to reuse the environment across multiple executions. When reading and writing from the Node.js processes, you always need to read from and write to the './files' directory to ensure persistence on the mounted volume."
     },
     {
       "name": "sandbox_stop",
@@ -38,7 +46,15 @@
     },
     {
       "name": "run_js_ephemeral",
-      "description": "Run a JavaScript snippet in a temporary disposable container with optional npm dependencies, then automatically clean up."
+      "description": "Run a JavaScript snippet in a temporary disposable container with optional npm dependencies, then automatically clean up. The code must be valid ESModules (import/export syntax). Ideal for simple one-shot executions without maintaining a sandbox or managing cleanup manually. When reading and writing from the Node.js processes, you always need to read from and write to the './files' directory to ensure persistence on the mounted volume. This includes images (e.g., PNG, JPEG) and other files (e.g., text, JSON, binaries)."
+    },
+    {
+      "name": "get_dependency_types",
+      "description": "Given an array of npm package names (and optional versions), fetch whether each package ships its own TypeScript definitions or has a corresponding @types/… package, and return the raw .d.ts text. Useful when you're about to run a Node.js script against an unfamiliar dependency and want to inspect what APIs and types it exposes."
+    },
+    {
+      "name": "search_npm_packages",
+      "description": "Search for npm packages by a search term and get their name, description, and a README snippet."
     }
   ],
   "compatibility": {

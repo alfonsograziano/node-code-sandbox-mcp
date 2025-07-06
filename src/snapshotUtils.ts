@@ -1,5 +1,6 @@
 import path from 'node:path';
-import { glob, stat, readFile } from 'node:fs/promises';
+import { stat, readFile } from 'node:fs/promises';
+import fg from 'fast-glob';
 import { pathToFileURL } from 'node:url';
 
 import mime from 'mime-types';
@@ -7,7 +8,6 @@ import mime from 'mime-types';
 import { getFilesDir } from './runUtils.ts';
 import { type McpContent, textContent } from './types.ts';
 import { isRunningInDocker } from './utils.ts';
-import type { Dirent } from 'node:fs';
 
 type ChangeType = 'created' | 'updated' | 'deleted';
 type Change = {
@@ -28,21 +28,28 @@ export const getMountPointDir = () => {
 export async function getSnapshot(dir: string): Promise<FileSnapshot> {
   const snapshot: FileSnapshot = {};
 
-  const executor = glob('**/*', {
+  // Use fast-glob to get all files and directories, excluding .git and node_modules
+  const entries = await fg(['**/*'], {
     cwd: dir,
-    withFileTypes: true,
-    exclude: (file: string | Dirent): boolean => {
-      const name = typeof file === 'string' ? file : file.name;
-      return ['.git', 'node_modules'].includes(name);
-    },
+    dot: true,
+    onlyFiles: false,
+    followSymbolicLinks: false,
+    ignore: ['.git/**', 'node_modules/**'],
+    stats: true,
   });
 
-  for await (const entry of executor) {
-    const fullPath = path.join(entry.parentPath, entry.name);
-    const stats = await stat(fullPath);
+  for (const entry of entries) {
+    // entry is a FastGlobEntry (has .path and .stats)
+    const fullPath = path.join(
+      dir,
+      typeof entry === 'string' ? entry : entry.path
+    );
+    const statsObj =
+      typeof entry === 'string' ? await stat(fullPath) : entry.stats;
+    if (!statsObj) continue;
     snapshot[fullPath] = {
-      mtimeMs: stats.mtimeMs,
-      isDirectory: entry.isDirectory(),
+      mtimeMs: statsObj.mtimeMs,
+      isDirectory: statsObj.isDirectory(),
     };
   }
 
