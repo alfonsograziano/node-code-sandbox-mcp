@@ -1,7 +1,7 @@
 {
   "name": "node-code-sandbox-mcp",
   "description": "Run arbitrary JavaScript inside disposable Docker containers and install npm dependencies on the fly.",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "type": "module",
   "bin": {
     "node-code-sandbox-mcp": "dist/server.js"
