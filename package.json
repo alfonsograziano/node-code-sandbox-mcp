@@ -32,6 +32,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.10.2",
     "dotenv": "^16.5.0",
+    "fast-glob": "^3.3.3",
     "mime-types": "^3.0.1",
     "npm-registry-sdk": "^1.2.1",
     "openai": "^4.96.2",
@@ -60,6 +61,6 @@
     "vitest": "^3.1.3"
   },
   "engines": {
-    "node": ">=23.10.0"
+    "node": ">=22.0.0"
   }
 }
