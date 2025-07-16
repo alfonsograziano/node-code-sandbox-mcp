@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/alfonsograziano-node-code-sandbox-mcp-badge.png)](https://mseep.ai/app/alfonsograziano-node-code-sandbox-mcp)
+
 # 🐢🚀 Node.js Sandbox MCP Server
 
 Node.js server implementing the Model Context Protocol (MCP) for running arbitrary JavaScript in ephemeral Docker containers with on‑the‑fly npm dependency installation.
