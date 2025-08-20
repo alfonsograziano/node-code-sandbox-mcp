@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as tmp from 'tmp';
 import { z } from 'zod';
 import runJsEphemeral, { argSchema } from '../src/tools/runJsEphemeral.ts';
-import { DEFAULT_NODE_IMAGE } from '../src/utils.ts';
+import { DEFAULT_NODE_IMAGE, PLAYWRIGHT_IMAGE } from '../src/utils.ts';
 import { describeIfLocal } from './utils.ts';
 import type {
   McpContentImage,
@@ -350,27 +350,42 @@ describe('runJsEphemeral', () => {
 
   describe('runJsEphemeral screenshot with Playwright', () => {
     it('should take a screenshot of example.com using Playwright and the Playwright image', async () => {
+      process.env.RUN_SCRIPT_TIMEOUT = '80000';
+
+      const playwrightVersion =
+        PLAYWRIGHT_IMAGE.match(/:v(\d+\.\d+\.\d+)/)?.[1];
+      if (!playwrightVersion) {
+        throw new Error(
+          `Could not extract Playwright version from image: ${PLAYWRIGHT_IMAGE}`
+        );
+      }
+
       const result = await runJsEphemeral({
         code: `
-          import { chromium } from 'playwright';
-  
-          (async () => {
-            const browser = await chromium.launch();
-            const page = await browser.newPage();
-            await page.goto('https://example.com');
-            await page.screenshot({ path: './files/example_screenshot.png' });
-            await browser.close();
-            console.log('Screenshot saved');
-          })();
-        `,
+            import { chromium } from 'playwright';
+    
+            (async () => {
+              const browser = await chromium.launch({ args: ['--no-sandbox'] });
+              const page = await browser.newPage();
+              await page.goto('https://example.com', { timeout: 70000 });
+              await page.screenshot({ path: './files/example_screenshot.png' });
+              await browser.close();
+              console.log('Screenshot saved');
+            })();
+          `,
         dependencies: [
           {
             name: 'playwright',
-            version: '^1.52.0',
+            version: `^${playwrightVersion}`,
           },
         ],
-        image: 'mcr.microsoft.com/playwright:v1.53.2-noble',
+        image: PLAYWRIGHT_IMAGE,
       });
+
+      console.log(result);
+
+      // Cleanup
+      delete process.env.RUN_SCRIPT_TIMEOUT;
 
       expect(result).toBeDefined();
       expect(result.content).toBeDefined();
@@ -387,7 +402,7 @@ describe('runJsEphemeral', () => {
         (item) => item.type === 'image' && item.mimeType === 'image/png'
       );
       expect(image).toBeDefined();
-    }, 15_000);
+    }, 100_000);
   });
 
   // Skipping this on the CI as it requires a lot of resources
@@ -543,7 +558,9 @@ describe('runJsEphemeral', () => {
             console.log("Mermaid definition saved to authDiagram.mmd");
       
             console.time("test");
-            await run("./files/authDiagram.mmd", "output.svg");
+            await run("./files/authDiagram.mmd", "./files/output.svg", {
+              puppeteerConfig: { args: ['--no-sandbox'] },
+            });
             console.timeEnd("test");
             console.log("Diagram generated as output.svg");
           `,
@@ -573,13 +590,13 @@ describe('runJsEphemeral', () => {
         );
         expect(mmdFile).toBeDefined();
 
-        // Optional: Validate that the SVG file was generated
-        const svgLog = result.content.find(
+        // Validate that the SVG file was generated and returned as a resource
+        const svgFile = result.content.find(
           (item) =>
-            item.type === 'text' &&
-            item.text.includes('Diagram generated as output.svg')
+            item.type === 'resource' &&
+            item.resource?.uri?.endsWith('output.svg')
         );
-        expect(svgLog).toBeDefined();
+        expect(svgFile).toBeDefined();
       });
     },
     50_000

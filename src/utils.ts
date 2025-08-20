@@ -50,12 +50,14 @@ export function preprocessDependencies({
 
 export const DEFAULT_NODE_IMAGE = 'node:lts-slim';
 
+export const PLAYWRIGHT_IMAGE = 'mcr.microsoft.com/playwright:v1.55.0-noble';
+
 export const suggestedImages = {
   'node:lts-slim': {
     description: 'Node.js LTS version, slim variant.',
     reason: 'Lightweight and fast for JavaScript execution tasks.',
   },
-  'mcr.microsoft.com/playwright:v1.53.2-noble': {
+  [PLAYWRIGHT_IMAGE]: {
     description: 'Playwright image for browser automation.',
     reason: 'Preconfigured for running Playwright scripts.',
   },

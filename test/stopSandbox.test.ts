@@ -18,18 +18,19 @@ vi.mock('../src/utils.ts', async () => {
   };
 });
 
+beforeEach(() => {
+  vi.resetAllMocks();
+  vi.spyOn(childProcess, 'execFileSync').mockImplementation(() =>
+    Buffer.from('')
+  );
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 describe('stopSandbox', () => {
   const fakeContainerId = 'js-sbx-test123'; // valid container ID
-
-  beforeEach(() => {
-    vi.resetAllMocks();
-    vi.spyOn(childProcess, 'execFileSync').mockImplementation(() =>
-      Buffer.from('')
-    );
-  });
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
 
   it('should remove the container with the given ID', async () => {
     const result = await stopSandbox({ container_id: fakeContainerId });
