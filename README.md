@@ -33,7 +33,7 @@ To use this MCP server, Docker must be installed and running on your machine.
 Example recommended images:
 
 - node:lts-slim
-- mcr.microsoft.com/playwright:v1.53.2-noble
+- mcr.microsoft.com/playwright:v1.55.0-noble
 - alfonsograziano/node-chartjs-canvas:latest
 
 ## Getting started
@@ -242,14 +242,12 @@ Run shell commands inside the running sandbox.
 Install npm dependencies and execute JavaScript code.
 
 - **Input**:
-
   - `container_id` (_string_): ID from `sandbox_initialize`
   - `code` (_string_): JS source to run (ES modules supported)
   - `dependencies` (_array of `{ name, version }`_, optional, default: `[]`): npm package names → semver versions
   - `listenOnPort` (_number_, optional): If set, leaves the process running and exposes this port to the host (**Detached Mode**)
 
 - **Behavior:**
-
   1. Creates a temp workspace inside the container
   2. Writes `index.js` and a minimal `package.json`
   3. Runs `npm install --omit=dev --ignore-scripts --no-audit --loglevel=error`
@@ -271,7 +269,6 @@ Terminate and remove the sandbox container.
 Search for npm packages by a search term and get their name, description, and a README snippet.
 
 - **Input**:
-
   - `searchTerm` (_string_, required): The term to search for in npm packages. Should contain all relevant context. Use plus signs (+) to combine related terms (e.g., "react+components" for React component libraries).
   - `qualifiers` (_object_, optional): Optional qualifiers to filter the search results:
     - `author` (_string_, optional): Filter by package author name
@@ -283,7 +280,6 @@ Search for npm packages by a search term and get their name, description, and a 
     - `boostExact` (_string_, optional): Boost exact matches for this term in search results
 
 - **Behavior:**
-
   1. Searches the npm registry using the provided search term and qualifiers
   2. Returns up to 5 packages sorted by popularity
   3. For each package, provides name, description, and README snippet (first 500 characters)
