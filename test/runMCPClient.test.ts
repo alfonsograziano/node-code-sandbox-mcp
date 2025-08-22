@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { tmpdir } from 'os';
-import { mkdtempSync, rmSync } from 'fs';
+import { mkdtempSync, rmSync, readFileSync } from 'fs';
 import path from 'path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
@@ -11,8 +11,9 @@ import { execSync } from 'child_process';
 import { normalizeMountPath } from './utils.ts';
 
 dotenv.config();
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
-describe('runJsEphemeral via MCP client (files) ', () => {
+describe('Node.js Code Sandbox MCP Tests', () => {
   let hostWorkspaceDir: string;
   let containerWorkspaceDir: string;
   let client: Client;
@@ -22,8 +23,6 @@ describe('runJsEphemeral via MCP client (files) ', () => {
     containerWorkspaceDir = normalizeMountPath(hostWorkspaceDir);
 
     // Build the latest version of the Docker image
-    // I need to build the image before running the test which requires it
-
     execSync('docker build -t alfonsograziano/node-code-sandbox-mcp .', {
       stdio: 'inherit',
     });
@@ -51,6 +50,8 @@ describe('runJsEphemeral via MCP client (files) ', () => {
 
   afterAll(() => {
     rmSync(hostWorkspaceDir, { recursive: true, force: true });
+    // Optional: Stop any potentially lingering client connections
+    client?.close();
   });
 
   it('should run a console.log', async () => {
@@ -72,7 +73,7 @@ describe('runJsEphemeral via MCP client (files) ', () => {
     expect(outputText).toContain('Node.js process output');
   });
 
-  describe('runJsEphemeral via MCP client (host workspace mounting)', () => {
+  describe('runJsEphemeral via MCP client (files)', () => {
     it('should read and write files using the host-mounted /files', async () => {
       const inputFileName = 'text.txt';
       const inputFilePath = path.join(hostWorkspaceDir, inputFileName);
@@ -147,6 +148,36 @@ describe('runJsEphemeral via MCP client (files) ', () => {
       expect(telemetry).toBeDefined();
       expect((telemetry as { text: string }).text).toContain('"installTimeMs"');
       expect((telemetry as { text: string }).text).toContain('"runTimeMs"');
+    });
+  });
+
+  describe('run-node-js-script prompt', () => {
+    it('should include NODE_GUIDELINES.md in the prompt response', async () => {
+      const expectedGuidelines = readFileSync(
+        path.join(__dirname, '../NODE_GUIDELINES.md'),
+        'utf-8'
+      );
+
+      const userPrompt = "Please create a file named 'test.txt'.";
+
+      // Get the prompt
+      const result = await client.getPrompt({
+        name: 'run-node-js-script',
+        arguments: { prompt: userPrompt },
+      });
+
+      expect(result).toBeDefined();
+      expect(result.messages).toBeInstanceOf(Array);
+      expect(result.messages.length).toBeGreaterThan(0);
+
+      const messageContent = result.messages[0].content;
+      expect(messageContent.type).toBe('text');
+
+      const responseText = messageContent.text;
+
+      // Check that the response text includes both the user's prompt and the full guidelines
+      expect(responseText).toContain(userPrompt);
+      expect(responseText).toContain(expectedGuidelines);
     });
   });
 }, 200_000);

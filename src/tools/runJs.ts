@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { execFileSync } from 'node:child_process';
-import { type McpResponse, textContent } from '../types.ts';
+import { type McpResponse, textContent, type McpContent } from '../types.ts';
 import { prepareWorkspace } from '../runUtils.ts';
 import {
   DOCKER_NOT_RUNNING_ERROR,
@@ -18,6 +18,7 @@ import {
   getContentFromError,
   safeExecNodeInContainer,
 } from '../dockerUtils.ts';
+import { lintAndRefactorCode } from '../linterUtils.ts';
 
 const NodeDependency = z.object({
   name: z.string().describe('npm package name, e.g. lodash'),
@@ -70,13 +71,19 @@ export default async function runJs({
     return { content: [textContent(DOCKER_NOT_RUNNING_ERROR)] };
   }
 
+  // Lint and refactor the code first.
+  const { fixedCode, errorReport } = await lintAndRefactorCode(code);
+
   const telemetry: Record<string, unknown> = {};
   const dependenciesRecord: Record<string, string> = Object.fromEntries(
     dependencies.map(({ name, version }) => [name, version])
   );
 
   // Create workspace in container
-  const localWorkspace = await prepareWorkspace({ code, dependenciesRecord });
+  const localWorkspace = await prepareWorkspace({
+    code: fixedCode,
+    dependenciesRecord,
+  });
   execFileSync('docker', [
     'cp',
     `${localWorkspace.name}/.`,
@@ -115,7 +122,17 @@ export default async function runJs({
       command: `nohup node index.js > output.log 2>&1 &`,
     });
     telemetry.runTimeMs = duration;
-    if (error) return getContentFromError(error, telemetry);
+    if (error) {
+      const errorResponse = getContentFromError(error, telemetry);
+      if (errorReport) {
+        errorResponse.content.unshift(
+          textContent(
+            `Linting issues found (some may have been auto-fixed):\n${errorReport}`
+          )
+        );
+      }
+      return errorResponse;
+    }
 
     await waitForPortHttp(listenOnPort);
     rawOutput = `Server started in background; logs at /output.log`;
@@ -142,7 +159,17 @@ export default async function runJs({
 
     if (output) rawOutput = output;
     telemetry.runTimeMs = duration;
-    if (error) return getContentFromError(error, telemetry);
+    if (error) {
+      const errorResponse = getContentFromError(error, telemetry);
+      if (errorReport) {
+        errorResponse.content.unshift(
+          textContent(
+            `Linting issues found (some may have been auto-fixed):\n${errorReport}`
+          )
+        );
+      }
+      return errorResponse;
+    }
   }
 
   // Detect the file changed during the execution of the tool in the mounted workspace
@@ -156,8 +183,18 @@ export default async function runJs({
   const extractedContents = await changesToMcpContent(changes);
   localWorkspace.removeCallback();
 
+  const responseContent: McpContent[] = [];
+  if (errorReport) {
+    responseContent.push(
+      textContent(
+        `Linting issues found (some may have been auto-fixed):\n${errorReport}`
+      )
+    );
+  }
+
   return {
     content: [
+      ...(responseContent.length ? responseContent : []),
       textContent(`Node.js process output:\n${rawOutput}`),
       ...extractedContents,
       textContent(`Telemetry:\n${JSON.stringify(telemetry, null, 2)}`),

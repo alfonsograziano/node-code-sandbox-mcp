@@ -93,11 +93,11 @@ export function getHostOutputDir(): string {
 }
 
 // This FILES_DIR is an env var coming from the user
-export const getFilesDir = (): string   => {
-  return getConfig().filesDir!;             
+export const getFilesDir = (): string => {
+  return getConfig().filesDir!;
 };
 
-export const getMountFlag = (): string  => {
+export const getMountFlag = (): string => {
   const dir = getFilesDir();
   return dir ? `-v ${dir}:/workspace/files` : '';
 };

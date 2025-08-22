@@ -40,7 +40,7 @@ async function run() {
   // Initialize OpenAI Audit Client
   const client = new OpenAIAuditClient({
     apiKey: process.env.OPENAI_API_KEY!,
-    model: 'gpt-4o-mini',
+    model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
   });
   await client.initializeClient();
   console.log('OpenAI Audit Client initialized');

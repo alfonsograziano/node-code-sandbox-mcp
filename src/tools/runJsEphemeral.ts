@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { execFileSync } from 'child_process';
 import tmp from 'tmp';
 import { randomUUID } from 'crypto';
-import { type McpResponse, textContent } from '../types.ts';
+import { type McpResponse, textContent, type McpContent } from '../types.ts';
 import {
   DEFAULT_NODE_IMAGE,
   DOCKER_NOT_RUNNING_ERROR,
@@ -22,6 +22,7 @@ import {
   getContentFromError,
   safeExecNodeInContainer,
 } from '../dockerUtils.ts';
+import { lintAndRefactorCode } from '../linterUtils.ts';
 
 const NodeDependency = z.object({
   name: z.string().describe('npm package name, e.g. lodash'),
@@ -70,6 +71,9 @@ export default async function runJsEphemeral({
     return { content: [textContent(DOCKER_NOT_RUNNING_ERROR)] };
   }
 
+  // Lint and refactor the code first.
+  const { fixedCode, errorReport } = await lintAndRefactorCode(code);
+
   const telemetry: Record<string, unknown> = {};
   const dependenciesRecord = preprocessDependencies({ dependencies, image });
   const containerId = `js-ephemeral-${randomUUID()}`;
@@ -98,7 +102,10 @@ export default async function runJsEphemeral({
     ]);
 
     // Prepare workspace locally
-    const localWorkspace = await prepareWorkspace({ code, dependenciesRecord });
+    const localWorkspace = await prepareWorkspace({
+      code: fixedCode,
+      dependenciesRecord,
+    });
     execFileSync('docker', [
       'cp',
       `${localWorkspace.name}/.`,
@@ -131,7 +138,17 @@ export default async function runJsEphemeral({
       containerId,
     });
     telemetry.runTimeMs = duration;
-    if (error) return getContentFromError(error, telemetry);
+    if (error) {
+      const errorResponse = getContentFromError(error, telemetry);
+      if (errorReport) {
+        errorResponse.content.unshift(
+          textContent(
+            `Linting issues found (some may have been auto-fixed):\n${errorReport}`
+          )
+        );
+      }
+      return errorResponse;
+    }
 
     // Detect the file changed during the execution of the tool in the mounted workspace
     // and report the changes to the user
@@ -143,8 +160,18 @@ export default async function runJsEphemeral({
 
     const extractedContents = await changesToMcpContent(changes);
 
+    const responseContent: McpContent[] = [];
+    if (errorReport) {
+      responseContent.push(
+        textContent(
+          `Linting issues found (some may have been auto-fixed):\n${errorReport}`
+        )
+      );
+    }
+
     return {
       content: [
+        ...(responseContent.length ? responseContent : []),
         textContent(`Node.js process output:\n${output}`),
         ...extractedContents,
         textContent(`Telemetry:\n${JSON.stringify(telemetry, null, 2)}`),
