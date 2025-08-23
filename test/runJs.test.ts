@@ -1,18 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as tmp from 'tmp';
 import { z } from 'zod';
 import runJs, { argSchema } from '../src/tools/runJs.ts';
 import initializeSandbox from '../src/tools/initialize.ts';
 import stopSandbox from '../src/tools/stop.ts';
 import type { McpContentText } from '../src/types.ts';
-import { vi } from 'vitest';
-// import * as childProcess from 'node:child_process'; // REMOVE THIS LINE
-
-// REMOVE THIS GLOBAL MOCK:
-// vi.mock('node:child_process', () => ({
-//   execFileSync: vi.fn(() => Buffer.from('')),
-//   execFile: vi.fn(() => Buffer.from('')),
-// }));
 
 describe('argSchema', () => {
   it('should accept code and container_id and set defaults', () => {
@@ -223,6 +215,68 @@ describe('runJs basic execution', () => {
       (item) => item.type === 'text' && item.text.startsWith('Telemetry:')
     );
     expect(telemetryText).toBeDefined();
+  });
+
+  it('should auto-fix linting issues and run the corrected code', async () => {
+    const result = await runJs({
+      container_id: containerId,
+      // This code has fixable issues: `var` instead of `const`, and extra spacing.
+      code: `var msg = "hello auto-fixed world"  ; console.log(msg)`,
+    });
+
+    // 1. Check that no linting report was returned, as it should be auto-fixed.
+    const lintReport = result.content.find(
+      (c) => c.type === 'text' && c.text.startsWith('Linting issues found')
+    );
+    expect(lintReport).toBeUndefined();
+
+    // 2. Check that the execution was successful and the output is correct.
+    const execOutput = result.content.find(
+      (c) => c.type === 'text' && c.text.startsWith('Node.js process output:')
+    );
+    expect(execOutput).toBeDefined();
+    if (execOutput?.type === 'text') {
+      expect(execOutput.text).toContain('hello auto-fixed world');
+    }
+
+    // 3. Check that there was no execution error.
+    const execError = result.content.find(
+      (c) => c.type === 'text' && c.text.startsWith('Error during execution:')
+    );
+    expect(execError).toBeUndefined();
+  });
+
+  it('should report unfixable linting issues and the subsequent execution error', async () => {
+    const result = await runJs({
+      container_id: containerId,
+      // This code has an unfixable issue: using an undefined variable.
+      code: `console.log(someUndefinedVariable);`,
+    });
+
+    expect(result).toBeDefined();
+
+    // 1. Check that a linting report was returned.
+    const lintReport = result.content.find(
+      (c) => c.type === 'text' && c.text.startsWith('Linting issues found')
+    );
+    expect(lintReport).toBeDefined();
+    if (lintReport?.type === 'text') {
+      expect(lintReport.text).toContain(
+        "'someUndefinedVariable' is not defined."
+      );
+      expect(lintReport.text).toContain('(no-undef)');
+    }
+
+    // 2. Check that the execution also failed and was reported.
+    const execError = result.content.find(
+      (c) => c.type === 'text' && c.text.startsWith('Error during execution:')
+    );
+    expect(execError).toBeDefined();
+    if (execError?.type === 'text') {
+      expect(execError.text).toContain(
+        'ReferenceError: someUndefinedVariable is not defined'
+      );
+    }
   });
 }, 10_000);
 

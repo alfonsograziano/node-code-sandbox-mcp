@@ -18,6 +18,8 @@ import runJsEphemeral, {
 } from './tools/runJsEphemeral.ts';
 import mime from 'mime-types';
 import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { z } from 'zod';
 import { getConfig } from './config.ts';
 import { startScavenger, cleanActiveContainers } from './containerUtils.ts';
@@ -28,11 +30,18 @@ import getDependencyTypes, {
 import searchNpmPackages, {
   SearchNpmPackagesToolSchema,
 } from './tools/searchNpmPackages.ts';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 import packageJson from '../package.json' with { type: 'json' };
 
 export const serverRunId = randomUUID();
 setServerRunId(serverRunId);
+
+const nodeGuidelines = await fs.readFile(
+  path.join(__dirname, '..', 'NODE_GUIDELINES.md'),
+  'utf-8'
+);
 
 // Create the server with logging capability enabled
 const server = new McpServer(
@@ -150,16 +159,9 @@ server.prompt('run-node-js-script', { prompt: z.string() }, ({ prompt }) => ({
         type: 'text',
         text:
           `Here is my prompt:\n\n${prompt}\n\n` +
-          `Follow modern Node.js best practices:\n` +
-          // I've noticed that gpt4o-mini tends to use CommonJS
-          `- Use ECMAScript Modules (ESM) syntax (import/export), avoid CommonJS (require/module.exports)\n` +
-          // gpt4o-mini tends to try to install node-fetch
-          `- Use native fetch, avoid node-fetch or axios unless absolutely necessary or requested\n` +
-          `- Prefer top-level await in ES modules when appropriate\n` +
-          `- Use async/await consistently for asynchronous code, avoid mixing with .then/.catch\n` +
-          `- Avoid callback-style code in favor of Promises and async/await\n` +
-          `- Avoid unnecessary dependencies if a native API is available\n` +
-          `Please write and run a Node.js script.`,
+          nodeGuidelines +
+          `\n---\n\n` +
+          `Please write and run a Node.js script that fulfills my prompt.`,
       },
     },
   ],
