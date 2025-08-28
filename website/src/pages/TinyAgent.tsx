@@ -14,11 +14,9 @@ import {
   Server,
   HardDrive,
   Search,
-  Bot,
   GitBranch,
   Package,
   Globe,
-  Sparkles,
   ArrowUpRight,
   Settings,
 } from 'lucide-react';
@@ -37,40 +35,40 @@ const TinyAgent: React.FC = () => {
       icon: Brain,
       title: 'Intelligent Agent',
       description: 'LLM-powered agent with context-aware decision making',
-      color: 'from-purple-500 to-pink-500',
+      color: 'from-green-500 to-green-600',
     },
     {
       icon: Server,
       title: 'Server-Client Architecture',
       description:
         'Once the server is running, multiple clients can be used to interact with the agent',
-      color: 'from-blue-500 to-cyan-500',
+      color: 'from-green-600 to-green-700',
     },
     {
       icon: Search,
       title: 'RAG System',
       description:
         'Automatic file indexing of your workspace and retrieval with semantic search',
-      color: 'from-green-500 to-emerald-500',
+      color: 'from-green-700 to-green-800',
     },
     {
       icon: HardDrive,
       title: 'Memory Persistence',
       description: 'Save and load agent memories using RAG and pgvector',
-      color: 'from-orange-500 to-red-500',
+      color: 'from-green-500 to-green-600',
     },
     {
       icon: Terminal,
       title: 'Built-in Tools',
       description:
         'Integrated MCP servers including code interpreter and Playwright',
-      color: 'from-indigo-500 to-purple-500',
+      color: 'from-green-600 to-green-700',
     },
     {
       icon: Shield,
       title: 'Node.js Sandbox',
       description: 'Safe code execution environment for dynamic tool creation',
-      color: 'from-teal-500 to-blue-500',
+      color: 'from-green-700 to-green-800',
     },
   ];
 
@@ -162,71 +160,52 @@ const TinyAgent: React.FC = () => {
 
       {/* Hero Section */}
       <header className="relative overflow-hidden">
-        <div className="max-w-6xl mx-auto px-6 py-20 text-center">
-          {/* Animated Logo */}
-          <div className="mb-8 flex justify-center">
-            <div className="relative">
-              <div className="w-24 h-24 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 rounded-2xl flex items-center justify-center shadow-2xl animate-pulse">
-                <Bot size={48} className="text-white" />
-              </div>
-              <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                <Sparkles size={16} className="text-white" />
-              </div>
+        <div className="max-w-6xl mx-auto px-6 py-20 grid grid-cols-1 md:grid-cols-2 items-center gap-12">
+          {/* Left Column - Content */}
+          <div className="text-center md:text-left order-2 md:order-1">
+            <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-green-700 leading-[1.2]">
+                Tiny Agent
+              </span>
+
+              <span className="block text-3xl md:text-4xl font-normal text-gray-600 mt-1">
+                Intelligent AI Framework
+              </span>
+            </h1>
+
+            <p className="text-lg md:text-xl text-gray-700 mb-8 max-w-2xl">
+              A lightweight, intelligent agent framework with built-in RAG
+              capabilities, memory persistence, and powerful tool integration.
+              Build AI-powered workflows that scale with your needs.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start mb-12">
+              <a
+                href="https://github.com/alfonsograziano/meta-tiny-agents"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                <Github size={20} />
+                View on GitHub
+              </a>
+              <a
+                href="#features"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-white border border-gray-300 text-gray-800 rounded-lg hover:bg-gray-100 transition text-lg font-semibold"
+              >
+                <ArrowRight size={20} />
+                Explore Features
+              </a>
             </div>
           </div>
 
-          <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
-              Tiny Agent
-            </span>
-            <span className="block text-3xl md:text-4xl font-normal text-gray-600 mt-4">
-              Intelligent AI Framework
-            </span>
-          </h1>
-
-          <p className="text-lg md:text-xl text-gray-700 mb-8 max-w-3xl mx-auto">
-            A lightweight, intelligent agent framework with built-in RAG
-            capabilities, memory persistence, and powerful tool integration.
-            Build AI-powered workflows that scale with your needs.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <a
-              href="https://github.com/alfonsograziano/meta-tiny-agents"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-            >
-              <Github size={20} />
-              View on GitHub
-            </a>
-            <a
-              href="#features"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-white border border-gray-300 text-gray-800 rounded-lg hover:bg-gray-100 transition text-lg font-semibold"
-            >
-              <ArrowRight size={20} />
-              Explore Features
-            </a>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">100%</div>
-              <div className="text-sm text-gray-600">TypeScript</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-pink-600">6+</div>
-              <div className="text-sm text-gray-600">Built-in Tools</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">∞</div>
-              <div className="text-sm text-gray-600">Scalable</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">🚀</div>
-              <div className="text-sm text-gray-600">Fast</div>
-            </div>
+          {/* Right Column - Image */}
+          <div className="flex justify-center md:justify-end order-1 md:order-2">
+            <img
+              src="/images/client.png"
+              alt="Client illustration"
+              className="max-w-full h-auto rounded-2xl shadow-xl"
+            />
           </div>
         </div>
       </header>
@@ -247,7 +226,7 @@ const TinyAgent: React.FC = () => {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className={`group relative p-6 rounded-xl border-2 transition-all duration-300 hover:shadow-xl transform hover:-translate-y-2 border-gray-200 bg-white hover:border-purple-200`}
+                className={`group relative p-6 rounded-xl border-2 transition-all duration-300 hover:shadow-xl transform hover:-translate-y-2 border-gray-200 bg-white hover:border-green-200`}
               >
                 <div
                   className={`w-12 h-12 rounded-lg bg-gradient-to-r ${feature.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
@@ -282,7 +261,7 @@ const TinyAgent: React.FC = () => {
                 className="bg-white p-8 rounded-xl shadow-lg border border-gray-200"
               >
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-700 rounded-lg flex items-center justify-center">
                     <arch.icon size={24} className="text-white" />
                   </div>
                   <h3 className="text-2xl font-bold">{arch.title}</h3>
@@ -323,7 +302,7 @@ const TinyAgent: React.FC = () => {
                 key={index}
                 className="bg-gradient-to-br from-gray-50 to-white p-6 rounded-xl border border-gray-200 hover:shadow-lg transition-all duration-300"
               >
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mb-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-700 rounded-lg flex items-center justify-center mb-4">
                   <tool.icon size={24} className="text-white" />
                 </div>
                 <h3 className="text-xl font-semibold mb-3">{tool.title}</h3>
@@ -346,7 +325,7 @@ const TinyAgent: React.FC = () => {
       </section>
 
       {/* Quick Start Section */}
-      <section className="py-20 bg-gradient-to-br from-purple-50 to-pink-50">
+      <section className="py-20 bg-gradient-to-br from-green-50 to-green-100">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -363,7 +342,7 @@ const TinyAgent: React.FC = () => {
                 key={index}
                 className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 text-center"
               >
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-700 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-white font-bold text-xl">
                     {step.step}
                   </span>
@@ -379,7 +358,7 @@ const TinyAgent: React.FC = () => {
               href="https://github.com/alfonsograziano/meta-tiny-agents"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
               <Github size={20} />
               Start Building
@@ -445,7 +424,7 @@ const TinyAgent: React.FC = () => {
             </div>
 
             <div className="relative">
-              <div className="bg-gradient-to-br from-purple-100 to-pink-100 p-8 rounded-2xl">
+              <div className="bg-gradient-to-br from-green-100 to-green-200 p-8 rounded-2xl">
                 <div className="space-y-4">
                   <div className="bg-white p-4 rounded-lg shadow-sm">
                     <div className="flex items-center gap-2 mb-2">
@@ -490,12 +469,12 @@ const TinyAgent: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-purple-600 to-pink-600">
+      <section className="py-20 bg-gradient-to-r from-green-600 to-green-700">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
             Ready to Build Intelligent AI Agents?
           </h2>
-          <p className="text-xl text-purple-100 mb-8">
+          <p className="text-xl text-green-100 mb-8">
             Join the future of AI development with Tiny Agent's powerful
             framework
           </p>
@@ -505,7 +484,7 @@ const TinyAgent: React.FC = () => {
               href="https://github.com/alfonsograziano/meta-tiny-agents"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-white text-purple-600 rounded-lg hover:bg-gray-100 transition text-lg font-semibold shadow-lg"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-white text-green-600 rounded-lg hover:bg-gray-100 transition text-lg font-semibold shadow-lg"
             >
               <Github size={20} />
               Star on GitHub
@@ -514,7 +493,7 @@ const TinyAgent: React.FC = () => {
               href="https://github.com/alfonsograziano/meta-tiny-agents"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-8 py-4 border-2 border-white text-white rounded-lg hover:bg-white hover:text-purple-600 transition text-lg font-semibold"
+              className="inline-flex items-center gap-2 px-8 py-4 border-2 border-white text-white rounded-lg hover:bg-white hover:text-green-600 transition text-lg font-semibold"
             >
               <GitBranch size={20} />
               Fork & Contribute

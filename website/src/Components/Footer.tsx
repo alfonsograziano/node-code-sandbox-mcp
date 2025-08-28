@@ -21,6 +21,11 @@ const Footer: React.FC = () => {
                   Node.js Sandbox MCP
                 </Link>
               </li>
+              <li>
+                <Link to="/tiny-agent" className="hover:text-white transition">
+                  Tiny Agent
+                </Link>
+              </li>
             </ul>
           </div>
 
