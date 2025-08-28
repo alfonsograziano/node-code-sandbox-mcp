@@ -58,6 +58,14 @@ const Home: React.FC = () => {
       link: '/mcp',
       icon: Terminal,
     },
+    {
+      title: 'Tiny Agent Framework',
+      description:
+        'Intelligent AI agent framework with RAG capabilities and memory persistence',
+      category: 'AI Development',
+      link: '/tiny-agent',
+      icon: Brain,
+    },
   ];
 
   return (

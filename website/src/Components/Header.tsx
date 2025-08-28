@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Terminal, Brain } from 'lucide-react';
+import { Menu, X, Terminal, Brain, Bot } from 'lucide-react';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -56,6 +56,19 @@ const Header: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Terminal size={16} />
                 MCP Sandbox
+              </div>
+            </Link>
+            <Link
+              to="/tiny-agent"
+              className={`text-sm font-medium transition-colors ${
+                isActive('/tiny-agent')
+                  ? 'text-green-600 border-b-2 border-green-600'
+                  : 'text-gray-600 hover:text-green-600'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Bot size={16} />
+                Tiny Agent
               </div>
             </Link>
             <a
@@ -116,6 +129,20 @@ const Header: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <Terminal size={16} />
                   MCP Sandbox
+                </div>
+              </Link>
+              <Link
+                to="/tiny-agent"
+                onClick={closeMenu}
+                className={`text-base font-medium transition-colors ${
+                  isActive('/tiny-agent')
+                    ? 'text-green-600'
+                    : 'text-gray-600 hover:text-green-600'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Bot size={16} />
+                  Tiny Agent
                 </div>
               </Link>
               <a
