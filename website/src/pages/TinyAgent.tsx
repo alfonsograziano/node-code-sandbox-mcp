@@ -169,14 +169,14 @@ const TinyAgent: React.FC = () => {
               </span>
 
               <span className="block text-3xl md:text-4xl font-normal text-gray-600 mt-1">
-                Intelligent AI Framework
+                A cute agent written in TypeScript
               </span>
             </h1>
 
             <p className="text-lg md:text-xl text-gray-700 mb-8 max-w-2xl">
-              A lightweight, intelligent agent framework with built-in RAG
-              capabilities, memory persistence, and powerful tool integration.
-              Build AI-powered workflows that scale with your needs.
+              An opinionated AI agent that comes with "batteries included":
+              built-in tools, RAG capabilities, memory persistence, and powerful
+              integrations.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start mb-12">
@@ -215,10 +215,11 @@ const TinyAgent: React.FC = () => {
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Powerful Features for AI Development
+              Everything You Need, Built Right In
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Everything you need to build intelligent, scalable AI applications
+              No need to hunt for tools or build integrations - everything is
+              already included and designed to work together seamlessly
             </p>
           </div>
 
@@ -472,11 +473,11 @@ const TinyAgent: React.FC = () => {
       <section className="py-20 bg-gradient-to-r from-green-600 to-green-700">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Ready to Build Intelligent AI Agents?
+            Ready to Build AI Agents the Right Way?
           </h2>
           <p className="text-xl text-green-100 mb-8">
-            Join the future of AI development with Tiny Agent's powerful
-            framework
+            Skip the setup headaches and start building with our opinionated,
+            batteries-included framework
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
