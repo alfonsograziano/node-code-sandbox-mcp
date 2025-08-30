@@ -35,40 +35,41 @@ const TinyAgent: React.FC = () => {
       icon: Brain,
       title: 'Intelligent Agent',
       description: 'LLM-powered agent with context-aware decision making',
-      color: 'from-green-500 to-green-600',
+      color: 'from-green-500 to-green-700',
     },
     {
       icon: Server,
       title: 'Server-Client Architecture',
       description:
         'Once the server is running, multiple clients can be used to interact with the agent',
-      color: 'from-green-600 to-green-700',
+      color: 'from-green-500 to-green-700',
     },
     {
       icon: Search,
       title: 'RAG System',
       description:
         'Automatic file indexing of your workspace and retrieval with semantic search',
-      color: 'from-green-700 to-green-800',
-    },
-    {
-      icon: HardDrive,
-      title: 'Memory Persistence',
-      description: 'Save and load agent memories using RAG and pgvector',
-      color: 'from-green-500 to-green-600',
+      color: 'from-green-500 to-green-700',
     },
     {
       icon: Terminal,
       title: 'Built-in Tools',
       description:
         'Integrated MCP servers including code interpreter and Playwright',
-      color: 'from-green-600 to-green-700',
+      color: 'from-green-500 to-green-700',
     },
     {
       icon: Shield,
       title: 'Node.js Sandbox',
       description: 'Safe code execution environment for dynamic tool creation',
-      color: 'from-green-700 to-green-800',
+      color: 'from-green-500 to-green-700',
+    },
+    {
+      icon: Globe,
+      title: 'Smart Web Content Fetching',
+      description:
+        'Fetch and extract clean, LLM-optimized text content from webpages.',
+      color: 'from-green-500 to-green-700',
     },
   ];
 
