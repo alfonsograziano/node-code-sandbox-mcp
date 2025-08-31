@@ -26,6 +26,9 @@ RUN  npm pkg delete scripts.prepare && npm ci --production
 # 5. Pull in the compiled output from builder
 COPY --from=builder /app/dist ./dist
 
+# 5.5. Copy guideline files needed by the server at runtime
+COPY NODE_GUIDELINES.md eslint.config.js ./
+
 # 6. Expose Docker socket for nested Docker commands
 #    When running: docker run -v /var/run/docker.sock:/var/run/docker.sock ...
 VOLUME ["/var/run/docker.sock"]
