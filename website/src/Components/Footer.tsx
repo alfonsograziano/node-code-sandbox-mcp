@@ -26,6 +26,11 @@ const Footer: React.FC = () => {
                   Tiny Agent
                 </Link>
               </li>
+              <li>
+                <Link to="/graph-gpt" className="hover:text-white transition">
+                  GraphGPT
+                </Link>
+              </li>
             </ul>
           </div>
 

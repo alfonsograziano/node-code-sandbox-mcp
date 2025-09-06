@@ -11,6 +11,7 @@ import {
   CheckCircle,
   Play,
   Github,
+  GitBranch,
 } from 'lucide-react';
 import Footer from '../Components/Footer';
 import Header from '../Components/Header';
@@ -65,6 +66,14 @@ const Home: React.FC = () => {
       category: 'AI Development',
       link: '/tiny-agent',
       icon: Brain,
+    },
+    {
+      title: 'GraphGPT',
+      description:
+        'Graph-based interface for LLM interactions that mirrors human thinking patterns',
+      category: 'AI Interface',
+      link: '/graph-gpt',
+      icon: GitBranch,
     },
   ];
 
@@ -737,7 +746,7 @@ const Home: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {tools.map((tool, index) => (
               <div
                 key={index}

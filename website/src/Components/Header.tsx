@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Terminal, Brain, Bot } from 'lucide-react';
+import { Menu, X, Terminal, Brain, Bot, GitBranch } from 'lucide-react';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -69,6 +69,19 @@ const Header: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Bot size={16} />
                 Tiny Agent
+              </div>
+            </Link>
+            <Link
+              to="/graph-gpt"
+              className={`text-sm font-medium transition-colors ${
+                isActive('/graph-gpt')
+                  ? 'text-green-600 border-b-2 border-green-600'
+                  : 'text-gray-600 hover:text-green-600'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <GitBranch size={16} />
+                GraphGPT
               </div>
             </Link>
             <a
@@ -143,6 +156,20 @@ const Header: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <Bot size={16} />
                   Tiny Agent
+                </div>
+              </Link>
+              <Link
+                to="/graph-gpt"
+                onClick={closeMenu}
+                className={`text-base font-medium transition-colors ${
+                  isActive('/graph-gpt')
+                    ? 'text-green-600'
+                    : 'text-gray-600 hover:text-green-600'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <GitBranch size={16} />
+                  GraphGPT
                 </div>
               </Link>
               <a
