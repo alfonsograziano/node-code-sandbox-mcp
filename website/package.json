@@ -8,6 +8,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mdx-js/react": "^3.1.1",
+    "@mdx-js/rollup": "^3.1.1",
     "@types/react-router-dom": "^5.3.3",
     "buffer": "^6.0.3",
     "clsx": "^2.1.1",

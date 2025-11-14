@@ -1,0 +1,402 @@
+import ImagePlaceholder from '../../Components/pillars/shared/ImagePlaceholder';
+import ConceptCard from '../../Components/pillars/shared/ConceptCard';
+import FeatureCard from '../../Components/pillars/shared/FeatureCard';
+import ExampleFlowCard from '../../Components/pillars/shared/ExampleFlowCard';
+import TipCard from '../../Components/pillars/shared/TipCard';
+import AgentWorkflowCard from '../../Components/pillars/shared/AgentWorkflowCard';
+import { Settings, Wrench, MessageSquare, Brain, Shield, Target, Palette, Globe, FileText, Terminal, Search, Code2, Database, Webhook, Play } from 'lucide-react';
+
+<div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+  <img
+    src="/images/pillars/context_diagram.png"
+    alt="Context Engineering Diagram"
+    className="w-full h-auto rounded-lg shadow-2xl"
+  />
+</div>
+
+## What is this "context"?
+
+<div className="my-8">
+  <ConceptCard
+    icon={Brain}
+    title="Context: From Text to Tokens"
+    description="Context for an LLM is just… numbers. Specifically, tokens. We pass text to an LLM (and images, if it's multimodal) and this will be converted and processed as tokens. From a semantic point of view, we can divide the context into multiple components which we might add or not. The interesting thing about context is how we retrieve it!"
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        One of the biggest challenges we do have at the moment while working with agents is how we can retrieve and pass to the LLM the right context, always being cautious about the limitation of the window size and the accuracy loss as soon as we bring more and more context.
+      </p>
+      <p>
+        The key thing to understand is that, while interacting with an LLM, the only mandatory thing is the user query. Everything else is optional and it's main goal is to provide more information to the LLM to provide (hopefully) a better answer based on more information we provide.
+      </p>
+    </div>
+  </ConceptCard>
+</div>
+
+### System prompt
+
+<div className="my-8">
+  <ConceptCard
+    icon={Settings}
+    title="System Prompt: The Foundation"
+    description="The system prompt is one of the most important parts of context engineering. It defines the identity, behavior, and boundaries of the LLM or agent. You can think of it as the foundation layer of the conversation: everything else (user input, memory, and tools) builds on top of it."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6">
+      <p className="text-gray-300 mb-4">
+        A good system prompt often includes several key sections:
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FeatureCard
+          icon={Brain}
+          title="Role Definition"
+          description="Who the model is. Example: 'You are a technical assistant specialized in software engineering.'"
+        />
+        <FeatureCard
+          icon={Target}
+          title="Goals"
+          description="What the model should achieve. Example: 'Your goal is to help users write clean, efficient TypeScript code.'"
+        />
+        <FeatureCard
+          icon={Palette}
+          title="Tone and Style"
+          description="How the model should communicate. Example: 'Use clear and simple English. Be concise and professional.'"
+        />
+        <FeatureCard
+          icon={Shield}
+          title="Behavioral Rules"
+          description="What to do and what not to do. Example: 'Always explain your reasoning briefly before giving the answer. Do not write unsafe code.'"
+        />
+      </div>
+      <div className="mt-6 pt-6 border-t border-white/10">
+        <p className="text-gray-300 mb-4">
+          This means the system prompt directly influences the model's reasoning and style throughout the conversation. When we design context for an LLM, the system prompt is the first and most stable part. It helps with:
+        </p>
+        <ul className="list-disc pl-6 space-y-2 text-gray-300">
+          <li><strong className="text-green-400">Consistency:</strong> all outputs follow the same logic, tone, and goals.</li>
+          <li><strong className="text-green-400">Safety:</strong> prevents the model from performing unwanted actions.</li>
+          <li><strong className="text-green-400">Efficiency:</strong> reduces the need to repeat instructions in every user prompt.</li>
+          <li><strong className="text-green-400">Alignment:</strong> keeps the model focused on the task or role we expect.</li>
+        </ul>
+        <p className="text-gray-300 mt-4">
+          In short, a well-written system prompt reduces confusion, improves quality, and helps the model stay "in character." Usually, the system prompt is <strong className="text-green-400">static</strong>: is written in a config file and is loaded in the agent every time we start a conversation.
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+### Available tools
+
+<div className="my-8">
+  <ConceptCard
+    icon={Wrench}
+    title="Tools: External Capabilities"
+    description="Tools are the external capabilities that the model (or the agent wrapper around the model) can call upon. These tools expand what the model can do beyond just generating text."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        A tool is a function or interface that:
+      </p>
+      <ul className="list-disc pl-6 space-y-2">
+        <li>has a clear name summarising its purpose</li>
+        <li>has a description that explains what it does</li>
+        <li>requires a set of parameters to work</li>
+        <li>produces a defined output</li>
+        <li>has a schema (often in JSON) that defines what a valid call looks like</li>
+      </ul>
+      <p>
+        For example, in one agent framework, a tool might be a "web search" API, or a "file system read" function. Using well-defined schemas ensures that the LLM can reliably call tools and interpret their outputs. Proper tooling helps keep the <strong className="text-green-400">context size manageable</strong>: instead of stuffing everything into the prompt, we can rely on tools and retrieve information when needed.
+      </p>
+      <p className="text-green-400 font-semibold">
+        Tools are both part of the context (as we need to inject the tool definition) and a way to retrieve more context dynamically directly from the agent!
+      </p>
+    </div>
+  </ConceptCard>
+</div>
+
+### User Input & User-provided context
+
+<div className="my-8">
+  <ConceptCard
+    icon={MessageSquare}
+    title="User Input: The Trigger"
+    description="User input is the immediate request or command from the user. It is the piece of context that triggers the agent's action. It tells the agent what the user wants now."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6">
+      <div>
+        <p className="text-gray-300 mb-4">
+          User input can take many forms, such as:
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4">
+            <p className="text-gray-300 mb-2"><strong className="text-green-400">Natural-language question:</strong></p>
+            <p className="text-gray-400 italic">"Generate unit tests for this function."</p>
+          </div>
+          <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4">
+            <p className="text-gray-300 mb-2"><strong className="text-green-400">Command:</strong></p>
+            <p className="text-gray-400 italic">"Search the codebase for occurrences of `TODO`."</p>
+          </div>
+          <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4">
+            <p className="text-gray-300 mb-2"><strong className="text-green-400">Specification:</strong></p>
+            <p className="text-gray-400 italic">"Refactor the module `auth.ts` to follow the new architecture."</p>
+          </div>
+          <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4">
+            <p className="text-gray-300 mb-2"><strong className="text-green-400">Parameterised request:</strong></p>
+            <p className="text-gray-400 italic">"Use library X version 5.2 to implement feature Y."</p>
+          </div>
+        </div>
+      </div>
+      <div className="pt-4 border-t border-white/10">
+        <p className="text-gray-300 mb-4">
+          The key point is: user input is the <strong className="text-green-400">latest turn</strong> in the conversation or workflow, and it tells the agent what <em>now</em> needs to be done.
+        </p>
+        <p className="text-gray-300 mb-4">
+          When we design the context for an agent, user input matters because:
+        </p>
+        <ul className="list-disc pl-6 space-y-2 text-gray-300">
+          <li>It defines the <strong className="text-green-400">task boundary</strong>: it tells what the agent should focus on.</li>
+          <li>It shapes the <strong className="text-green-400">retrieval</strong> of relevant context: the agent must pick the right tools, memory, documents based on what the user asked.</li>
+          <li>It is a <strong className="text-green-400">dynamic input</strong>: unlike static environment or user profile, this changes turn-by-turn and must be processed correctly to maintain coherence and relevance.</li>
+        </ul>
+      </div>
+      <div className="pt-4 border-t border-white/10">
+        <p className="text-gray-300 mb-4">
+          In some cases, you might end up working on the same task type. When this is the case, most probably the user prompt will be relatively similar, and just a few things might change (as parameter in a function).
+        </p>
+        <p className="text-gray-300 mb-4">
+          Therefore, the tooling evolved to have <strong className="text-green-400">prompt templates</strong> which are like helper functions: you recall the prompt template, it gets injected in the context, then you add your customizations.
+        </p>
+        <p className="text-gray-300 mb-4">
+          Examples of this are <a href="https://cursor.com/docs/agent/chat/commands" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300 underline">Commands in Cursor</a> or <a href="https://modelcontextprotocol.info/docs/concepts/prompts/" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300 underline">Prompts in MCP</a>.
+        </p>
+        <p className="text-gray-300 mb-4">
+          Also, apart from defining what we want to achieve, we can also pass some more context to explain how we want to achieve it. <a href="https://cursor.com/docs/context/rules" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300 underline">Rules</a> are a nice example of this. While we write the user input, we can recall and add explicitly one or more rules to the context just by tagging them with @ruleName. A rule is usually just a Markdown file which contains style guides, restrictions etc.
+        </p>
+        <p className="text-gray-300 mb-4">
+          Depending on the task you're performing, injecting the right rules can do the difference! Also, in some cases it's also possible to recall a rule directly from a prompt template.
+        </p>
+        <p className="text-gray-300">
+          There are also standards which are emerging such as <a href="https://agents.md/" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300 underline">AGENTS.md</a> to do something similar.
+        </p>
+        <p className="text-gray-300 mt-4">
+          Thanks to the user-provided context, the human interacting with the agent can provide manually more context to better guide the agent in the right direction.
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+
+After the user starts the interaction, the agent takes over and begins the process of reasoning, planning, and acting based on the given context.
+
+At this point, the **LLM has a full view of the context** it can access, including the system prompt, environment, available tools, and user input, and it uses all this information to decide *what to do next*.
+
+## From request to action: how the flow works
+<div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+  <img
+    src="/images/pillars/context_lifecycle.png"
+    alt="Context Engineering Diagram"
+    className="w-full h-auto rounded-lg shadow-2xl"
+  />
+</div>
+
+
+
+<AgentWorkflowCard /> 
+<div className="my-8">
+  <ExampleFlowCard
+    title="Example: Coding Agent Workflow"
+    messages={[
+      {
+        speaker: 'user',
+        content: 'Add logging to failed login attempts in the auth service.'
+      },
+      {
+        speaker: 'agent',
+        content: (
+          <ul className="list-disc pl-6 space-y-2">
+            <li>Loads the system prompt, environment via <a href="https://agents.md/" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300 underline">AGENTS.md</a> (Node.js v18, Express, PostgreSQL), and tool definitions.</li>
+            <li>Analyzes user input and decides to read <code className="text-green-400 bg-gray-900/60 px-2 py-1 rounded">auth.ts</code>.</li>
+            <li>Calls the <code className="text-green-400 bg-gray-900/60 px-2 py-1 rounded">read_file</code> tool through MCP.</li>
+            <li>Parses the result and identifies where to insert logging.</li>
+            <li>Generates code for the new logging statement.</li>
+            <li>Writes changes using the <code className="text-green-400 bg-gray-900/60 px-2 py-1 rounded">write_file</code> tool.</li>
+            <li>Runs tests with the <code className="text-green-400 bg-gray-900/60 px-2 py-1 rounded">run_tests</code> tool.</li>
+            <li>Summarizes the result and returns it to the user.</li>
+          </ul>
+        )
+      }
+    ]}
+  />
+</div>
+
+<div className="my-6">
+  <p className="text-gray-300 text-lg">
+    Each step includes a tool call, a reasoning phase, and a feedback check.
+  </p>
+</div>
+    
+
+<div className="my-8">
+  <ConceptCard
+    icon={Brain}
+    title="Dynamic Context Retrieval"
+    description="Retrieving context dynamically at runtime through the usage of tools is therefore a big part of how modern agents operate. Static context (like system prompts, rules, or environment configuration) gives the agent a foundation, but most real-world tasks require fresh, situational information, something the model can only get by interacting with its environment."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <p className="text-gray-300 mb-6">
+      To achieve this, agents use tools and protocols that allow them to fetch, explore, and query data while they run.
+    </p>
+    <p className="text-gray-300 mb-6 font-semibold text-green-400">
+      Let's look at the main sources an agent can leverage to gather more context dynamically:
+    </p>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <FeatureCard
+        icon={Globe}
+        title="Fetch (API requests)"
+        description="One of the most common ways to retrieve data. Agents can use a fetch tool or an HTTP client to send requests to APIs, microservices, or backend endpoints. Responses are returned as structured JSON and become part of the agent's runtime context."
+      />
+      <FeatureCard
+        icon={Play}
+        title="Browser interaction"
+        description="Through tools like a Playwright MCP server, the agent can interact with real web pages, clicking buttons, filling forms, or reading page content. This is especially useful when APIs are not available and the only way to access information is through a web interface."
+      />
+      <FeatureCard
+        icon={FileText}
+        title="Filesystem"
+        description="The agent can inspect local or remote files to understand what exists in a project or repository. It can read configuration files, check code structure, or analyze logs. This allows the model to retrieve domain-specific context directly from the source code or data files."
+      />
+      <FeatureCard
+        icon={Terminal}
+        title="Terminal"
+        description="Agents can execute terminal commands in a controlled environment to gather information about the system state. Examples include running ls to list files, git status to see repository changes, or npm test to verify code quality."
+      />
+      <FeatureCard
+        icon={Database}
+        title="RAG (Retrieval-Augmented Generation)"
+        description="RAG is used when the agent needs to retrieve information from large knowledge bases or document stores. The system indexes documents into vector embeddings and retrieves the most relevant chunks based on a query. RAG can range from simple document lookup to complex multi-source retrieval pipelines."
+      />
+      <FeatureCard
+        icon={Search}
+        title="Web search"
+        description="When the information is not available locally, agents can perform web searches to get public data. This is often done through specialized APIs or search tools (e.g. Tavily). Web search gives the agent access to the latest, up-to-date information beyond its training data."
+      />
+      <FeatureCard
+        icon={Code2}
+        title="Code Sandbox"
+        description="Sometimes the agent needs to write and execute a small script to compute intermediate results, transform data, or inspect artifacts that aren't directly accessible through other tools. Code Sandboxes provide a safe, isolated runtime where the agent can run code snippets, test logic, or analyze outputs without affecting the main system."
+      />
+      <FeatureCard
+        icon={Webhook}
+        title="Other local or networked resources"
+        description="Finally, agents can access any other authorized data source available on the local system or through a network. This includes internal APIs, databases, or third-party services that require authentication. Standards such as OAuth 2 are often used to handle secure access tokens."
+      />
+    </div>
+    <div className="mt-6 pt-6 border-t border-white/10">
+      <p className="text-gray-300">
+        The <a href="https://modelcontextprotocol.io/specification/draft/basic/authorization" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300 underline">Model Context Protocol (MCP)</a> already supports authorization and secure resource access, making it easier to standardize how agents communicate with multiple systems.
+      </p>
+    </div>
+  </ConceptCard>
+</div>
+    
+
+## How give Agents the right context?
+
+<div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+  <img
+    src="/images/pillars/context_agent.png"
+    alt="Agent"
+    className="w-full h-auto rounded-lg shadow-2xl"
+  />
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={Brain}
+    title="The Art of Context Engineering"
+    description="Giving an agent the right context is a continuous process of curation, documentation, and optimization. An agent works best when it has access to accurate, up-to-date, and well-structured information. You can think of it as an exceptionally capable coworker who, however, always starts each day as if it were their first."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6">
+      <p className="text-gray-300">
+        Without proper documentation, clear instructions, and accessible resources, even the best model will struggle to perform effectively. Therefore, maintaining consistent and comprehensive context files (rules, style guides, and documentation) is essential. Every time something changes in your environment or workflows, take the time to update these references so the agent can stay aligned with reality.
+      </p>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <TipCard
+          title="Documentation & Maintenance"
+          description="Keep your context files up-to-date and well-structured. Update rules, style guides, and documentation whenever your environment or workflows change."
+          tips={[
+            "Maintain consistent and comprehensive context files",
+            "Update references when environment or workflows change",
+            "Keep documentation clear and accessible"
+          ]}
+        />
+        
+        <TipCard
+          title="Tool Selection"
+          description="More is not always better. Provide only the necessary tools with clear descriptions and examples. In some cases, explicitly mention which tools to use in your user input."
+          tips={[
+            "Provide only necessary tools, not all available ones",
+            "Include clear descriptions and examples for each tool",
+            "Explicitly mention tools in user input when needed"
+          ]}
+        />
+        
+        <TipCard
+          title="Context Cleanliness"
+          description="As conversations grow longer, the LLM's context window fills up and quality can degrade. Start fresh chats when tasks are completed or when responses lose precision."
+          tips={[
+            "Start new chats after task completion",
+            "Restart mid-way through complex tasks if quality degrades",
+            "Keep context focused and relevant"
+          ]}
+        />
+        
+        <TipCard
+          title="Token Optimization"
+          description="Use compact and machine-friendly formats for large structured information. Compression formats like Toon or custom JSON minifiers can help optimize token usage."
+          tips={[
+            "Use compact formats for JSON data, logs, configs",
+            "Consider compression formats like Toon",
+            "Optimize token usage for large payloads"
+          ]}
+        />
+      </div>
+      
+      <div className="mt-6 pt-6 border-t border-white/10">
+        <p className="text-gray-300 text-lg mb-4">
+          <strong className="text-green-400">The Golden Rule:</strong> Providing the right context is not only about quantity but also about intentionality. It means being deliberate in what you include and what you leave out.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+            <p className="text-green-400 font-semibold mb-2">Too Little</p>
+            <p className="text-gray-400 text-sm">Makes the agent blind</p>
+          </div>
+          <div className="backdrop-blur-md bg-green-600/10 border border-green-600/30 rounded-xl p-4 text-center">
+            <p className="text-green-400 font-semibold mb-2">Just Right</p>
+            <p className="text-gray-300 text-sm">Enables effective reasoning</p>
+          </div>
+          <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+            <p className="text-green-400 font-semibold mb-2">Too Much</p>
+            <p className="text-gray-400 text-sm">Makes it distracted</p>
+          </div>
+        </div>
+        <p className="text-gray-300 mt-6">
+          The goal is to give just enough information for the model to reason effectively while staying within the context window. This balance, between <strong className="text-green-400">precision</strong>, <strong className="text-green-400">relevance</strong>, and <strong className="text-green-400">clarity</strong>, is what ultimately determines how well an agent can understand and execute a user's intent.
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
