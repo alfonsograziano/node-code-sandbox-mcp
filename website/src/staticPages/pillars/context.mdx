@@ -14,6 +14,124 @@ import { Settings, Wrench, MessageSquare, Brain, Shield, Target, Palette, Globe,
   />
 </div>
 
+## Why Context Engineering Matters
+
+<div className="my-8">
+  <ConceptCard
+    icon={Brain}
+    title="The Discovery: Inference-Time Learning"
+    description="As we've worked with Large Language Models, we discovered something remarkable: prompts and context act as a form of learning that happens at inference time. This means we can dramatically change and improve the model's output simply by carefully crafting the context we provide—without any weight updates or retraining."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6">
+      <p className="text-gray-300">
+        Research published in July 2025 revealed that transformer architectures have an incredible ability: they can learn new patterns on-the-fly during inference. When you provide examples or instructions in the prompt, the model can adapt its behavior to match those patterns, even if it never saw them during training.
+      </p>
+      
+      <div className="my-6">
+        <div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+          <img
+            src="/images/pillars/learning_without_training.webp"
+            alt="Learning without training"
+            className="w-full h-auto rounded-lg shadow-2xl"
+          />
+        </div>
+      </div>
+      
+      <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6">
+        <p className="text-gray-300 mb-4">
+          <strong className="text-green-400">How it works:</strong> The combination of self-attention layers and MLP (Multi-Layer Perceptron) layers in transformer blocks allows the model to implicitly modify how it processes information based on the context. Think of it as the model temporarily "rewiring" itself to better handle the specific task you're asking it to perform, all without changing its actual weights.
+        </p>
+        <p className="text-gray-300">
+          This discovery, detailed in <a href="https://arxiv.org/abs/2507.16003" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300 underline">"Learning without training: The implicit dynamics of in-context learning"</a>, shows that transformer blocks can transform context into low-rank weight updates of the MLP layer. This is why few-shot learning and prompt engineering work so effectively.
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={Shield}
+    title="The Reality Check: Context Window Limitations"
+    description="While it's tempting to think 'more context equals better results,' reality is more nuanced. There are two critical limitations that prevent us from simply maxing out the context window."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6">
+          <h4 className="text-green-400 font-semibold mb-3">1. Context Window Size Limits</h4>
+          <p className="text-gray-300">
+            Every LLM has a maximum context window—a hard limit on how many tokens it can process in a single request. Even models that claim to support millions of tokens have practical limits.
+          </p>
+        </div>
+        <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6">
+          <h4 className="text-green-400 font-semibold mb-3">2. Performance Degradation</h4>
+          <p className="text-gray-300">
+            More context doesn't always mean better results. As you add more information, the model struggles to retain and effectively use all of it, leading to decreased accuracy and quality.
+          </p>
+        </div>
+      </div>
+      
+      <div className="my-6">
+        <div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+          <img
+            src="/images/pillars/context_is_what_you_need.webp"
+            alt="Context is what you need"
+            className="w-full h-auto rounded-lg shadow-2xl"
+          />
+        </div>
+      </div>
+      
+      <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6">
+        <p className="text-gray-300 mb-4">
+          Research from <a href="https://arxiv.org/abs/2509.21361" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300 underline">"Context Is What You Need: The Maximum Effective Context Window for Real World Limits of LLMs"</a> reveals a critical finding: the <strong className="text-green-400">Maximum Effective Context Window (MECW)</strong> is drastically different from the advertised Maximum Context Window (MCW).
+        </p>
+        <ul className="list-disc pl-6 space-y-2 text-gray-300 mb-4">
+          <li>Some top-tier models failed with as little as <strong className="text-green-400">100 tokens</strong> in context</li>
+          <li>Most models showed severe accuracy degradation by <strong className="text-green-400">1,000 tokens</strong></li>
+          <li>All models fell short of their advertised maximum by as much as <strong className="text-green-400">99 percent</strong></li>
+          <li>The effective window size <strong className="text-green-400">varies based on problem type</strong>—what works for one task may not work for another</li>
+        </ul>
+        <p className="text-gray-300">
+          This means that even if a model claims to support 1 million tokens, the actual effective context window where it performs well might be only a fraction of that.
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={Target}
+    title="The Challenge: Finding the Balance"
+    description="We need to simultaneously maximize context to improve performance while minimizing it to maintain quality and control costs. This is where Context Engineering comes in."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        Unfortunately, we cannot simply max out the context window, pass all our data, and hope for better results. Beyond the performance degradation, there are practical considerations:
+      </p>
+      <ul className="list-disc pl-6 space-y-2">
+        <li><strong className="text-green-400">Cost:</strong> Most LLM providers charge per token. Filling a large context window can become prohibitively expensive.</li>
+        <li><strong className="text-green-400">Latency:</strong> Processing more tokens takes more time, slowing down your application.</li>
+        <li><strong className="text-green-400">Quality:</strong> As research shows, more context often leads to worse results, not better ones.</li>
+      </ul>
+      <p className="mt-4">
+        This creates a fundamental challenge: we need to find techniques that allow us to <strong className="text-green-400">maximize the amount of relevant context</strong> we provide (to improve task performance) while <strong className="text-green-400">minimizing the total context size</strong> (to maintain quality and control costs).
+      </p>
+      <div className="mt-6 pt-6 border-t border-white/10">
+        <p className="text-gray-300 text-lg">
+          <strong className="text-green-400">Context Engineering</strong> is the art and science of retrieving, selecting, and structuring the right context so that LLMs can correctly perform tasks while keeping context size under control. It's about being intentional and strategic with every piece of information we include.
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
 ## What is this "context"?
 
 <div className="my-8">
