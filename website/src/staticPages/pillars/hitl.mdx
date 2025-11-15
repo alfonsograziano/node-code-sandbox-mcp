@@ -1,0 +1,728 @@
+import ImagePlaceholder from '../../Components/pillars/shared/ImagePlaceholder';
+import ConceptCard from '../../Components/pillars/shared/ConceptCard';
+import FeatureCard from '../../Components/pillars/shared/FeatureCard';
+import ExampleFlowCard from '../../Components/pillars/shared/ExampleFlowCard';
+import TipCard from '../../Components/pillars/shared/TipCard';
+import QuoteCard from '../../Components/pillars/shared/QuoteCard';
+import AgentWorkflowCard from '../../Components/pillars/shared/AgentWorkflowCard';
+import { Users, MessageSquare, RefreshCw, Shield, Zap, DollarSign, Target, GitBranch, CheckCircle2, AlertTriangle, Clock, Brain, Code, FileText, Terminal, Search, ArrowRight, Scale, TrendingUp } from 'lucide-react';
+
+<div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+  <img
+    src="/images/pillars/hitl_cover.png"
+    alt="Human In The Loop Cover"
+    className="w-full h-auto rounded-lg shadow-2xl"
+  />
+</div>
+
+## The Feedback Story
+
+<div className="my-8">
+  <ConceptCard
+    icon={Users}
+    title="The Manager's Request"
+    description="Have you ever been in this situation? Your manager rushes to your desk with a vague request like: 'We need a customer presentation… something about the quarterly results of our platform, value, impact… I'm super busy, so just make it good.' Then he disappears into another meeting."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6">
+      <p className="text-gray-300">
+        You try your best. You spend five days polishing slides, adding diagrams, rewriting the story. You even add a few animations for extra flavor. But when your manager finally reviews it, his reaction is… painful.
+      </p>
+      
+      <div className="my-6">
+        <div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+          <img
+            src="/images/pillars/hitl_problem.png"
+            alt="Manager feedback reaction"
+            className="w-full h-auto rounded-lg shadow-2xl"
+          />
+        </div>
+      </div>
+
+      <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6">
+        <p className="text-gray-300 italic text-lg mb-4">
+          "Hmm… this is not really what I had in mind."
+        </p>
+        <p className="text-gray-300">
+          The issue wasn't your skills. The issue was the missing feedback. You had some context, but it was incomplete. The project moved forward without alignment, and the final result became something completely different from what your manager imagined.
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={RefreshCw}
+    title="The Iterative Approach"
+    description="This time, your manager still gives only a short request, but instead of working for five days in silence, you take a different approach. You spend 20 minutes preparing a simple list of bullet points: the agenda, the key messages and the story flow. You send it to your manager."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6">
+      <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6">
+        <p className="text-gray-300 mb-4">
+          He replies quickly:
+        </p>
+        <p className="text-gray-300 italic text-lg mb-4">
+          "Good start. Remove part 3, focus more on value, and include a customer case study."
+        </p>
+        <p className="text-gray-300">
+          You adjust, send it again, get another round of feedback and keep iterating.
+        </p>
+      </div>
+
+      <div className="my-6">
+        <div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+          <img
+            src="/images/pillars/hitl_solution.png"
+            alt="Successful presentation"
+            className="w-full h-auto rounded-lg shadow-2xl"
+          />
+        </div>
+      </div>
+
+      <p className="text-gray-300">
+        After just one day, the full presentation is done and it is exactly what he needs for the customer.
+      </p>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <QuoteCard
+    quote="This story is the perfect metaphor for how feedback transforms AI performance!"
+  />
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={Brain}
+    title="Feedback: The Steering Wheel"
+    description="Without feedback, an AI system behaves like the first version of you: it tries its best, but if the initial instructions are vague or incomplete, it may end up very far from your expectations. The model cannot read your mind; it only sees what you type."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6">
+      <p className="text-gray-300">
+        With feedback, AI becomes more like the second version: fast, aligned and efficient. Each correction enriches its context. Instead of one long, risky attempt, you get many tight, controlled iterations that guide the system toward your real goal.
+      </p>
+      
+      <div className="backdrop-blur-md bg-green-600/10 border border-green-600/30 rounded-xl p-6">
+        <p className="text-gray-300 text-lg mb-4">
+          <strong className="text-green-400">And this is the key idea: feedback is not just a patch, it is the steering wheel.</strong>
+        </p>
+        <p className="text-gray-300">
+          Without it, even a powerful AI goes off track. With it, the system becomes a collaborative partner that can deliver high-quality results in a fraction of the time.
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={TrendingUp}
+    title="From Automation to Collaboration"
+    description="While giving feedback early and often feels intuitive to us as humans, the first wave of AI adoption advertised something different. We tried to automate complex tasks with a single prompt: 'Do everything end to end.' It looked magical in demos, but in real workflows it quickly showed its limits, especially on non–state of the art models or on SLMs (Small Language Models)."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        The output was inconsistent, missing details or simply wrong.
+      </p>
+      <p>
+        That's why the industry shifted from pure automation to collaboration. Instead of expecting the model to succeed alone, we place humans inside the loop: guiding, correcting and steering the AI step by step.
+      </p>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={MessageSquare}
+    title="HITL: Enriching Context in Real Time"
+    description="Human-in-the-loop is not simply 'tell the AI it made a mistake.': it is a structured way to enrich the AI's context in real time. LLMs behave differently depending on the context they receive as you might know from the Context Engineering pillar."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6">
+      <p className="text-gray-300">
+        If the context is incomplete, the model fills the gaps with assumptions. If the context is rich and continuously refined, the model becomes far more precise.
+      </p>
+      
+      <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6">
+        <p className="text-gray-300 mb-4">
+          <strong className="text-green-400">This is where HITL shines.</strong> Your feedback becomes <em className="text-green-400">new context</em>. Your clarifications become <em className="text-green-400">constraints</em>. Your corrections become <em className="text-green-400">rules the system adapts to</em>.
+        </p>
+        <p className="text-gray-300">
+          Step by step, you build a dynamic knowledge layer around the model that nudges it toward your goal.
+        </p>
+      </div>
+
+      <div className="my-6">
+        <div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+          <img
+            src="/images/pillars/hitl_feedback.png"
+            alt="HITL feedback loop"
+            className="w-full h-auto rounded-lg shadow-2xl"
+          />
+        </div>
+      </div>
+
+      <p className="text-gray-300">
+        In other words, HITL turns every interaction into an opportunity to inject more meaning into the system. You are not just fixing mistakes: you are expanding the model's understanding of <em className="text-green-400">your world</em>.
+      </p>
+
+      <div className="backdrop-blur-md bg-green-600/10 border border-green-600/30 rounded-xl p-6">
+        <p className="text-gray-300 text-lg">
+          This enriched context becomes the fuel that drives better reasoning, fewer hallucinations and more stable results. The magic of HITL is simple: the AI becomes smarter not because the model changes, but because <strong className="text-green-400">the context becomes richer</strong>.
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+## HITL in Agentic Systems
+
+<div className="my-8">
+  <ConceptCard
+    icon={Code}
+    title="Agents That Act"
+    description="Agentic systems are not just chatbots that answer questions. They are AI systems that can act: run tools, read files, write code, modify documents, search the web and more. This makes them incredibly powerful, but also introduces new challenges. Actions create consequences. Consequences need supervision. And this is exactly where HITL becomes essential."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6">
+     <div className="my-6">
+        <div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+          <img
+            src="/images/pillars/hitl_agent.png"
+            alt="HITL in agentic systems"
+            className="w-full h-auto rounded-lg shadow-2xl"
+          />
+        </div>
+      </div>
+      <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6">
+        <p className="text-gray-300 mb-4">
+          <strong className="text-green-400">At the core of every agent lies a simple loop:</strong>
+        </p>
+        <ol className="list-decimal pl-6 space-y-2 text-gray-300">
+          <li><strong className="text-green-400">Perceive</strong> the current state</li>
+          <li><strong className="text-green-400">Decide</strong> what to do next</li>
+          <li><strong className="text-green-400">Act</strong> by using tools or generating output</li>
+          <li><strong className="text-green-400">Evaluate</strong> the results</li>
+          <li><strong className="text-green-400">Repeat</strong></li>
+        </ol>
+      </div>
+
+      <p className="text-gray-300">
+        If this reminds you of how a junior engineer works, that's not a coincidence. The agent tries something, observes what happened and then decides the next move. But without a human reviewing these steps, the agent might take a path that is technically correct but completely misaligned with your real goal.
+      </p>
+
+      <p className="text-gray-300">
+        HITL inserts you directly into this cycle, giving you the ability to guide, interrupt, refine or redirect the agent before small mistakes become big ones.
+      </p>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={FileText}
+    title="Artifacts: The Footprints of AI Actions"
+    description="Every time an agent completes one iteration of the loop, it produces artifacts. These artifacts are the real 'footprints' of AI actions."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6">
+    <div className="my-6">
+        <div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+          <img
+            src="/images/pillars/hitl_artifacts.png"
+            alt="Artifacts"
+            className="w-full h-auto rounded-lg shadow-2xl"
+          />
+        </div>
+    </div>
+      <p className="text-gray-300 mb-4">
+        They can be:
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FeatureCard
+          icon={FileText}
+          title="Text"
+          description="explanations, plans, notes, decisions"
+        />
+        <FeatureCard
+          icon={Code}
+          title="Files"
+          description="markdown specs, configs, documentation"
+        />
+        <FeatureCard
+          icon={Terminal}
+          title="Code"
+          description="new features, refactors, entire backend endpoints"
+        />
+        <FeatureCard
+          icon={Search}
+          title="Edits"
+          description="changes to existing files in your repo"
+        />
+        <FeatureCard
+          icon={MessageSquare}
+          title="Logs"
+          description="results from tools, API calls or tests"
+        />
+      </div>
+
+      <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6">
+        <p className="text-gray-300 mb-4">
+          These artifacts are gold. They tell you what the agent understood, what it built and how it interpreted your request. An example of process that generates multiple artifacts is spec-driven development where the system produces specs and other text artifacts before implementing real code.
+        </p>
+        <p className="text-gray-300">
+          But artifacts also tell you something more important: <strong className="text-green-400">where to intervene.</strong>
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="backdrop-blur-md bg-red-600/10 border border-red-600/30 rounded-xl p-4">
+          <p className="text-gray-300">
+            <strong className="text-red-400">If a plan is wrong,</strong> no code should be written.
+          </p>
+        </div>
+        <div className="backdrop-blur-md bg-yellow-600/10 border border-yellow-600/30 rounded-xl p-4">
+          <p className="text-gray-300">
+            <strong className="text-yellow-400">If the code is right but tests fail,</strong> the issue is likely in the behavior.
+          </p>
+        </div>
+      </div>
+
+      <p className="text-gray-300">
+        Artifacts show you where feedback is needed and how to steer the next loop.
+      </p>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={CheckCircle2}
+    title="The Review Phase"
+    description="Once the agent generates artifacts, it's your turn. This review phase is where HITL proves its value. You check the output and ask questions like:"
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4">
+      <ul className="list-disc pl-6 space-y-2 text-gray-300">
+        <li>Does this match my intent?</li>
+        <li>Are any steps missing?</li>
+        <li>Did the agent misunderstand a constraint?</li>
+        <li>Is the code correct? Efficient? Secure?</li>
+        <li>Are the tests meaningful and complete?</li>
+      </ul>
+
+      <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6">
+        <p className="text-gray-300">
+          Think of it like reviewing a pull request from a high-speed junior developer who never sleeps. You are not fixing everything yourself; you are deciding whether the next loop continues or adjusts course.
+        </p>
+      </div>
+
+      <p className="text-gray-300">
+        This human review prevents the agent from drifting and keeps the quality consistently high.
+      </p>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={RefreshCw}
+    title="The Power of Iteration"
+    description="The real power of HITL in agentic workflows comes from iteration. With each loop the agent refines its understanding, the context becomes richer, the artifacts become more accurate and the distance between 'current state' and 'desired state' shrinks."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6">
+    <div className="my-6">
+        <div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+          <img
+            src="/images/pillars/hitl_accuracy.png"
+            alt="Accuracy-time chart"
+            className="w-full h-auto rounded-lg shadow-2xl"
+          />
+        </div>
+    </div>
+      <p className="text-gray-300">
+        And because each round includes your feedback, the agent moves in the right direction faster and with fewer mistakes.
+      </p>
+
+      <div className="backdrop-blur-md bg-green-600/10 border border-green-600/30 rounded-xl p-6">
+        <p className="text-gray-300 mb-4">
+          Instead of a single high-risk attempt, you get multiple low-risk iterations.
+        </p>
+        <p className="text-gray-300">
+          This iterative alignment is what makes complex AI-driven development possible. You and the agent move forward together, step by step, until the final result is not just "acceptable," but exactly what you envisioned.
+        </p>
+      </div>
+
+      <p className="text-gray-300 text-lg">
+        That is the promise of HITL inside agentic systems: <strong className="text-green-400">precision, reliability and collaboration at scale</strong>.
+      </p>
+    </div>
+  </ConceptCard>
+</div>
+
+## Advanced HITL Techniques
+
+<div className="my-8">
+  <ConceptCard
+    icon={Brain}
+    title="Transforming Feedback Flow"
+    description="As AI systems become more capable, we are not just improving the quality of feedback: we are transforming how feedback flows. Traditional HITL meant a single user correcting a single model. Today, new patterns are emerging where AI agents can collaborate with entire teams, route questions to the right humans and even pause their execution until a human responds."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6">
+      <p className="text-gray-300">
+        In a way, AI is starting to behave like a real software engineer: asking for clarification, requesting reviews and escalating when it gets stuck.
+      </p>
+
+      <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6">
+        <p className="text-gray-300 mb-4">
+          In classical setups, humans decide when to review the agent. In modern agentic workflows, <strong className="text-green-400">the agent decides when it needs you</strong>.
+        </p>
+        <p className="text-gray-300">
+          This "human-on-demand" pattern makes HITL smarter and more efficient. Instead of humans monitoring everything, the agent invites humans at the exact moment their expertise is required.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FeatureCard
+          icon={AlertTriangle}
+          title="Uncertainty"
+          description="it is unsure about a business rule"
+        />
+        <FeatureCard
+          icon={Shield}
+          title="Approval Needed"
+          description="it needs approval before modifying production data"
+        />
+        <FeatureCard
+          icon={MessageSquare}
+          title="Ambiguity"
+          description="it has two possible interpretations of a requirement"
+        />
+        <FeatureCard
+          icon={Users}
+          title="Missing Inputs"
+          description="it detects missing inputs only a human can provide"
+        />
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={GitBranch}
+    title="A2HA: Agent-to-Human-Agent"
+    description="One project experimenting in the space is A2HA: Agent-to-Human-Agent. This approach allows an AI agent to autonomously reach out to humans in your organization, ask for help and resume its workflow once a human replies."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6">
+    <div className="my-6">
+        <div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+          <img
+            src="/images/pillars/hitl_a2ha.webp"
+            alt="A2HA"
+            className="w-full h-auto rounded-lg shadow-2xl"
+          />
+        </div>
+    </div>
+      <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6">
+        <p className="text-gray-300 mb-4">
+          A full working example and implementation can be found here:
+        </p>
+        <p className="text-green-400 text-lg">
+          <a href="https://github.com/alfonsograziano/a2ha" target="_blank" rel="noopener noreferrer" className="hover:text-green-300 underline">
+            A2HA on Github
+          </a>
+        </p>
+      </div>
+
+      <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6">
+        <p className="text-gray-300 mb-4">
+          <strong className="text-green-400">In an A2HA workflow:</strong>
+        </p>
+        <ol className="list-decimal pl-6 space-y-2 text-gray-300">
+          <li>The agent realizes it needs human support</li>
+          <li>It triggers a request through a proxy system</li>
+          <li>The message appears in a human-facing tool (like Slack or Email)</li>
+          <li>The human responds</li>
+          <li>The response flows back into the agent asynchronously</li>
+          <li>The agent continues working with the new information</li>
+        </ol>
+      </div>
+
+      <p className="text-gray-300">
+        It is the closest thing to having an AI coworker who taps you on the shoulder when needed.
+      </p>
+
+      <div className="backdrop-blur-md bg-green-600/10 border border-green-600/30 rounded-xl p-6">
+        <p className="text-gray-300 mb-4">
+          A2HA opens the door to something powerful: AI agents that can route their questions to the <strong className="text-green-400">right</strong> human, not just any human. Just like a software engineer knows who to ask for a security review, who to involve for architectural decisions and who owns a specific part of the product, an AI agent using A2HA can leverage metadata like skills, ownership, responsibility, availability and other factors to decide which human should receive its request.
+        </p>
+        <p className="text-gray-300">
+          This prevents irrelevant pings to the wrong people and ensures that key decisions are reviewed by the appropriate experts. In practice, A2HA enables a form of intelligent "review routing" that boosts both team efficiency and trust: the agent becomes a respectful collaborator who asks the right person at the right time.
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={Users}
+    title="Multi-Human Feedback"
+    description="In more advanced setups, agents don't just receive feedback from one human: they gather feedback from multiple humans and aggregate it."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6">
+      <p className="text-gray-300 mb-4">
+        Useful in scenarios like:
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FeatureCard
+          icon={Target}
+          title="Design Reviews"
+          description="Gathering feedback from multiple designers"
+        />
+        <FeatureCard
+          icon={Shield}
+          title="Code Audits"
+          description="Security and quality reviews from experts"
+        />
+        <FeatureCard
+          icon={AlertTriangle}
+          title="Risk Analysis"
+          description="Multiple perspectives on potential issues"
+        />
+        <FeatureCard
+          icon={Brain}
+          title="Product Requirements"
+          description="Refining requirements with stakeholders"
+        />
+      </div>
+
+      <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6">
+        <p className="text-gray-300 mb-4">
+          The agent can combine overlapping answers, detect contradictions and even ask follow-up questions to resolve disagreements.
+        </p>
+        <p className="text-gray-300">
+          This mirrors real-world team decision making where insights come from different roles.
+        </p>
+      </div>
+
+      <p className="text-gray-300">
+        Over time, this multi-human feedback becomes a powerful form of contextual enrichment, giving the agent a more complete view of the task and reducing the risk of errors caused by ambiguity.
+      </p>
+    </div>
+  </ConceptCard>
+</div>
+
+## Evaluating HITL Tradeoffs
+
+<div className="my-8">
+  <ConceptCard
+    icon={Scale}
+    title="The Balancing Act"
+    description="Human-in-the-loop brings massive benefits, but it also comes with tradeoffs. It's a balancing act: more feedback improves quality, but it also adds latency, cost and complexity. Understanding these tradeoffs helps you design AI workflows that are reliable without becoming slow or expensive."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6">
+    <div className="my-6">
+        <div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+          <img
+            src="/images/pillars/hitl_matrix.png"
+            alt="HITL Matrix"
+            className="w-full h-auto rounded-lg shadow-2xl"
+          />
+        </div>
+    </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <TipCard
+          title="Speed vs Accuracy"
+          description="Adding humans to the loop naturally slows things down. Full automation is fast, but it also comes with a higher chance of mistakes especially in complex or ambiguous tasks."
+          tips={[
+            "No review: lightning fast, but risky",
+            "Too much review: extremely safe, but painfully slow",
+            "Balanced review: fast enough, accurate enough"
+          ]}
+        />
+        
+        <TipCard
+          title="Autonomy vs Control"
+          description="The more autonomy you give an AI agent, the more it can accomplish without blocking. But autonomy always reduces control."
+          tips={[
+            "High autonomy: drafting, prototyping, brainstorming",
+            "Low autonomy: financial decisions, security-sensitive workflows",
+            "HITL helps you dial autonomy up or down"
+          ]}
+        />
+        
+        <TipCard
+          title="Cost vs Quality"
+          description="Human feedback costs time and money. But skipping feedback often costs even more: in rework, debugging and failed outputs."
+          tips={[
+            "Less HITL: cheaper now, more expensive later",
+            "More HITL: more expensive now, cheaper and safer later",
+            "Proportional investment is key"
+          ]}
+        />
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={Zap}
+    title="Speed vs Accuracy"
+    description="Adding humans to the loop naturally slows things down. Full automation is fast, but it also comes with a higher chance of mistakes especially in complex or ambiguous tasks."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        Think of it like a code review:
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="backdrop-blur-md bg-yellow-600/10 border border-yellow-600/30 rounded-xl p-4">
+          <p className="text-yellow-400 font-semibold mb-2">No review</p>
+          <p className="text-gray-300 text-sm">lightning fast, but risky</p>
+        </div>
+        <div className="backdrop-blur-md bg-red-600/10 border border-red-600/30 rounded-xl p-4">
+          <p className="text-red-400 font-semibold mb-2">Too much review</p>
+          <p className="text-gray-300 text-sm">extremely safe, but painfully slow</p>
+        </div>
+        <div className="backdrop-blur-md bg-green-600/10 border border-green-600/30 rounded-xl p-4">
+          <p className="text-green-400 font-semibold mb-2">Balanced review</p>
+          <p className="text-gray-300 text-sm">fast enough, accurate enough</p>
+        </div>
+      </div>
+      <p>
+        HITL lets you decide where along this spectrum your task should sit. Mission-critical tasks lean toward accuracy. Low-risk tasks lean toward speed.
+      </p>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={Shield}
+    title="Autonomy vs Control"
+    description="The more autonomy you give an AI agent, the more it can accomplish without blocking. But autonomy always reduces control."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="backdrop-blur-md bg-green-600/10 border border-green-600/30 rounded-xl p-6">
+          <h4 className="text-green-400 font-semibold mb-3">High autonomy works well for:</h4>
+          <ul className="list-disc pl-6 space-y-2 text-gray-300">
+            <li>drafting documents</li>
+            <li>generating early prototypes</li>
+            <li>brainstorming</li>
+            <li>transforming files or content</li>
+          </ul>
+        </div>
+        <div className="backdrop-blur-md bg-yellow-600/10 border border-yellow-600/30 rounded-xl p-6">
+          <h4 className="text-yellow-400 font-semibold mb-3">Low autonomy (meaning more human involvement) is better for:</h4>
+          <ul className="list-disc pl-6 space-y-2 text-gray-300">
+            <li>financial decisions</li>
+            <li>security-sensitive workflows</li>
+            <li>modifying production code</li>
+            <li>anything where mistakes have real-world impact</li>
+          </ul>
+        </div>
+      </div>
+      <p className="text-gray-300">
+        HITL helps you dial autonomy up or down depending on the risk level.
+      </p>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={DollarSign}
+    title="Cost vs Quality"
+    description="Human feedback costs time and money. But skipping feedback often costs even more: in rework, debugging and failed outputs."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="backdrop-blur-md bg-red-600/10 border border-red-600/30 rounded-xl p-4">
+          <p className="text-red-400 font-semibold mb-2">Less HITL</p>
+          <p className="text-gray-300">cheaper now, more expensive later</p>
+        </div>
+        <div className="backdrop-blur-md bg-green-600/10 border border-green-600/30 rounded-xl p-4">
+          <p className="text-green-400 font-semibold mb-2">More HITL</p>
+          <p className="text-gray-300">more expensive now, cheaper and safer later</p>
+        </div>
+      </div>
+      <p className="text-gray-300">
+        The key is proportional investment: don't spend ten hours reviewing a three-minute task, and don't automate a mission-critical workflow without supervision.
+      </p>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={Target}
+    title="When to Use HITL and When to Automate"
+    description="You don't need HITL everywhere. In fact, overusing it can slow teams down."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="backdrop-blur-md bg-blue-600/10 border border-blue-600/30 rounded-xl p-6">
+          <h4 className="text-blue-400 font-semibold mb-3">Use automation only when:</h4>
+          <ul className="list-disc pl-6 space-y-2 text-gray-300">
+            <li>the task is simple</li>
+            <li>the cost of failure is low</li>
+            <li>outputs are easy to verify automatically</li>
+            <li>you want pure speed</li>
+          </ul>
+        </div>
+        <div className="backdrop-blur-md bg-green-600/10 border border-green-600/30 rounded-xl p-6">
+          <h4 className="text-green-400 font-semibold mb-3">Use HITL when:</h4>
+          <ul className="list-disc pl-6 space-y-2 text-gray-300">
+            <li>the task has unclear requirements</li>
+            <li>the model must follow strict constraints</li>
+            <li>errors are costly or dangerous</li>
+            <li>quality matters more than speed</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6">
+        <p className="text-gray-300 mb-4">
+          Also, HITL isn't all-or-nothing. You can apply it selectively: early for alignment, lightly during execution or heavily at final review.
+        </p>
+        <p className="text-gray-300 text-lg">
+          Too little HITL risks bad output. Too much HITL slows everything down. <strong className="text-green-400">The real magic happens in the middle</strong>, where humans guide the AI just enough to keep it on track while still enjoying all the speed and power automation brings.
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>

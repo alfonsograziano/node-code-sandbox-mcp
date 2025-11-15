@@ -33,6 +33,7 @@ const PillarsOverviewSection: React.FC = () => {
       icon: Users,
       title: 'Human-in-the-Loop (HITL) & Collaboration',
       description: 'Processes, UIs and gating where humans review, refine and approve intermediate artifacts (specs, designs, generated code, model outputs).',
+      link: '/pillars/hitl',
     },
     {
       icon: Shield,

@@ -9,10 +9,12 @@ import { MDXComponent } from './Components/MDXComponent';
 import PillarPage from './Components/pillars/PillarPage';
 
 const ContextPillars = lazy(() => import("./staticPages/pillars/context.mdx"));
+const HITLPillar = lazy(() => import("./staticPages/pillars/hitl.mdx"));
 
 
 const contentRoutes = [
   { path: "pillars/context", component: ContextPillars, title: "Context Engineering" },
+  { path: "pillars/hitl", component: HITLPillar, title: "Human-in-the-Loop (HITL)" },
 ];
 
 const App: React.FC = () => {
