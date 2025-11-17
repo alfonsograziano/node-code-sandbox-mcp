@@ -7,6 +7,7 @@ const Pillars: React.FC = () => {
     <BasePillarsPage>
       <HeroSection />
       <PillarsOverviewSection />
+      <div className="py-20"></div>
     </BasePillarsPage>
   );
 };
