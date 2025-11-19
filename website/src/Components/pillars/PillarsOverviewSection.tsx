@@ -69,6 +69,7 @@ const PillarsOverviewSection: React.FC = () => {
                 title={feature.title}
                 description={feature.description}
                 link={feature.link}
+                comingSoon={!feature.link}
               />
             </div>
           ))}
