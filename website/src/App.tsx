@@ -1,5 +1,5 @@
-import React, { lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { lazy, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
 import NodeMCPServer from './pages/NodeMCPServer';
 import TinyAgent from './pages/TinyAgent';
@@ -19,9 +19,55 @@ const contentRoutes = [
   { path: "pillars/spec-driven-development", component: SpecDrivenDevelopment, title: "Spec-Driven Development" },
 ];
 
+// Component to update document title based on route
+const DocumentTitle: React.FC = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const baseTitle = "jsdevai.com";
+    let pageTitle = "";
+
+    // First check if it's a content route (pillar pages)
+    const contentRoute = contentRoutes.find(route => {
+      const routePath = route.path.startsWith('/') ? route.path : `/${route.path}`;
+      return location.pathname === routePath || location.pathname.endsWith(`/${route.path}`);
+    });
+
+    if (contentRoute) {
+      pageTitle = contentRoute.title;
+    } else {
+      // Handle other routes
+      switch (location.pathname) {
+        case "/":
+          pageTitle = "Home";
+          break;
+        case "/mcp":
+          pageTitle = "Node.js Sandbox MCP Server";
+          break;
+        case "/tiny-agent":
+          pageTitle = "Tiny Agent";
+          break;
+        case "/graph-gpt":
+          pageTitle = "GraphGPT";
+          break;
+        case "/pillars":
+          pageTitle = "Pillars of AI Native Engineering";
+          break;
+        default:
+          pageTitle = "jsdevai";
+      }
+    }
+
+    document.title = pageTitle ? pageTitle : baseTitle;
+  }, [location.pathname]);
+
+  return null;
+};
+
 const App: React.FC = () => {
   return (
     <Router>
+      <DocumentTitle />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/mcp" element={<NodeMCPServer />} />
