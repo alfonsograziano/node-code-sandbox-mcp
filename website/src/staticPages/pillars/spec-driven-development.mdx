@@ -1,0 +1,1239 @@
+import ImagePlaceholder from '../../Components/pillars/shared/ImagePlaceholder';
+import ConceptCard from '../../Components/pillars/shared/ConceptCard';
+import FeatureCard from '../../Components/pillars/shared/FeatureCard';
+import ExampleFlowCard from '../../Components/pillars/shared/ExampleFlowCard';
+import TipCard from '../../Components/pillars/shared/TipCard';
+import AgentWorkflowCard from '../../Components/pillars/shared/AgentWorkflowCard';
+import QuoteCard from '../../Components/pillars/shared/QuoteCard';
+import { AlertTriangle, Code2, Shield, Zap, Brain, Target, FileText, CheckCircle2, XCircle, TrendingUp, Users, Lock, GitBranch, Layers, BookOpen, Wrench, Settings, Play, FileCheck, Terminal, Command, Workflow, Package, ExternalLink, Youtube, Scale, GitMerge, Database, RefreshCw, BarChart, GraduationCap } from 'lucide-react';
+
+
+## Introduction
+
+<div className="my-8">
+  <p className="text-gray-300 text-lg leading-relaxed">
+    In this pillar, we will discuss what Spec-Driven Development (SDD) is, how it emerged from vibe coding, what problems it's solving and how it works. Then, we will discuss some of the tools in the space so that you can understand what's the best one for your use case. At the end, as SDD is a new concept, we will discuss what the challenges and open topics to make SDD a mature methodology.
+  </p>
+</div>
+
+## The rise of Vibe-coding
+
+<div className="my-8">
+  <p className="text-gray-300 leading-relaxed mb-6">
+    It's February 2025. Andrej Karpathy, one of the most influential AI scientists of our time publishes a post on X. Karpathy just invented the term "vibe coding".
+  </p>
+
+  <div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+    <img
+      src="/images/pillars/sdd_1.png"
+      alt="Karpathy's tweet about vibe coding"
+      className="w-full h-auto rounded-lg shadow-2xl"
+    />
+  </div>
+
+  <div className="space-y-4 text-gray-300">
+    <p>
+      The idea is simple, you describe in plain English what you desire, the AI will interpret the request and try to build the code to satisfy it. You don't do planning or research. You don't evaluate tradeoffs or account for risks. You just describe your functional needs, the AI will try to fill the gaps and implement it.
+    </p>
+    <p>
+      In just a few months, vibe coding platforms emerged. The promise is simple: from now on, everyone, not just engineers, will be able to create fully working applications!
+    </p>
+    <p>
+      Demos are great, examples are shiny, websites created with these tools are cheap to build and start to generate revenue…
+    </p>
+    <p>
+      Everyone forgot one important thing though: Karpathy, in the end mentions that this form of interaction with AI is not really coding. You see stuff, say stuff, run stuff, copy paste, fix when things don't work and it mostly works.
+    </p>
+    <div className="my-6">
+      <QuoteCard
+        quote="You see stuff, say stuff, run stuff, copy paste, fix when things don't work and it mostly works."
+        author="Andrej Karpathy"
+      />
+    </div>
+    <p>
+      If you're reading this article, most probably you're a Software Developer, an Architect or, in general, someone that knows how to code. As you may guess, this approach is very limited and cannot be used in production-grade applications.
+    </p>
+  </div>
+</div>
+
+## Vibe-coding limitations
+
+<div className="my-8">
+  <p className="text-gray-300 leading-relaxed mb-6">
+    Vibe-coding looks magical in demos, but when people started using it for real projects, a long list of problems appeared. The core issue is simple: the AI guesses. And when you build software on guesses, things break in surprising (and sometimes painful) ways. Even people started to advertise themselves as "Vibe Coding Cleanup Specialist".
+  </p>
+
+  <div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+    <img
+      src="/images/pillars/sdd_2.png"
+      alt="Vibe Coding Cleanup Specialist"
+      className="w-full h-auto rounded-lg shadow-2xl"
+    />
+  </div>
+
+  <p className="text-gray-300 leading-relaxed mb-8">
+    Let's go through the biggest limitations, with real stories that circulated online in early 2025.
+  </p>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={AlertTriangle}
+    title="AI doesn't always respect your instructions"
+    description="You write 'Don't change production', 'Freeze code', 'Ask me first', but AI may ignore it. This can lead to catastrophic consequences in production environments."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        For example, in mid-2025 the platform Replit Agent reportedly <a href="https://hackaday.com/2025/07/23/vibe-coding-goes-wrong-as-ai-wipes-entire-database" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300 underline">deleted a live production database</a>, despite explicit code-freeze instructions. The CEO of Replit <a href="https://www.businessinsider.com/replit-ceo-apologizes-ai-coding-tool-delete-company-database-2025-7" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300 underline">publicly apologised</a>: "unacceptable and should never be possible."
+      </p>
+      <div className="backdrop-blur-md bg-red-600/10 border border-red-600/30 rounded-xl p-4">
+        <p className="text-gray-300">
+          <strong className="text-red-400">So yes, if you're treating "vibe-code" as fully autonomous production-grade code, you're playing with fire.</strong>
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={Code2}
+    title="Code quality, readability & maintenance suffer"
+    description="When AI generates large chunks of code from your prompts, you may not fully understand what it did, or why. This creates significant challenges for long-term maintenance."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        According to one large-scale study, AI-generated snippets had a high proportion of <a href="https://arxiv.org/abs/2310.02059" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300 underline">security weaknesses</a> (e.g., 29.5% of Python snippets had issues) when using tools like GitHub Copilot.
+      </p>
+      <p>
+        Many tools skip standard security practices, compliance checks (e.g., GDPR) or proper code review.
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4">
+          <h4 className="text-red-400 font-semibold mb-2 flex items-center gap-2">
+            <XCircle className="w-5 h-5" />
+            Common Issues
+          </h4>
+          <ul className="list-disc pl-6 space-y-2 text-gray-300">
+            <li>Old/outdated libraries used via AI-generated code</li>
+            <li>Missing parameter validation / injection risk</li>
+            <li>Policies not enforced because the AI "just wrote something that worked"</li>
+          </ul>
+        </div>
+        <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4">
+          <h4 className="text-yellow-400 font-semibold mb-2 flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5" />
+            Risk Areas
+          </h4>
+          <p className="text-gray-300">
+            If you're working in a regulated environment (education tech, healthcare, finance) this is a red flag.
+          </p>
+        </div>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={Shield}
+    title="Debugging and traceability challenges"
+    description="With vibe coding, since you didn't author every line (the AI did), when something breaks you might struggle to trace it. The AI's reasoning is hidden in prompts + model behavior, not documented architecture."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        If you have real engineering knowledge, you'll recognize the mismatch:
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FeatureCard
+          icon={XCircle}
+          title="What Vibe-coding Skips"
+          description="Much of planning, architecture, risk-analysis"
+        />
+        <FeatureCard
+          icon={AlertTriangle}
+          title="Trust Issues"
+          description="Puts trust in an AI agent that may not understand your domain, may not respect constraints"
+        />
+        <FeatureCard
+          icon={Code2}
+          title="Quick but Brittle"
+          description="Delivers 'working code' quickly, but maybe wrong, insecure, or brittle"
+        />
+        <FeatureCard
+          icon={Target}
+          title="Missing Engineering"
+          description="In production-grade systems, you still need design, review, governance, testing, monitoring"
+        />
+      </div>
+      <div className="mt-6 pt-6 border-t border-white/10">
+        <p className="text-gray-300 text-lg">
+          <strong className="text-green-400">The key takeaway:</strong> Vibe-coding is <em>cool</em>, useful for prototyping, rapidly iterating ideas (yes you can build a side-project over pizza). But it is not a replacement for proper software engineering when stakes are high.
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+## From vibe-coding to AI Native Engineering
+
+<div className="my-8">
+  <p className="text-gray-300 leading-relaxed mb-6">
+    Vibe coding is not well suited for actual production-grade code, right?
+  </p>
+  <p className="text-gray-300 leading-relaxed mb-6">
+    What if instead of abandoning AI, we step back, remove the hype, and think how to use AI as a real engineering tool across the software development lifecycle (SDLC)? That is the move from vibe-coding to <strong className="text-green-400">AI Native Software Engineering</strong>.
+  </p>
+  <p className="text-gray-300 leading-relaxed mb-6">
+    When we treat AI as a partner rather than an "all-knowing magic box", interesting opportunities (and challenges) open up:
+  </p>
+</div>
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
+  <FeatureCard
+    icon={CheckCircle2}
+    title="Better code quality"
+    description="AI can help with repetitive, error-prone work and free humans for design, architecture, edge cases. For example, AI can generate test cases or suggest documentation."
+  />
+  <FeatureCard
+    icon={Zap}
+    title="Faster throughput"
+    description="Studies show AI tools are helping engineers save hours per week and increase productivity when used well."
+  />
+  <FeatureCard
+    icon={Target}
+    title="More focus on value"
+    description="Engineers spend less time on boilerplate and more on the parts that really matter (business logic, reliability, maintainability)."
+  />
+  <FeatureCard
+    icon={Users}
+    title="Better collaboration"
+    description="Instead of 'AI did this, hope it works' you get 'AI helped me do this, I review it, we build together'."
+  />
+</div>
+
+<div className="my-8">
+  <p className="text-gray-300 leading-relaxed mb-6">
+    Ok, but how can I move from Vibe coding to AI native engineering? The risk is to just say "Alright, I'll just write again code manually". There has to be a better way! A middle ground where both the human and the AI collaborate together to build high-quality software. Here are some the key principles.
+  </p>
+
+  <div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+    <img
+      src="/images/pillars/sdd_3.png"
+      alt="AI Native Engineering principles"
+      className="w-full h-auto rounded-lg shadow-2xl"
+    />
+  </div>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={Brain}
+    title="Context-rich input instead of simple prompt"
+    description="In vibe-coding you might just say: 'Build a user-login page'. But in proper AI native engineering you provide the system with context: existing architecture diagrams, coding standards, dependency graph, module boundaries, style guidelines."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        This is also called <strong className="text-green-400">memory bank</strong> in some tools.
+      </p>
+      <p>
+        Without that context the AI generates code, but you're left deciphering it, integrating it, and maybe discovering it violates your conventions. The research around AI native engineering emphasizes that "just prompt" is not enough. Usually, when we just give a prompt, AI agents will try to perform <strong className="text-green-400">dynamic context discovery</strong>: they read your files, search your codebase and try to understand how you usually write code.
+      </p>
+      <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6 mt-4">
+        <p className="text-gray-300 mb-4">
+          <strong className="text-green-400">Example:</strong> If you want to test the power of proper context you can provide the AI with your API spec, target frontend/back-end tech stack, SLA/throughput targets, then ask "Create the endpoints for user management" rather than "make a login page".
+        </p>
+        <p className="text-gray-300">
+          If you want to learn more about context you can read the <a href="https://jsdevai.com/pillars/context/" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300 underline">Context pillar</a>.
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={Users}
+    title="Human-in-the-loop (HITL) and no full autonomy"
+    description="One of the biggest issues of vibe-coding is letting the system run without proper human oversight. In production settings that is risky. In contrast: AI native engineering uses AI as a collaborator, and humans remain accountable."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        Architecture review, security review, integration, deployment still involve people. This layered approach reduces risk.
+      </p>
+      <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6 mt-4">
+        <p className="text-gray-300 mb-4">
+          Think of AI as the friendly intern who can whip up drafts, but you're still the senior engineer who says "Yep, sign it off" (or "Nope, go back and fix this").
+        </p>
+        <p className="text-gray-300">
+          If you want to learn more about this topic, you can read the <a href="https://jsdevai.com/pillars/hitl/" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300 underline">HITL Pillar</a>.
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={GitBranch}
+    title="Divide & Conquer"
+    description="Do you remember about Divide & conquer? It helps to break down the system and you can use AI where it helps most!"
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        Instead of asking for "Build the whole system" (vibe-coding style), you break the project into modules or phases (ever heard of epics/stories?), assign AI-assisted tasks for particular scopes, then integrate.
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        <FeatureCard
+          icon={Layers}
+          title="Manageable Reviews"
+          description="This 'divide & conquer' makes reviews manageable and reduces risk of chaotic AI output."
+        />
+        <FeatureCard
+          icon={Users}
+          title="HITL Integration"
+          description="Together with HITL it's a powerful tool to review AI-generated code."
+        />
+        <FeatureCard
+          icon={Target}
+          title="Gradual Expansion"
+          description="It allows you to pick 'safe bets' for AI use first (low-risk modules) and gradually expand."
+        />
+      </div>
+      <div className="mt-6 pt-6 border-t border-white/10">
+        <p className="text-gray-300 text-lg">
+          Once you are using AI as a collaborator, the next step is: how do you define <strong className="text-green-400">good specs</strong> that the system can work against? How do you formalize your context and integrate AI into your SDLC in a controlled manner? That's where spec-driven development comes in.
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+# Spec-driven Development
+
+<div className="my-8">
+  <div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+    <img
+      src="/images/pillars/sdd_4.png"
+      alt="Spec-Driven Development"
+      className="w-full h-auto rounded-lg shadow-2xl"
+    />
+  </div>
+
+  <div className="space-y-4 text-gray-300">
+    <p>
+      At its core, Spec-Driven Development (SDD) is about flipping the old "code first, document later" workflow by letting specifications become the driving artifact for AI Native Engineering.
+    </p>
+    <p>
+      The key idea is simple: we treat the <strong className="text-green-400">specification</strong> (what we want + why + constraints) as the source of truth. We give the AI that spec + context, then let it generate the code (and maybe tests, tasks, etc). Humans validate, evolve the spec, steer the AI. We do <em>not</em> hand over fully autonomous control.
+    </p>
+    <p>
+      SDD tries to overcome vibe-coding limitation, by leveraging all the concepts we mentioned earlier.
+    </p>
+  </div>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={AlertTriangle}
+    title="SDD is Still Evolving"
+    description="Do you like the idea? Unfortunately, as explicitly described by ThoughtWorks researcher Birgitta Böckeler, the definition of 'spec-driven development' (SDD) is still in flux."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        As <a href="https://martinfowler.com/articles/exploring-gen-ai/sdd-3-tools.html" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300 underline">explicitly described</a> by ThoughtWorks researcher Birgitta Böckeler: "Like with many emerging terms… the definition of 'spec-driven development' (SDD) is still in flux." Put another way: we're still figuring out "how exactly to do SDD" as the tools are appearing, the vocabulary is emerging, but it's not yet a matured methodology.
+      </p>
+      <p>
+        Because the methodology is still new, each tool developed so far has its own flavor and practices. There is no "one size fits all" version of SDD yet: your organization will need to tailor.
+      </p>
+      <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6 mt-4">
+        <p className="text-gray-300 mb-4">
+          This approach is similar to what FAANG engineers are doing in the industry, as reported by this thread on Reddit:
+        </p>
+        <div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+          <img
+            src="/images/pillars/sdd_5.png"
+            alt="Reddit thread about FAANG engineers"
+            className="w-full h-auto rounded-lg shadow-2xl"
+          />
+        </div>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+## Tools and frameworks
+
+<div className="my-8">
+  <p className="text-gray-300 leading-relaxed mb-6">
+    Since SDD is emerging, a number of tools and frameworks are being built to support it. These tools reflect different ways of implementing the intuition above (spec becomes truth → AI generates → human reviews). In this section we will see how different tools and frameworks are implementing different versions of SDD.
+  </p>
+
+  <div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+    <img
+      src="/images/pillars/sdd_6.png"
+      alt="Tools and frameworks overview"
+      className="w-full h-auto rounded-lg shadow-2xl"
+    />
+  </div>
+</div>
+
+### Kiro
+
+<div className="my-8">
+  <ConceptCard
+    icon={Wrench}
+    title="Kiro: Agentic AI IDE from AWS"
+    description="Kiro is an 'Agentic AI' IDE from AWS. Instead of you writing a prompt, you're writing a goal and Kiro helps you plan, design and build across multiple files and tasks."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        So if standard AI code tools are like "here's a code snippet", Kiro is more like "let's map out what we're building, how we'll build it, then we will generate the list of tasks and we will write code for each one."
+      </p>
+
+      <div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+        <img
+          src="/images/pillars/sdd_7.png"
+          alt="Kiro interface"
+          className="w-full h-auto rounded-lg shadow-2xl"
+        />
+      </div>
+
+      <p>
+        Because many devs using AI assistants complain about: "it generated code, but I don't know how it made decisions, it doesn't fit my architecture, I lose track of changes." Kiro addresses those UX issues by:
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <FeatureCard
+          icon={FileText}
+          title="Planning first"
+          description="The UI gives you markdown 'Specs' (requirements.md, design.md, tasks.md) to review and edit before code is generated. This gives clarity and reduces surprises."
+        />
+        <FeatureCard
+          icon={Settings}
+          title="Structured workflow panels"
+          description="The interface gives you side-panels for specs, tasks, hooks, chats with agents. The familiarity helps reduce friction."
+        />
+        <FeatureCard
+          icon={GitBranch}
+          title="Diff and review mentality"
+          description="Instead of blind generation, you can see the changes (diffs) Kiro wants to make, approve or reject them. That gives control and reduces 'AI surprise'."
+        />
+        <FeatureCard
+          icon={Brain}
+          title="Persistent context (Steering + Hooks)"
+          description="You define project-wide rules (steering files) so the AI aligns to your architecture, naming conventions, test strategy. Agent hooks automate repetitive tasks like updating tests, docs, etc when certain files change."
+        />
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={Play}
+    title="How to use Kiro: From idea to code rollout"
+    description="Here's how you might use Kiro in a real project: from idea to code rollout."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6 text-gray-300">
+      <div>
+        <h4 className="text-green-400 font-semibold mb-3 text-lg">1. Install & setup</h4>
+        <ol className="list-decimal pl-6 space-y-2">
+          <li>Visit the Kiro website and download the version for your OS (macOS, Linux, Windows).</li>
+          <li>Install and do a sign in</li>
+          <li>(Optional) Import your existing VS Code settings if you use VS Code so the UI feels familiar.</li>
+        </ol>
+      </div>
+
+      <div>
+        <h4 className="text-green-400 font-semibold mb-3 text-lg">2. Define your feature/goal (Prompt)</h4>
+        <ol className="list-decimal pl-6 space-y-2">
+          <li>In the chat or command‐panel, you describe what you want to build. Example: "I want to add authentication + password reset to our web app." Kiro takes that intent and then:</li>
+          <li>Generates a <strong className="text-green-400">requirements.md</strong> with user stories and acceptance criteria.</li>
+          <li>You review/edit the requirements if needed.</li>
+        </ol>
+      </div>
+
+      <div>
+        <h4 className="text-green-400 font-semibold mb-3 text-lg">3. Design phase</h4>
+        <ol className="list-decimal pl-6 space-y-2">
+          <li>Once requirements are approved, Kiro analyses your codebase (or a scaffold) and proposes a <strong className="text-green-400">design.md</strong>: architecture, data flows, interfaces, tech stack decisions.</li>
+          <li>You review the design and can make edits or refine nuance (e.g., "use Postgres vs MySQL", "use React-TS for frontend")</li>
+        </ol>
+      </div>
+
+      <div>
+        <h4 className="text-green-400 font-semibold mb-3 text-lg">4. Task breakdown</h4>
+        <ol className="list-decimal pl-6 space-y-2">
+          <li>Kiro breaks the design into <strong className="text-green-400">tasks.md</strong>: discrete, actionable steps (create user model, implement login API, write unit tests, update docs, etc). Each task may link to which requirement(s) or design parts it covers. You can then pick a task to execute or run them in sequence.</li>
+        </ol>
+      </div>
+
+      <div>
+        <h4 className="text-green-400 font-semibold mb-3 text-lg">5. Execution & review</h4>
+        <ol className="list-decimal pl-6 space-y-2">
+          <li>Once you click on "Start task" in the task list, Kiro will apply changes (create files, modify files) to your codebase. It supports two modes: supervised (you review each diff) or autopilot (you allow it to proceed but still review final results).</li>
+          <li>You inspect diffs, test results, evaluate if code meets the spec/requirements.</li>
+          <li>You iterate: if something doesn't align, you can adjust the spec, design or task list and re-run. Alternatively, you can chat with the panel on the right to fix the code.</li>
+        </ol>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={FileCheck}
+    title="Hooks & automation"
+    description="While development is underway (or for future features), you configure agent hooks: triggers that run automatically when certain events happen."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        You configure <strong className="text-green-400">agent hooks</strong>: triggers that run automatically when certain events happen (file save, new file creation, commit, etc). Example: "When a new React component is added, auto-generate unit test skeleton and update docs."
+      </p>
+      <p>
+        These hooks help keep the workflow consistent and reduce boilerplate manual work.
+      </p>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={Brain}
+    title="Steering and project context"
+    description="You create 'steering' markdown files that hold your project's conventions, architecture decisions, style guides."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        You create "steering" markdown files that hold your project's conventions, architecture decisions, style guides. Kiro refers to them to guide its output (so naming, patterns, testing style follow your rules). Example steering file: <code className="text-green-400 bg-gray-900/60 px-2 py-1 rounded">steering/tech_stack.md</code>, <code className="text-green-400 bg-gray-900/60 px-2 py-1 rounded">steering/tests_convention.md</code>. This means over time Kiro "learns" your project style and fits new code to that.
+      </p>
+      <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6 mt-4">
+        <p className="text-gray-300">
+          <strong className="text-green-400">One of the big strengths of Kiro</strong> is the UI/UX and how it implements the spec-driven development. As Kiro offers a lot of guidance during the workflow, it's also very easy to use and it has a very simple learning curve.
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+### Spec Kit
+
+<div className="my-8">
+  <div className="mb-6">
+    <p className="text-gray-300 leading-relaxed mb-4">Want to see Spec Kit in action? Watch the <a href="https://www.youtube.com/watch?v=a9eR1xsfvHg&pp=0gcJCckJAYcqIYzv" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300 underline inline-flex items-center gap-1">video overview<ExternalLink className="w-3 h-3 ml-1" /></a>!</p>
+    <div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+      <img
+        src="/images/pillars/sdd_8.jpg"
+        alt="Spec Kit video header"
+        className="w-full h-auto rounded-lg shadow-2xl"
+      />
+    </div>
+  </div>
+
+  <ConceptCard
+    icon={Terminal}
+    title="Spec Kit: Flexible, Open-Source Command-Based Framework"
+    description="The Spec Kit toolkit is a flexible, open-source command-based framework designed to bring SDD into your AI-assisted workflow. Think of it as a lightweight shell around your favorite AI coding assistant."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        You install a small CLI, use slash-commands in the IDE, and the toolkit helps you scaffold <strong className="text-green-400">specs → plans → tasks</strong>, rather than diving straight into "tell the AI to write code".
+      </p>
+      <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4">
+        <p className="text-gray-300">
+          <strong className="text-green-400">Spec-Kit it's tool-agnostic:</strong> works with multiple AI agents, doesn't lock you into a vendor or proprietary platform.
+        </p>
+      </div>
+      <p>
+        Here's how it works, in plain developer-terms:
+      </p>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={Command}
+    title="Spec Kit Workflow"
+    description="Step-by-step guide to using Spec Kit in your development workflow."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6 text-gray-300">
+      <div>
+        <p className="text-green-400 font-semibold mb-3 text-lg">1. Install & bootstrap</p>
+        <ul className="list-disc pl-6 space-y-2">
+          <li>Install the <code className="text-green-400 bg-gray-900/60 px-2 py-1 rounded">specify-cli</code> (a small command-tool) into your existing environment.</li>
+          <li>Run something like <code className="text-green-400 bg-gray-900/60 px-2 py-1 rounded">specify init {'<PROJECT_NAME>'}</code> (or via slash-commands inside your AI-assistant) and pick your coding-agent of choice (e.g., GitHub Copilot, Claude Code, etc).</li>
+          <li>The tool scaffolds a directory structure (e.g., a <code className="text-green-400 bg-gray-900/60 px-2 py-1 rounded">.specify</code> or <code className="text-green-400 bg-gray-900/60 px-2 py-1 rounded">specs/</code> folder, plus prompt templates).</li>
+        </ul>
+      </div>
+
+      <div>
+        <p className="text-green-400 font-semibold mb-3 text-lg">2. Define your "constitution" (optional but recommended)</p>
+        <ul className="list-disc pl-6 space-y-2">
+          <li>Use a command like <code className="text-green-400 bg-gray-900/60 px-2 py-1 rounded">/speckit.constitution</code> or similar to document your non-negotiable rules (project conventions, styles, testing mandates).</li>
+          <li>This becomes part of the AI's context so it doesn't "go rogue" and use random libraries or ignore your style.</li>
+        </ul>
+      </div>
+
+      <div>
+        <p className="text-green-400 font-semibold mb-3 text-lg">3. Write the spec</p>
+        <ul className="list-disc pl-6 space-y-2">
+          <li>Use <code className="text-green-400 bg-gray-900/60 px-2 py-1 rounded">/speckit.specify</code> (or similar) to declare <em>what</em> you want and <em>why</em>. Not the nitty-gritty of how, but the feature or requirement (e.g., "Build user-photo album with date grouping and drag-drop").</li>
+          <li>This spec becomes the artefact the AI will use as the input starting-point.</li>
+        </ul>
+      </div>
+
+      <div>
+        <p className="text-green-400 font-semibold mb-3 text-lg">4. Generate the implementation plan</p>
+        <ul className="list-disc pl-6 space-y-2">
+          <li>Use <code className="text-green-400 bg-gray-900/60 px-2 py-1 rounded">/speckit.plan</code> to convert the spec into the "how": tech stack, architecture decisions, module breakdown, dependencies.</li>
+          <li>You can review/edit this plan.</li>
+        </ul>
+      </div>
+
+      <div>
+        <p className="text-green-400 font-semibold mb-3 text-lg">5. Break down into tasks</p>
+        <ul className="list-disc pl-6 space-y-2">
+          <li><code className="text-green-400 bg-gray-900/60 px-2 py-1 rounded">/speckit.tasks</code> creates granular actionable items (user stories, tasks/sub-tasks, test cases, docs updates) based on the plan.</li>
+          <li>This lets your AI (and you) pull one task at time rather than the AI doing "everything" in one shot.</li>
+        </ul>
+      </div>
+
+      <div>
+        <p className="text-green-400 font-semibold mb-3 text-lg">6. Execute implementation via your AI assistant</p>
+        <ul className="list-disc pl-6 space-y-2">
+          <li>Use <code className="text-green-400 bg-gray-900/60 px-2 py-1 rounded">/speckit.implement</code> (or equivalent) to instruct the AI to draft code/tests/docs for those tasks, within the context of spec + plan + tasks.</li>
+          <li>You still review, test, merge, and integrate like normal.</li>
+        </ul>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+### BMAD Method
+
+<div className="my-8">
+  <div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+    <img
+      src="/images/pillars/sdd_9.png"
+      alt="BMAD Method"
+      className="w-full h-auto rounded-lg shadow-2xl"
+    />
+  </div>
+
+  <ConceptCard
+    icon={Workflow}
+    title="BMAD Method: Full End-to-End SDD Workflow"
+    description="The BMAD Method is arguably the most powerful current methodology for SDD. It stands out because it offers a full, end-to-end workflow for engineering with AI assistance, and it gives you expandability."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        You can customize agents, workflows, and tailor the system to your own domain or organization.
+      </p>
+      <p>
+        In short: BMAD treats the specification and planning as <strong className="text-green-400">first-class artifacts</strong>, defines distinct agents (such as Analyst, Product Manager, Architect, Developer, Scrum-Master) each with a clear function in the workflow, and guides code generation, integration, testing, and review in a structured way.
+      </p>
+      <p>
+        The methodology guides you from analysis to planning, solutioning (architecture/design) to implementation, so you're not skipping design and context.
+      </p>
+      <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4">
+        <p className="text-gray-300">
+          One cool aspect is that it is <strong className="text-green-400">fully open source</strong> and it can be installed and used in your favorite IDE or Agentic environment. No vendor lock-in, no new tool to install which is not backwards compatible with your current workflow.
+        </p>
+      </div>
+      <p>
+        Here's a step-by-step of how BMAD typically plays out. Think: "you're still in charge, AI helps; you still review; you enforce quality".
+      </p>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={Users}
+    title="BMAD Workflow: Step-by-Step"
+    description="The complete BMAD workflow from analysis to implementation."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6 text-gray-300">
+      <div>
+        <h4 className="text-green-400 font-semibold mb-3 text-lg">1. Analysis Phase</h4>
+        <ul className="list-disc pl-6 space-y-2">
+          <li>The "Analyst" (AI agent) helps gather and clarify high-level intent: business goals, market/competitive context, user problem.</li>
+          <li>You work with the agent to define the <em>why</em> and <em>what</em> at a broad level (not yet coding).</li>
+          <li><strong className="text-green-400">Output:</strong> a brief but clear business case / feature description / scope document.</li>
+          <li><strong className="text-green-400">Benefit:</strong> reduces ambiguity early, avoids "just ask AI to write code" without framing.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 className="text-green-400 font-semibold mb-3 text-lg">2. Planning Phase</h4>
+        <ul className="list-disc pl-6 space-y-2">
+          <li>The "Product Manager" agent converts the business case into a complete PRD (Product Requirements Document)</li>
+          <li>The "Architect" agent takes that and produces system-level design: high-level architecture diagrams, module boundaries, data flows, interface definitions.</li>
+          <li>You review and refine: choose tech stack, define constraints (libraries to use/avoid), coding standards, deployment model.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 className="text-green-400 font-semibold mb-3 text-lg">3. Solutioning/Task Breakdown</h4>
+        <ul className="list-disc pl-6 space-y-2">
+          <li>The "Scrum Master" agent breaks down the design into granular work items: epics, tasks, sub-tasks, dependencies, test cases, docs to update.</li>
+          <li>Each task comes with the background context and relevant spec pointers (so the AI working on them knows "why").</li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 className="text-green-400 font-semibold mb-3 text-lg">4. Implementation Phase</h4>
+        <ul className="list-disc pl-6 space-y-2">
+          <li>The "Developer" agent (or agent + you) implements the tasks: generates code, tests, docs, possibly CI/CD changes.</li>
+          <li>AI makes the first draft; you review diffs, test results, adherence to spec and architecture.</li>
+          <li>If something does not align, you loop back: adjust spec or task and regenerate.</li>
+          <li>At each merge/release, you still apply standard engineering practices (code review, security scan, performance review).</li>
+          <li><strong className="text-green-400">Output:</strong> Working code, tests and docs, all traceable to spec.</li>
+        </ul>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={AlertTriangle}
+    title="BMAD Limitations"
+    description="BMAD is incredibly powerful, but it is not a magic shield that prevents all errors."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6 text-gray-300">
+      <div>
+        <h4 className="text-yellow-400 font-semibold mb-3 text-lg flex items-center gap-2">
+          <AlertTriangle className="w-5 h-5" />
+          First limitation: there is no strict enforcement layer for the agents yet.
+        </h4>
+        <p>
+          BMAD defines clear roles (Analyst, Architect, Developer, QA), but the system will not <em>force</em> an AI agent to behave exactly within that role. If you or the model drift outside the intended workflow (maybe the "Scrum Master" starts writing code) BMAD won't automatically stop you.
+        </p>
+        <div className="backdrop-blur-md bg-yellow-600/10 border border-yellow-600/30 rounded-xl p-4 mt-4">
+          <p className="text-gray-300">
+            This means that you can still accidentally misuse an agent or skip essential steps if you are not careful.
+          </p>
+        </div>
+      </div>
+
+      <div>
+        <h4 className="text-yellow-400 font-semibold mb-3 text-lg flex items-center gap-2">
+          <TrendingUp className="w-5 h-5" />
+          Second limitation: BMAD has a learning curve.
+        </h4>
+        <p>
+          For teams new to spec-first thinking, the mental shift can feel uncomfortable at first. You must learn how to:
+        </p>
+        <ul className="list-disc pl-6 space-y-2 mt-2">
+          <li>write actionable specs rather than jumping straight into coding</li>
+          <li>choose the right Agent for the right step</li>
+          <li>maintain clean context for AI</li>
+          <li>review output with stricter discipline</li>
+        </ul>
+        <p className="mt-4">
+          After a few cycles, teams get used to the rhythm and the structure becomes natural. Once that happens, BMAD's benefits become much more obvious and consistent.
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+### Other players
+
+<div className="my-8">
+  <p className="text-gray-300 leading-relaxed mb-6">
+    Please note that these tools evolve quickly and new approaches are emerging almost weekly, so this is not meant to be a comprehensive list, but rather more a nice set of pointers to start your own investigation.
+  </p>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={Package}
+    title="Tessl: AI-Native Development Platform"
+    description="Tessl describes itself as an 'AI-native development' platform. Essentially: the idea is to shift from writing a lot of code manually to defining specifications (what you want) and letting AI (or a framework) generate and maintain the code under clear guardrails."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        They offer two main pieces:
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <FeatureCard
+          icon={FileText}
+          title="Spec Registry"
+          description="Where you can find many pre-built specs (10 000+ mentioned) for common libraries/patterns."
+        />
+        <FeatureCard
+          icon={Wrench}
+          title="Framework / CLI / toolchain"
+          description="That integrates specs into your codebase, lets you generate code, test it, maintain it."
+        />
+      </div>
+      <div className="mt-6">
+        <h4 className="text-green-400 font-semibold mb-3">Here's a simplified flow:</h4>
+        <ol className="list-decimal pl-6 space-y-2">
+          <li>You write a spec file describing a component: what it does, its public API, maybe constraints or tests. (In Tessl this might use <code className="text-green-400 bg-gray-900/60 px-2 py-1 rounded">@generate</code>, <code className="text-green-400 bg-gray-900/60 px-2 py-1 rounded">@describe</code>, <code className="text-green-400 bg-gray-900/60 px-2 py-1 rounded">@test</code> annotations)</li>
+          <li>The framework uses that spec to generate code (or link with existing code) and produce tests.</li>
+          <li>The code is part of your project, and the spec remains a "source of truth" so future modifications reference the spec first rather than free-hand code.</li>
+          <li>If you upgrade a library or make a change, the spec/registry help ensure agents don't hallucinate APIs or introduce unintended side-effects (one of the problems Tessl explicitly cites)</li>
+        </ol>
+      </div>
+      <div className="mt-4">
+        <p>
+          Learn more at{' '}
+          <a href="https://tessl.io/" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300 underline inline-flex items-center gap-2">
+            tessl.io
+            <ExternalLink className="w-4 h-4" />
+          </a>
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={Code2}
+    title="OpenSpec: Open-Source CLI Tool"
+    description="OpenSpec is an open-source CLI tool and workflow framework that supports 'spec-driven development for AI coding assistants'."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        In plain terms: before you ask the AI to code, you <em>agree</em> with the AI (and your team) on what will be built (the spec), then you execute, then you archive the spec.
+      </p>
+      <p>
+        It supports many AI coding tools (Claude Code, Cursor, CodeBuddy, etc.) via slash commands or CLI commands. So you don't need to commit to a specific vendor (similarly to Speckit or BMAD).
+      </p>
+      <div className="mt-4">
+        <p>
+          Learn more at{' '}
+          <a href="https://github.com/Fission-AI/OpenSpec" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300 underline inline-flex items-center gap-2">
+            GitHub - Fission-AI/OpenSpec
+            <ExternalLink className="w-4 h-4" />
+          </a>
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+## What should I use?
+
+<div className="my-8">
+  <p className="text-gray-300 leading-relaxed mb-6">
+    Choosing between Kiro, Spec-Kit and BMAD really comes down to how much structure you want, how much change your team is willing to adopt and how deeply you want AI woven into your engineering workflow.
+  </p>
+</div>
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
+  <ConceptCard
+    icon={Wrench}
+    title="Kiro"
+    description="Great choice if you want a guided, visual experience embedded directly inside an IDE."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        The UI helps you plan, design and execute features with AI side-by-side, almost like having a built-in project navigator. This is ideal if you like strong guardrails and a clear workflow presented in a friendly interface.
+      </p>
+      <div className="backdrop-blur-md bg-yellow-600/10 border border-yellow-600/30 rounded-xl p-4">
+        <p className="text-gray-300">
+          <strong className="text-yellow-400">The tradeoff:</strong> you'll likely need to work inside a new IDE environment, which means a small disruption to your existing habits.
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+
+  <ConceptCard
+    icon={Terminal}
+    title="Spec-Kit"
+    description="Perfect if you want something simple to install, simple to use and easy to layer on top of your current AI agent."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        It uses a set of commands to generate specs, plans and tasks without forcing you into a new tool or workflow. This keeps vendor lock-in low and the learning curve gentle.
+      </p>
+      <div className="backdrop-blur-md bg-green-600/10 border border-green-600/30 rounded-xl p-4">
+        <p className="text-gray-300">
+          <strong className="text-green-400">It's a great "lightweight SDD starter kit"</strong> that feels natural for teams who want to adopt spec-driven thinking without changing how they code day to day.
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+
+  <ConceptCard
+    icon={Workflow}
+    title="BMAD"
+    description="The right choice if you want to explore the full power of a complete, customizable SDD workflow."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        It manages the entire lifecycle, assigns distinct AI roles and lets you create tailored agents or processes that fit your team's domain. It offers the highest flexibility and depth, but also requires the most discipline and onboarding.
+      </p>
+      <div className="backdrop-blur-md bg-blue-600/10 border border-blue-600/30 rounded-xl p-4">
+        <p className="text-gray-300">
+          <strong className="text-blue-400">You trade simplicity for control and extensibility.</strong>
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6">
+    <p className="text-gray-300 text-lg mb-4">
+      <strong className="text-green-400">In the end the tradeoffs typically revolve around:</strong>
+    </p>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <ul className="list-disc pl-6 space-y-2 text-gray-300">
+          <li>UI/UX</li>
+          <li>Vendor lock-in</li>
+        </ul>
+      </div>
+      <div>
+        <ul className="list-disc pl-6 space-y-2 text-gray-300">
+          <li>Learning curve</li>
+          <li>Customization</li>
+        </ul>
+      </div>
+    </div>
+    <p className="text-gray-300 mt-6">
+      If you want a smooth visual experience, pick <strong className="text-green-400">Kiro</strong>. If you want simplicity and compatibility with your current AI assistant, pick <strong className="text-green-400">Spec-Kit</strong>. If you want full control, full workflow management and room to experiment with custom agents, <strong className="text-green-400">BMAD</strong> is the strongest option.
+    </p>
+  </div>
+</div>
+
+## Current Limitations of Spec-Driven Development (SDD)
+
+<div className="my-8">
+  <div className="mb-12 -mx-6 md:-mx-8 lg:-mx-12">
+    <img
+      src="/images/pillars/sdd_10.png"
+      alt="SDD Limitations"
+      className="w-full h-auto rounded-lg shadow-2xl"
+    />
+  </div>
+
+  <div className="space-y-4 text-gray-300">
+    <p>
+      Even though SDD holds a lot of promise (i.e., using formal specifications + AI + human-in-the-loop), it is still very much an emerging methodology. As such, there are several practical limitations teams and organizations are facing right now.
+    </p>
+    <div className="backdrop-blur-md bg-green-600/10 border border-green-600/30 rounded-xl p-6">
+      <p className="text-gray-300">
+        I deeply believe that these limitations are just temporary and will be fixed in a relatively short amount of time both with technical solutions, tooling or new team practices and improved workflows.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={Scale}
+    title="Mismatch between spec size and task complexity"
+    description="One major limitation with spec-driven development is that the size and depth of a specification and the other generated artifacts don't yet scale smoothly with the size and complexity of the task."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        When the work involves a large module, many dependencies or complex integrations, writing a full spec + plan + task breakdown makes sense and can bring real value.
+      </p>
+      <div className="backdrop-blur-md bg-yellow-600/10 border border-yellow-600/30 rounded-xl p-4">
+        <p className="text-gray-300">
+          But for smaller features or quick changes, the overhead of creating a full specification workflow becomes <strong className="text-yellow-400">burdensome</strong>, often outweighing the benefits.
+        </p>
+      </div>
+      <p>
+        In effect there is no streamlined "lightweight spec" path yet: teams either skip the spec approach for minor work (losing consistency) or apply it and spend more time upfront than they gain downstream.
+      </p>
+      <p>
+        This imbalance means that spec-driven development currently works best for mid-to-large efforts, but struggles to fit comfortably into quick, small scoped tasks.
+      </p>
+      <div className="mt-6 pt-6 border-t border-white/10">
+        <h4 className="text-green-400 font-semibold mb-3">Emerging Solutions</h4>
+        <div className="space-y-4">
+          <p>
+            Tools like <a href="https://arc.net/l/quote/gphgkqkx" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300 underline">BMAD</a> started to implement features such as "Quick Flow", which is tailored for bug fixes or small features.
+          </p>
+          <p>
+            Other tools are trying to smooth out this imbalance. Editors like Cursor and GitHub Copilot have introduced a "Plan" mode, which gives the AI just enough space to think before coding without forcing the developer through a full, heavyweight specification workflow. Instead of a large, formal spec, the model produces a brief one-page plan: a bit of research, a short outline of steps, and a clear explanation of what will change.
+          </p>
+          <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4">
+            <p className="text-gray-300">
+              This lighter structure helps keep small tasks consistent and intentional, without slowing teams down with unnecessary ceremony. It's not a full solution yet, but it's a promising middle ground that makes spec-driven thinking feel practical even for quick fixes and small features.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={Users}
+    title="Team settings and collaborative workflows are under-defined"
+    description="Another limitation: most SDD tools and workflows are oriented toward individual developers or small prototyping contexts, rather than full team, multi-role, enterprise workflows."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        For example, many toolkits assume a single developer writes the spec, then the AI generates code, then the same developer reviews. But in real development teams you have product owners, business analysts, architects, QA, operations, security.
+      </p>
+      <p>
+        What this means practically:
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <FeatureCard
+          icon={Users}
+          title="Role Alignment"
+          description="Who owns the spec? How do roles align (product, architecture, dev, QA)?"
+        />
+        <FeatureCard
+          icon={GitMerge}
+          title="Collaboration"
+          description="How do multiple team members contribute/edit the spec?"
+        />
+        <FeatureCard
+          icon={GitBranch}
+          title="Versioning & Branching"
+          description="How is versioning, branching, collaboration handled in the spec layer?"
+        />
+        <FeatureCard
+          icon={Workflow}
+          title="Integration"
+          description="How does the workflow integrate with existing team practices (sprints, agile ceremonies, code reviews, CI/CD)?"
+        />
+      </div>
+      <div className="backdrop-blur-md bg-yellow-600/10 border border-yellow-600/30 rounded-xl p-4 mt-4">
+        <p className="text-gray-300">
+          Because these aspects are not yet mature, teams risk creating process friction when adopting SDD. While some tools are already doing progress, there is not yet a standard to work within multi-repo contexts.
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={Database}
+    title="Legacy systems, brownfield code and integration challenges"
+    description="SDD works best when you are building something new (greenfield). But most organizations maintain large legacy systems (brownfield)."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        Some SDD tools currently struggle with:
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4">
+          <h4 className="text-red-400 font-semibold mb-2">Understanding Context</h4>
+          <p className="text-gray-300 text-sm">
+            Understanding existing codebase context and dependencies.
+          </p>
+        </div>
+        <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4">
+          <h4 className="text-red-400 font-semibold mb-2">Integration</h4>
+          <p className="text-gray-300 text-sm">
+            Generating specs and code that integrate cleanly with existing modules, rather than assuming a fresh start.
+          </p>
+        </div>
+        <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4">
+          <h4 className="text-red-400 font-semibold mb-2">Alignment</h4>
+          <p className="text-gray-300 text-sm">
+            Aligning generated code with existing architecture, patterns, conventions and non-functional requirements.
+          </p>
+        </div>
+      </div>
+      <div className="backdrop-blur-md bg-yellow-600/10 border border-yellow-600/30 rounded-xl p-4 mt-4">
+        <p className="text-gray-300">
+          Using SDD for legacy systems it's possible, but often involves additional overhead (reverse-engineering context, refactoring prior to spec), which takes some time, needs review and the AI might not be able to reverse-engineer all the requirements and business needs.
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={RefreshCw}
+    title="Tooling maturity, consistency & reproducibility"
+    description="When applying spec-driven development (SDD) in practice, one of the biggest hurdles is the maturity and predictability of the tools and AI agents involved."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-6 text-gray-300">
+      <div>
+        <h4 className="text-yellow-400 font-semibold mb-3 flex items-center gap-2">
+          <RefreshCw className="w-5 h-5" />
+          Reproducibility Issues
+        </h4>
+        <p>
+          First, teams run into reproducibility issues: unlike a traditional compiler where the same input and settings reliably produce the same output, AI-based generation does not guarantee this. As one practitioner puts it, "output varies across tools and models. The same spec will produce different code from different agents."
+        </p>
+      </div>
+
+      <div>
+        <h4 className="text-yellow-400 font-semibold mb-3 flex items-center gap-2">
+          <Brain className="w-5 h-5" />
+          Context and Scope Limitations
+        </h4>
+        <p>
+          Another critical limitation is context and scope. Large or complex specifications, big codebases, numerous files and dependencies can exceed an agent's effective context window or lead to "context blindness" where the AI misses earlier constraints or architectural rules. The result: generated code works but does not meet the underlying intent or integration requirements.
+        </p>
+      </div>
+
+      <div>
+        <h4 className="text-yellow-400 font-semibold mb-3 flex items-center gap-2">
+          <Wrench className="w-5 h-5" />
+          Evolving Ecosystem
+        </h4>
+        <p>
+          The tooling ecosystem itself is still evolving. Many of the frameworks and agents branded for SDD are experimental, with frequent breaking changes, limited support, and few established best practices. Teams adopting SDD thus face risks of tool fatigue, migration pain, inconsistent workflows and lacking documentation or community guidance.
+        </p>
+      </div>
+
+      <div>
+        <h4 className="text-yellow-400 font-semibold mb-3 flex items-center gap-2">
+          <BarChart className="w-5 h-5" />
+          Measurement and Feedback
+        </h4>
+        <p>
+          Finally, the measurement and feedback layer is underdeveloped. How do you quantify the benefit of SDD plus AI tooling? What metrics show defect reduction, velocity improvement, or spec-to-code alignment? These questions remain largely unanswered in published practice.
+        </p>
+        <div className="backdrop-blur-md bg-red-600/10 border border-red-600/30 rounded-xl p-4 mt-4">
+          <p className="text-gray-300">
+            Without robust feedback loops, teams may adopt SDD with hype rather than clarity.
+          </p>
+        </div>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+<div className="my-8">
+  <ConceptCard
+    icon={GraduationCap}
+    title="Skills, culture and change management"
+    description="Finally, adopting SDD requires changes in how teams work: writing specs becomes a more central task, humans shift roles, AI becomes part of the flow."
+    expandable={true}
+    defaultExpanded={true}
+  >
+    <div className="space-y-4 text-gray-300">
+      <p>
+        The skills and culture of teams may need to adapt. Some limitations here:
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4">
+          <h4 className="text-yellow-400 font-semibold mb-2">Writing Skills</h4>
+          <p className="text-gray-300 text-sm">
+            Writing good, actionable specs is hard. Not all product owners, architects or developers currently have that skill set.
+          </p>
+        </div>
+        <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4">
+          <h4 className="text-yellow-400 font-semibold mb-2">Resistance to Change</h4>
+          <p className="text-gray-300 text-sm">
+            Teams may resist the perceived overhead of spec writing.
+          </p>
+        </div>
+        <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4">
+          <h4 className="text-yellow-400 font-semibold mb-2">New Roles</h4>
+          <p className="text-gray-300 text-sm">
+            New roles or responsibilities (e.g., "spec owner", "AI-agent reviewer") might not yet exist in many orgs.
+          </p>
+        </div>
+        <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4">
+          <h4 className="text-yellow-400 font-semibold mb-2">Over-reliance Risk</h4>
+          <p className="text-gray-300 text-sm">
+            There is risk of over-reliance on AI output or under-review.
+          </p>
+        </div>
+      </div>
+      <div className="backdrop-blur-md bg-yellow-600/10 border border-yellow-600/30 rounded-xl p-4 mt-4">
+        <p className="text-gray-300">
+          There is a learning curve for the team to adopt and learn how to use properly these tools, so teams or specific team members might resist the change.
+        </p>
+      </div>
+    </div>
+  </ConceptCard>
+</div>
+
+## Summary
+
+<div className="my-8">
+  <div className="backdrop-blur-xl bg-gradient-to-r from-green-600/10 via-blue-600/5 to-green-600/10 border border-green-600/30 rounded-2xl p-8 shadow-2xl">
+    <div className="space-y-6 text-gray-300">
+      <p className="text-xl leading-relaxed">
+        Spec-Driven Development is a compelling evolution of how we work with AI in software engineering: we move from ad-hoc "vibe-coding" toward a structured workflow: <strong className="text-green-400">specify → plan → tasks → implement</strong>, with AI as collaborator and humans as reviewers. But it is not yet fully matured.
+      </p>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6">
+          <h3 className="text-green-400 font-semibold mb-4 text-lg flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5" />
+            Current State
+          </h3>
+          <p className="text-gray-300">
+            Even though there are limitations, the future is bright: we can expect lightweight modes, better collaboration tooling, living specs/contracts, brownfield integration, agile-friendly workflows, mature metrics, and teams fully trained in the new way of working.
+          </p>
+        </div>
+        
+        <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6">
+          <h3 className="text-green-400 font-semibold mb-4 text-lg flex items-center gap-2">
+            <Target className="w-5 h-5" />
+            The Path Forward
+          </h3>
+          <p className="text-gray-300">
+            SDD represents a fundamental shift toward more intentional, structured, and collaborative software development. As the methodology matures and tools evolve, we can expect these limitations to be addressed, making SDD accessible and practical for teams of all sizes.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

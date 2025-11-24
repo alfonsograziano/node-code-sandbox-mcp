@@ -24,6 +24,7 @@ const PillarsOverviewSection: React.FC = () => {
       icon: FileText,
       title: 'Spec-Driven Development',
       description: 'Treat human-readable, testable specifications as the primary artefact; split work into small spec→task→PR cycles so agents implement against those specs.',
+      link: '/pillars/spec-driven-development',
     },
     {
       icon: Network,

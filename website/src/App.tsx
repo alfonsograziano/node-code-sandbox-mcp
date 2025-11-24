@@ -10,11 +10,13 @@ import PillarPage from './Components/pillars/PillarPage';
 
 const ContextPillars = lazy(() => import("./staticPages/pillars/context.mdx"));
 const HITLPillar = lazy(() => import("./staticPages/pillars/hitl.mdx"));
+const SpecDrivenDevelopment = lazy(() => import("./staticPages/pillars/spec-driven-development.mdx"));
 
 
 const contentRoutes = [
   { path: "pillars/context", component: ContextPillars, title: "Context Engineering" },
   { path: "pillars/hitl", component: HITLPillar, title: "Human-in-the-Loop (HITL)" },
+  { path: "pillars/spec-driven-development", component: SpecDrivenDevelopment, title: "Spec-Driven Development" },
 ];
 
 const App: React.FC = () => {
